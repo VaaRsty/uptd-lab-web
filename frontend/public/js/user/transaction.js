@@ -6,7 +6,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Transaction.js initialized');
         
-        // Ambil data dari atribut HTML
         const dataElement = document.getElementById('transaction-data');
         
         if (!dataElement) {
@@ -20,24 +19,14 @@
             
             const transactions = rawData ? JSON.parse(rawData) : [];
             
-            console.log('📦 Data transaksi setelah parse:', transactions);
             console.log('📦 Jumlah transaksi:', transactions.length);
             
-            // Cek struktur data pertama
             if (transactions.length > 0) {
                 console.log('Contoh data transaksi:', transactions[0]);
-                console.log('Field yang tersedia:', Object.keys(transactions[0]));
-            } else {
-                console.log('⚠️ Tidak ada data transaksi');
             }
             
-            // Hitung statistik
             calculateStats(transactions);
-            
-            // Render tabel
             renderTable(transactions);
-            
-            // Setup filter
             setupFilters(transactions);
             
         } catch (error) {
@@ -54,19 +43,17 @@
         let totalMenungguSKRD = 0;
         
         transactions.forEach(t => {
-            // Ambil total_tagihan dari tabel payments
             const tagihan = parseFloat(t.total_tagihan) || 0;
             totalTagihan += tagihan;
             
-            // Ambil jumlah_dibayar dari tabel payments
             const dibayar = parseFloat(t.jumlah_dibayar) || 0;
             totalDibayar += dibayar;
             
-            // Status pembayaran dari tabel payments (sesuai enum)
             const status = t.status_pembayaran || 'Belum Bayar';
             
             switch(status) {
                 case 'Lunas':
+                case 'Selesai':
                     totalLunas++;
                     break;
                 case 'Belum Lunas':
@@ -76,8 +63,10 @@
                     totalBelumBayar++;
                     break;
                 case 'Menunggu SKRD Upload':
+                case 'Menunggu Verifikasi':
                     totalMenungguSKRD++;
                     break;
+                // status lainnya tidak dihitung dalam statistik
             }
         });
         
@@ -145,18 +134,20 @@
         
         let html = '';
         transactions.forEach(item => {
-            // Ambil data dari tabel payments
             const total = parseFloat(item.total_tagihan) || 0;
             const dibayar = parseFloat(item.jumlah_dibayar) || 0;
             const sisa = total - dibayar;
             
-            // Status pembayaran (sesuai enum di database)
             let statusText = item.status_pembayaran || 'Belum Bayar';
             let statusBadge = '';
             
+            // 🔥 Mapping 9 status dengan kelas CSS
             switch(statusText) {
                 case 'Lunas':
                     statusBadge = 'status-lunas';
+                    break;
+                case 'Selesai':
+                    statusBadge = 'status-selesai';
                     break;
                 case 'Belum Lunas':
                     statusBadge = 'status-belum-lunas';
@@ -165,13 +156,24 @@
                     statusBadge = 'status-belum-bayar';
                     break;
                 case 'Menunggu SKRD Upload':
-                    statusBadge = 'status-menunggu';
+                    statusBadge = 'status-menunggu-skrd';
+                    break;
+                case 'Menunggu Verifikasi':
+                    statusBadge = 'status-menunggu-verifikasi';
+                    break;
+                case 'Pengecekan Sampel':
+                    statusBadge = 'status-pengecekan';
+                    break;
+                case 'Sedang Diuji':
+                    statusBadge = 'status-sedang-diuji';
+                    break;
+                case 'Dibatalkan':
+                    statusBadge = 'status-dibatalkan';
                     break;
                 default:
                     statusBadge = 'status-default';
             }
             
-            // Format tanggal dari tabel payments
             const date = item.created_at;
             const formattedDate = date ? new Date(date).toLocaleDateString('id-ID', {
                 day: '2-digit',
@@ -179,10 +181,7 @@
                 year: 'numeric'
             }) : '-';
             
-            // No invoice dari tabel payments
             const noInvoice = item.no_invoice || `INV-${String(item.submission_id || item.id).padStart(5, '0')}`;
-            
-            // Nama proyek dari tabel submissions (harusnya sudah di-join)
             const namaProyek = item.nama_proyek || 'Pengujian';
             
             html += `
@@ -226,7 +225,6 @@
                 const noInvoice = (item.no_invoice || '').toLowerCase();
                 const namaProyek = (item.nama_proyek || '').toLowerCase();
                 
-                // Search di no invoice dan nama proyek
                 const matchSearch = noInvoice.includes(search) || namaProyek.includes(search);
                 
                 let itemStatus = item.status_pembayaran || 'Belum Bayar';
