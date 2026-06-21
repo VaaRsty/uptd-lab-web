@@ -361,8 +361,22 @@
                     <span class="text-muted small">Laporan tersedia setelah mengisi kuisioner</span>
                 `;
             } else {
-                // Sudah isi kuisioner - tampilkan tombol download dan preview
-                kuisionerSection.style.display = 'none';
+                // Sudah isi kuisioner - tampilkan tombol download laporan dan kuisioner
+                kuisionerSection.style.display = 'block';
+                kuisionerSection.innerHTML = `
+                    <div class="card-header-custom">
+                        <h6><i class="fas fa-star"></i> KUIISIONER KEPUASAN</h6>
+                    </div>
+                    <div class="card-body-custom text-center">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h6>Terima Kasih!</h6>
+                        <p class="text-muted small mb-3">Anda telah mengisi kuisioner kepuasan untuk layanan ini.</p>
+                        <button class="btn btn-outline-primary" onclick="window.downloadKuisionerPDF()">
+                            <i class="fas fa-download me-2"></i>Download Salinan Kuisioner
+                        </button>
+                    </div>
+                `;
+                
                 actionLaporan.innerHTML = `
                     <a href="#" onclick="window.openFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-outline-primary me-1">
                         <i class="fas fa-eye"></i> Preview
@@ -392,13 +406,140 @@
         }
     };
 
+    // 🔥 FUNGSI DOWNLOAD KUIISIONER PDF
+    window.downloadKuisionerPDF = async function() {
+        if (!currentSubmissionData || !currentSubmissionData.kuisioner) {
+            alert('Data kuisioner tidak ditemukan');
+            return;
+        }
+        
+        try {
+            const token = window.userToken;
+            const API_URL = 'http://localhost:5000/api';
+            const kuisionerId = currentSubmissionData.kuisioner.id;
+            
+            // Tampilkan state loading (bisa pakai sweetalert kalau ada, kita pakai log/alert biasa)
+            console.log('Mengunduh data kuisioner...');
+            
+            // Fetch detail kuisioner
+            const resKuisioner = await fetch(`${API_URL}/kuisioner/${kuisionerId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const dataKuisioner = await resKuisioner.json();
+            
+            if (!dataKuisioner.success) throw new Error('Gagal memuat data kuisioner');
+            
+            const detail = dataKuisioner.data;
+            const jawaban = detail.jawaban || {};
+            const pertanyaan = detail.pertanyaan || [];
+            
+            // Buat PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(18);
+            doc.text('Detail Kuisioner Kepuasan', 105, 15, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Informasi Pemohon', 14, 25);
+            
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(10);
+            doc.text(`Nama: ${detail.nama_pemohon || '-'}`, 14, 32);
+            doc.text(`Instansi: ${detail.nama_instansi || '-'}`, 14, 38);
+            doc.text(`Telepon: ${detail.nomor_telepon || '-'}`, 14, 44);
+            doc.text(`Tanggal: ${formatDate(detail.created_at)}`, 14, 50);
+            
+            doc.setFont(undefined, 'bold');
+            doc.text('Hasil Penilaian', 14, 62);
+            
+            const tableData = [];
+            for (let i = 1; i <= 10; i++) {
+                const nilai = detail[`skor_${i}`] !== undefined ? detail[`skor_${i}`] : (jawaban[i] !== undefined ? jawaban[i] : '-');
+                const label = pertanyaan[i-1] || ('Kriteria ' + i);
+                tableData.push([i, label, nilai]);
+            }
+            
+            doc.autoTable({
+                startY: 66,
+                head: [['No', 'Kriteria', 'Nilai']],
+                body: tableData,
+                theme: 'striped',
+                headStyles: { fillColor: [67, 97, 238] },
+                columnStyles: {
+                    0: { cellWidth: 20 },
+                    1: { cellWidth: 120 },
+                    2: { cellWidth: 30 }
+                }
+            });
+            
+            const finalY = doc.lastAutoTable.finalY + 10;
+            doc.setFont(undefined, 'bold');
+            doc.text('Saran / Komentar', 14, finalY);
+            doc.setFont(undefined, 'normal');
+            
+            const saranLines = doc.splitTextToSize(detail.saran || '-', 180);
+            doc.text(saranLines, 14, finalY + 6);
+            
+            const filename = 'kuisioner_' + (detail.nama_pemohon || 'pemohon') + '_' + new Date().getTime() + '.pdf';
+            doc.save(filename);
+            
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Gagal mendownload PDF: ' + error.message);
+        }
+    };
+
     // 🔥 UPDATE FUNGSI renderTimeline DENGAN 9 STATUS
     function renderTimeline(data) {
         const timelineEl = document.getElementById('timeline');
         if (!timelineEl) return;
         
-        // 🔥 PAKAI STATUS_CONFIG
-        const timelineHtml = window.STATUS_CONFIG.getTimelineHtml(data.status);
+        const currentStatus = data.status || 'Menunggu Verifikasi';
+        
+        // Urutan 9 status
+        const statuses = [
+            { key: 'Menunggu Verifikasi', label: 'Pengajuan Diterima', icon: 'fa-file' },
+            { key: 'Pengecekan Sampel', label: 'Pengecekan Sampel', icon: 'fa-search' },
+            { key: 'Belum Bayar', label: 'Menunggu Pembayaran', icon: 'fa-credit-card' },
+            { key: 'Menunggu SKRD Upload', label: 'Menunggu SKRD', icon: 'fa-file-invoice' },
+            { key: 'Belum Lunas', label: 'Pembayaran Sebagian', icon: 'fa-hourglass-half' },
+            { key: 'Lunas', label: 'Pembayaran Lunas', icon: 'fa-check-circle' },
+            { key: 'Sedang Diuji', label: 'Proses Pengujian', icon: 'fa-flask' },
+            { key: 'Selesai', label: 'Pengujian Selesai', icon: 'fa-check-double' },
+            { key: 'Dibatalkan', label: 'Dibatalkan', icon: 'fa-ban' }
+        ];
+
+        let currentIndex = statuses.findIndex(s => s.key === currentStatus);
+        if (currentIndex === -1) currentIndex = 0;
+
+        const timelineHtml = statuses.map((status, index) => {
+            let statusClass = 'pending';
+            let statusIcon = 'far fa-circle';
+            
+            if (index < currentIndex) {
+                statusClass = 'completed';
+                statusIcon = 'fas fa-check-circle';
+            } else if (index === currentIndex) {
+                statusClass = 'current';
+                statusIcon = 'fas fa-spinner fa-pulse';
+            }
+            
+            return `
+                <div class="timeline-item ${statusClass} mb-3 ps-3" style="border-left: 2px solid ${statusClass === 'completed' ? '#28a745' : statusClass === 'current' ? '#0d6efd' : '#e9ecef'}; position: relative;">
+                    <div class="d-flex align-items-center" style="position: absolute; left: -11px; top: 0; background: white;">
+                        <i class="fas ${statusIcon} ${statusClass === 'current' ? 'text-primary' : statusClass === 'completed' ? 'text-success' : 'text-muted'}" style="font-size: 1.2rem; background: white;"></i>
+                    </div>
+                    <div class="ms-3">
+                        <span class="fw-bold ${statusClass === 'current' ? 'text-primary' : ''}">${status.label}</span>
+                        ${index === currentIndex ? '<small class="text-primary d-block mt-1">Sedang dalam proses</small>' : ''}
+                        ${index < currentIndex ? '<small class="text-success d-block mt-1">Selesai</small>' : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
         timelineEl.innerHTML = timelineHtml;
     }
 
