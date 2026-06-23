@@ -552,49 +552,50 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     });
     
-    // Handle form submit dengan validasi
+    // Handle form submit
     document.getElementById('applicationForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        // 🔥 VALIDASI FILE SEBELUM SUBMIT
-        if (!validateFiles()) {
-            return;
-        }
-        
-        if (this.dataset.submitting === 'true') {
-            console.log('⚠️ Form sudah disubmit');
-            return;
-        }
+        if (!validateFiles()) return;
+        if (this.dataset.submitting === 'true') return;
         
         this.dataset.submitting = 'true';
-        
         const submitButton = this.querySelector('button[type="submit"]');
         const originalText = submitButton.innerHTML;
-        
         submitButton.disabled = true;
         submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
         
         try {
             const formData = new FormData(this);
+            
+            // 🔥 TAMBAHKAN LOG UNTUK MELIHAT FILE APA SAJA YANG DIKIRIM
+            for (let pair of formData.entries()) {
+                console.log('📤 FormData:', pair[0], pair[1] instanceof File ? pair[1].name : pair[1]);
+            }
+            
             const response = await fetch('/user/submission', {
                 method: 'POST',
                 body: formData
             });
             
+            if (!response.ok) {
+                const text = await response.text();
+                console.error('❌ Response not OK:', text);
+                throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
+            }
+            
             const result = await response.json();
+            console.log('📦 Result:', result);
             
             if (result.success) {
                 window.location.href = '/user/history?success=true&message=Pengajuan+berhasil+dikirim';
             } else {
                 alert('Error: ' + (result.message || 'Gagal mengirim pengajuan'));
-                this.dataset.submitting = 'false';
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
             }
-            
         } catch (error) {
             console.error('❌ Error:', error);
-            alert('Terjadi kesalahan saat mengirim data');
+            alert('Terjadi kesalahan saat mengirim data: ' + error.message);
+        } finally {
             this.dataset.submitting = 'false';
             submitButton.disabled = false;
             submitButton.innerHTML = originalText;

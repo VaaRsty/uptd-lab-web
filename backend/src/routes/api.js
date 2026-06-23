@@ -171,7 +171,7 @@ router.post('/user/submission',
     authMiddleware, 
     upload.fields([
         { name: 'surat_permohonan', maxCount: 1 },
-        { name: 'scan_ktp', maxCount: 1 }
+        { name: 'scan_ktp', maxCount: 1 },
     ]), 
     apiController.createSubmission
 );

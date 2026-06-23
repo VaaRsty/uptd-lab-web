@@ -836,6 +836,7 @@ const pageController = {
         }
     },
 
+    // ==================== postSubmission (FRONTEND) ====================
     postSubmission: async (req, res) => {
         console.log('➡️ postSubmission');
         console.log('📦 req.body:', req.body);
@@ -855,49 +856,48 @@ const pageController = {
 
             const axios = require('axios');
             const FormData = require('form-data');
+            const fs = require('fs');
             const API_URL = process.env.API_URL || 'http://localhost:5000/api';
             
-            // Buat FormData baru
             const formData = new FormData();
             
-            // Append semua field dari req.body - GUNAKAN Object.keys()
+            // Append semua field dari req.body
             Object.keys(req.body).forEach(key => {
                 const value = req.body[key];
-                
-                // Handle array (checkbox)
                 if (Array.isArray(value)) {
-                    // Untuk array, kita bisa gabungkan dengan koma atau kirim satu per satu
                     formData.append(key, value.join(','));
                 } else {
                     formData.append(key, value || '');
                 }
             });
             
+            // 🔥 APPEND FILES dengan validasi
             // Append files jika ada
             if (req.files) {
-                if (req.files['surat_permohonan']) {
+                if (req.files['surat_permohonan'] && req.files['surat_permohonan'].length > 0) {
                     const file = req.files['surat_permohonan'][0];
-                    // GUNAKAN fs.createReadStream karena kita pakai diskStorage
-                    formData.append('surat_permohonan', fs.createReadStream(file.path));
-                    console.log('📁 Surat file appended from path:', file.path);
+                    if (file.path && fs.existsSync(file.path)) {
+                        formData.append('surat_permohonan', fs.createReadStream(file.path));
+                    }
                 }
-                if (req.files['scan_ktp']) {
+                if (req.files['scan_ktp'] && req.files['scan_ktp'].length > 0) {
                     const file = req.files['scan_ktp'][0];
-                    formData.append('scan_ktp', fs.createReadStream(file.path));
-                    console.log('📁 KTP file appended from path:', file.path);
+                    if (file.path && fs.existsSync(file.path)) {
+                        formData.append('scan_ktp', fs.createReadStream(file.path));
+                    }
                 }
             }
-            
+
             console.log('📡 Sending to backend:', `${API_URL}/user/submission`);
             
-            // Dapatkan headers dari formData
             const headers = formData.getHeaders();
-            
             const response = await axios.post(`${API_URL}/user/submission`, formData, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     ...headers
-                }
+                },
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity
             });
             
             console.log('✅ Response from backend:', response.data);
@@ -924,16 +924,23 @@ const pageController = {
                 console.error('❌ Response data:', error.response.data);
             }
             
+            // Cek apakah error karena backend mengembalikan HTML (bukan JSON)
+            let errorMessage = 'Gagal mengirim pengajuan. Silakan coba lagi.';
+            if (error.response && typeof error.response.data === 'string' && error.response.data.includes('<head>')) {
+                errorMessage = 'Server backend mengembalikan error (lihat log server).';
+            } else if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
             if (error.code === 'ECONNREFUSED') {
-                return res.json({
-                    success: false,
-                    message: 'Tidak dapat terhubung ke server backend. Pastikan backend berjalan di port 5000.'
-                });
+                errorMessage = 'Tidak dapat terhubung ke server backend. Pastikan backend berjalan di port 5000.';
             }
             
             res.json({
                 success: false,
-                message: error.response?.data?.message || 'Gagal mengirim pengajuan'
+                message: errorMessage
             });
         }
     },

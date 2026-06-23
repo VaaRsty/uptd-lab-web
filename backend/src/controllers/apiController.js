@@ -859,28 +859,36 @@ const apiController = {
 
             console.log('📊 Getting admin dashboard stats for user:', userId);
 
-            // 1. STATISTIK KEUANGAN
+            // ========== 1. STATISTIK KEUANGAN (dari PAYMENTS) ==========
             const [incomeStats] = await db.query(`
                 SELECT 
-                    COALESCE(SUM(p.total_tagihan), 0) as total_income,
-                    COALESCE(SUM(CASE WHEN MONTH(p.created_at) = MONTH(CURDATE()) 
-                                AND YEAR(p.created_at) = YEAR(CURDATE()) 
-                                THEN p.total_tagihan ELSE 0 END), 0) as monthly_income
-                FROM payments p
+                    COALESCE(SUM(CASE WHEN status_pembayaran = 'Lunas' THEN total_tagihan ELSE 0 END), 0) as total_income,
+                    COALESCE(SUM(CASE WHEN status_pembayaran = 'Lunas' 
+                                AND MONTH(created_at) = MONTH(CURDATE()) 
+                                AND YEAR(created_at) = YEAR(CURDATE()) 
+                                THEN total_tagihan ELSE 0 END), 0) as monthly_income
+                FROM payments
             `);
 
-            // 2. STATISTIK SUBMISSIONS
+            // ========== 2. STATISTIK SUBMISSIONS ==========
             const [submissionStats] = await db.query(`
                 SELECT 
                     COUNT(*) as total_submissions,
                     SUM(CASE WHEN status = 'Menunggu Verifikasi' THEN 1 ELSE 0 END) as pending_verifikasi,
                     SUM(CASE WHEN status = 'Selesai' THEN 1 ELSE 0 END) as completed,
-                    SUM(CASE WHEN status = 'Sedang Diuji' THEN 1 ELSE 0 END) as ongoing,
-                    SUM(CASE WHEN status = 'Belum Lunas' THEN 1 ELSE 0 END) as awaiting_payment
+                    SUM(CASE WHEN status = 'Sedang Diuji' THEN 1 ELSE 0 END) as ongoing
                 FROM submissions
             `);
 
-            // 3. AKTIVITAS TERBARU (dari tabel activities)
+            // ========== 3. 🔥 MENUNGGU BAYAR (dari PAYMENTS, bukan SUBMISSIONS) ==========
+            const [paymentStats] = await db.query(`
+                SELECT 
+                    COUNT(*) as awaiting_payment_count
+                FROM payments
+                WHERE status_pembayaran IN ('Belum Bayar', 'Belum Lunas', 'Menunggu SKRD Upload')
+            `);
+
+            // ========== 4. AKTIVITAS TERBARU ==========
             const [recentActivities] = await db.query(`
                 SELECT 
                     a.*,
@@ -891,13 +899,11 @@ const apiController = {
                 LIMIT 5
             `);
 
-            // Format activities untuk frontend
+            // Format activities
             const formattedActivities = recentActivities.map(activity => {
                 let action = 'info';
-                let actionName = '';
                 if (activity.activity_name) {
                     const name = activity.activity_name.toLowerCase();
-                    actionName = activity.activity_name;
                     if (name.includes('login')) action = 'login';
                     else if (name.includes('register')) action = 'create';
                     else if (name.includes('update')) action = 'update';
@@ -905,20 +911,19 @@ const apiController = {
                     else if (name.includes('upload')) action = 'upload';
                     else if (name.includes('verify')) action = 'verify';
                 }
-
                 return {
                     id: activity.id,
                     company: activity.user_name || 'System',
-                    description: actionName || 'Aktivitas sistem',
+                    description: activity.activity_name || 'Aktivitas sistem',
                     time: formatTimeAgo(activity.created_at),
-                    status: actionName ? actionName.split(' ')[0] : 'Aktivitas',
+                    status: activity.activity_name ? activity.activity_name.split(' ')[0] : 'Aktivitas',
                     icon: getIconForAction(action),
                     color: getColorForAction(action),
                     badgeColor: getColorForAction(action)
                 };
             });
 
-            // 🔴 PERBAIKI QUERY SUBMISSIONS - Ambil semua field yang diperlukan
+            // ========== 5. SUBMISSIONS TERBARU ==========
             const [recentSubmissions] = await db.query(`
                 SELECT 
                     s.id,
@@ -939,9 +944,8 @@ const apiController = {
                 LIMIT 5
             `);
 
-            // 🔴 FORMAT SUBMISSIONS DENGAN BENAR
             const formattedSubmissions = recentSubmissions.map(sub => ({
-                id: sub.id, // Gunakan ID asli, bukan no_permohonan
+                id: sub.id,
                 no_permohonan: sub.no_permohonan || `SUB-${sub.id}`,
                 company: sub.company || sub.nama_pemohon || '-',
                 type: sub.jenis_uji || '-',
@@ -949,18 +953,18 @@ const apiController = {
                 status: sub.status || 'Menunggu Verifikasi'
             }));
 
-            // 5. CHART DATA (6 bulan terakhir)
+            // ========== 6. CHART (6 BULAN TERAKHIR) ==========
             const [chartData] = await db.query(`
                 SELECT 
-                    DATE_FORMAT(p.created_at, '%Y-%m') as month,
-                    COALESCE(SUM(p.total_tagihan), 0) as total
-                FROM payments p
-                WHERE p.created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-                GROUP BY DATE_FORMAT(p.created_at, '%Y-%m')
+                    DATE_FORMAT(created_at, '%Y-%m') as month,
+                    COALESCE(SUM(total_tagihan), 0) as total
+                FROM payments
+                WHERE status_pembayaran = 'Lunas'
+                    AND created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                GROUP BY DATE_FORMAT(created_at, '%Y-%m')
                 ORDER BY month ASC
             `);
 
-            // Generate labels dan values untuk chart
             const months = [];
             const values = [];
             const now = new Date();
@@ -976,13 +980,13 @@ const apiController = {
                 values.push(found ? parseFloat(found.total) : 0);
             }
 
-            // Format response
+            // ========== 7. RESPONSE ==========
             const response = {
                 stats: {
                     income: formatRupiah(incomeStats[0].monthly_income || 0),
                     pending: submissionStats[0].pending_verifikasi || 0,
                     completed: submissionStats[0].completed || 0,
-                    awaitingPayment: submissionStats[0].awaiting_payment || 0
+                    awaitingPayment: paymentStats[0].awaiting_payment_count || 0  // 🔥 INI YANG DIPERBAIKI
                 },
                 activities: formattedActivities,
                 submissions: formattedSubmissions,
@@ -5964,7 +5968,6 @@ const apiController = {
                     updateFields.push('file_ktp = ?');
                     updateValues.push(req.files['scan_ktp'][0].filename);
                 }
-
                 if (updateFields.length > 0) {
                     updateValues.push(submissionId);
                     await db.query(`UPDATE submissions SET ${updateFields.join(', ')} WHERE id = ?`, updateValues);
@@ -6275,7 +6278,7 @@ const apiController = {
                 });
             }
 
-            // HAPUS SEMUA REFERENSI KE skrd
+            // 🔥 QUERY BERSIH - TANPA KOMENTAR DI DALAM SQL
             const [payments] = await db.query(`
                 SELECT 
                     p.*,
@@ -6297,7 +6300,10 @@ const apiController = {
                     ss.jumlah_sample_satuan,
                     ss.price_at_time,
                     ss.method_at_time,
-                    sv.service_name
+                    sv.service_name,
+                    p.skrd_file,
+                    p.skrd_filename,
+                    p.skrd_uploaded_at
                 FROM payments p
                 JOIN submissions s ON p.submission_id = s.id
                 LEFT JOIN users u ON s.user_id = u.id
@@ -6347,6 +6353,11 @@ const apiController = {
                 bukti_pembayaran_2: payment.bukti_pembayaran_2,
                 bukti_pembayaran_notes: payment.bukti_pembayaran_notes,
                 created_at: payment.created_at,
+                
+                // SKRD FILE
+                skrd_file: payment.skrd_file || null,
+                skrd_filename: payment.skrd_filename || null,
+                skrd_uploaded_at: payment.skrd_uploaded_at || null,
                 
                 // Data pemohon
                 nama_pemohon: payment.nama_pemohon || payment.full_name,
