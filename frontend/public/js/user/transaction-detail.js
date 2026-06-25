@@ -117,7 +117,11 @@
         if (skrdInfo && skrdAction) {
             if (data.skrd_file) {
                 const fileUrl = `http://localhost:5000/api/file/skrd/${data.skrd_file}?token=${token}`;
-                skrdInfo.innerHTML = '<i class="fas fa-check-circle text-success"></i> SKRD telah diupload';
+                const uploadedAt = data.skrd_uploaded_at ? formatDate(data.skrd_uploaded_at) : '';
+                skrdInfo.innerHTML = `
+                    <i class="fas fa-check-circle text-success"></i> SKRD telah diupload
+                    ${uploadedAt ? `<br><small class="text-muted">Diunggah: ${uploadedAt}</small>` : ''}
+                `;
                 skrdAction.innerHTML = `
                     <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-primary me-2">Lihat</a>
                     <a href="${fileUrl}" download class="btn btn-sm btn-primary">Download</a>

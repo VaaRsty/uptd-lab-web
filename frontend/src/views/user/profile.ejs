@@ -106,6 +106,7 @@ const profileAvatarSrc = user.avatar
                 
                 <div class="profile-card-body">
                     <div class="settings-grid">
+                        <!-- Ubah Password (tetap) -->
                         <div class="profile-setting-item">
                             <div class="profile-setting-info">
                                 <strong>Ubah Password</strong>
@@ -116,14 +117,28 @@ const profileAvatarSrc = user.avatar
                             </button>
                         </div>
                         
+                        <!-- Toggle Notifikasi Email -->
                         <div class="profile-setting-item">
                             <div class="profile-setting-info">
-                                <strong>Notifikasi</strong>
-                                <p>Atur preferensi notifikasi email</p>
+                                <strong>Notifikasi Email</strong>
+                                <p>Terima pemberitahuan via email</p>
                             </div>
-                            <button class="btn-setting" id="notificationSettingsBtn" type="button">
-                                Atur
-                            </button>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="notifEmail" <%= user.notif_email !== false ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- Toggle Notifikasi WhatsApp -->
+                        <div class="profile-setting-item">
+                            <div class="profile-setting-info">
+                                <strong>Notifikasi WhatsApp</strong>
+                                <p>Terima pemberitahuan via WhatsApp</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="notifWa" <%= user.notif_wa === true ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
                         </div>
                     </div>
                 </div>

@@ -47,12 +47,55 @@
     // ================ DOM CONTENT LOADED ================
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Profile page loaded');
+
+        document.getElementById('notifEmail')?.addEventListener('change', function() {
+            updateNotificationSettings({
+                notif_email: this.checked,
+                notif_wa: document.getElementById('notifWa').checked
+            });
+        });
+
+        document.getElementById('notifWa')?.addEventListener('change', function() {
+            updateNotificationSettings({
+                notif_email: document.getElementById('notifEmail').checked,
+                notif_wa: this.checked
+            });
+        });
         
         // Load user profile from API
         loadUserProfile();
         
         setupEventListeners();
     });
+
+    async function updateNotificationSettings(settings) {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showToast('Sesi habis, silakan login ulang', 'error');
+                return;
+            }
+
+            const response = await fetch('http://localhost:5000/api/user/notification-settings', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(settings)
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                showToast('Pengaturan notifikasi berhasil diperbarui', 'success');
+            } else {
+                showToast(result.message || 'Gagal memperbarui pengaturan', 'error');
+            }
+        } catch (error) {
+            console.error('Error updating notification settings:', error);
+            showToast('Gagal menghubungi server', 'error');
+        }
+    }
 
     // ================ LOAD USER PROFILE FROM API ================
     async function loadUserProfile() {
@@ -506,11 +549,12 @@
     }
 
     function updateNotificationBadge() {
-        // This would be implemented if you have notification count
         const badge = document.getElementById('notificationBadge');
-        if (badge) {
-            badge.style.display = 'none';
-        }
+        if (!badge) return;
+
+        const count = window.notificationCount || 0;
+        badge.textContent = count > 0 ? count : '';
+        badge.style.display = count > 0 ? 'inline-block' : 'none';
     }
 
     function showToast(message, type = 'success') {

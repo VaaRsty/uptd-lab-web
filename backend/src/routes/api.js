@@ -183,6 +183,7 @@ router.post('/user/submission',
     upload.fields([
         { name: 'surat_permohonan', maxCount: 1 },
         { name: 'scan_ktp', maxCount: 1 },
+        { name: 'lampiran_pendukung', maxCount: 1 }
     ]), 
     apiController.createSubmission
 );
@@ -214,6 +215,9 @@ router.get('/user/transactions', authMiddleware, apiController.getUserTransactio
 
 // Ambil notifikasi spesifik user
 router.get('/user/notifications', authMiddleware, apiController.getUserNotifications);
+router.get('/user/notifications/count', authMiddleware, apiController.getUnreadNotificationCount);
+router.get('/user/notification-settings', authMiddleware, apiController.getNotificationSettings);
+router.put('/user/notification-settings', authMiddleware, apiController.updateNotificationSettings);
 
 // Detail transaksi user
 router.get('/user/transactions/:id', authMiddleware, apiController.getUserTransactionDetail);

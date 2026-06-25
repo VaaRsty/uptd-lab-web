@@ -1615,14 +1615,11 @@ const apiController = {
             if (subCheck.length > 0 && subCheck[0].user_id) {
                 const subUserId = subCheck[0].user_id;
                 const noPermohonan = subCheck[0].no_permohonan || `APP-${id}`;
-                await db.query(
-                    `INSERT INTO notifications (user_id, title, message, href) VALUES (?, ?, ?, ?)`,
-                    [
-                        subUserId, 
-                        'Update Status Pengajuan', 
-                        `Status pengajuan ${noPermohonan} telah diperbarui menjadi: ${status}.`, 
-                        `/user/history/${id}`
-                    ]
+                await sendNotifications(
+                    subUserId,
+                    'Update Status Pengajuan',
+                    `Status pengajuan ${noPermohonan} telah diperbarui menjadi: ${status}.`,
+                    `/user/history/${id}`
                 );
             }
 
@@ -1850,14 +1847,11 @@ const apiController = {
             if (subCheck.length > 0 && subCheck[0].user_id) {
                 const subUserId = subCheck[0].user_id;
                 const noPermohonan = subCheck[0].no_permohonan || `APP-${id}`;
-                await db.query(
-                    `INSERT INTO notifications (user_id, title, message, href) VALUES (?, ?, ?, ?)`,
-                    [
-                        subUserId, 
-                        'Hasil Uji Selesai', 
-                        `Laporan hasil pengujian untuk ${noPermohonan} telah tersedia dan dapat diunduh.`, 
-                        `/user/history/${id}`
-                    ]
+                await sendNotifications(
+                    subUserId,
+                    'Hasil Uji Selesai',
+                    `Laporan hasil pengujian untuk ${noPermohonan} telah tersedia dan dapat diunduh.`,
+                    `/user/history/${id}`
                 );
             }
 
@@ -2450,14 +2444,11 @@ const apiController = {
             const [subCheck] = await db.query('SELECT user_id FROM submissions WHERE id = ?', [payment.submission_id]);
             if (subCheck.length > 0 && subCheck[0].user_id) {
                 const subUserId = subCheck[0].user_id;
-                await db.query(
-                    `INSERT INTO notifications (user_id, title, message, href) VALUES (?, ?, ?, ?)`,
-                    [
-                        subUserId, 
-                        'Pembayaran Diverifikasi', 
-                        `Pembayaran Anda untuk Tagihan ${payment.no_invoice} sebesar Rp ${parseFloat(paid_amount).toLocaleString('id-ID')} telah diverifikasi. Status: ${newStatus}.`, 
-                        `/user/transaction/${id}`
-                    ]
+                await sendNotifications(
+                    subUserId,
+                    'Pembayaran Diverifikasi',
+                    `Pembayaran Anda untuk Tagihan ${payment.no_invoice} sebesar Rp ${parseFloat(paid_amount).toLocaleString('id-ID')} telah diverifikasi. Status: ${newStatus}.`,
+                    `/user/transaction/${id}`
                 );
             }
 
@@ -6153,17 +6144,45 @@ const apiController = {
                 let updateFields = [];
                 let updateValues = [];
 
-                if (req.files['surat_permohonan']?.[0]?.size > 0) {
-                    updateFields.push('file_surat_permohonan = ?');
-                    updateValues.push(req.files['surat_permohonan'][0].filename);
+                // Log untuk debugging
+                console.log('📁 Files received:', Object.keys(req.files));
+
+                if (req.files['surat_permohonan'] && req.files['surat_permohonan'].length > 0) {
+                    const file = req.files['surat_permohonan'][0];
+                    if (file.size > 0) {
+                        updateFields.push('file_surat_permohonan = ?');
+                        updateValues.push(file.filename);
+                        console.log('📄 Surat permohonan:', file.filename);
+                    }
                 }
-                if (req.files['scan_ktp']?.[0]?.size > 0) {
-                    updateFields.push('file_ktp = ?');
-                    updateValues.push(req.files['scan_ktp'][0].filename);
+                
+                if (req.files['scan_ktp'] && req.files['scan_ktp'].length > 0) {
+                    const file = req.files['scan_ktp'][0];
+                    if (file.size > 0) {
+                        updateFields.push('file_ktp = ?');
+                        updateValues.push(file.filename);
+                        console.log('📄 Scan KTP:', file.filename);
+                    }
                 }
+                
+                // 🔥 LAMPIRAN PENDUKUNG – simpan ke dokumen_tambahan
+                if (req.files['lampiran_pendukung'] && req.files['lampiran_pendukung'].length > 0) {
+                    const file = req.files['lampiran_pendukung'][0];
+                    if (file.size > 0) {
+                        updateFields.push('dokumen_tambahan = ?');
+                        updateValues.push(file.filename);
+                        console.log('📄 Lampiran pendukung:', file.filename);
+                    }
+                }
+
                 if (updateFields.length > 0) {
                     updateValues.push(submissionId);
-                    await db.query(`UPDATE submissions SET ${updateFields.join(', ')} WHERE id = ?`, updateValues);
+                    const query = `UPDATE submissions SET ${updateFields.join(', ')} WHERE id = ?`;
+                    console.log('📝 Update query:', query);
+                    console.log('📦 Update values:', updateValues);
+                    await db.query(query, updateValues);
+                } else {
+                    console.log('⚠️ Tidak ada file yang diupload');
                 }
             }
 
@@ -6171,9 +6190,19 @@ const apiController = {
             await db.query("INSERT INTO activities (user_id, activity_name, created_at) VALUES (?, 'create_submission', NOW())", [userId]);
             
             // 11. NOTIFY ADMIN (user_id = 0)
-            await db.query(
-                `INSERT INTO notifications (user_id, title, message, href) VALUES (?, ?, ?, ?)`,
-                [0, 'Pengajuan Baru Masuk', `Ada pengajuan baru (${no_permohonan_final}) dari ${nama_instansi || nama_pemohon || 'Pelanggan'}`, `/admin/submissions`]
+            await sendNotifications(
+                0,
+                'Pengajuan Baru Masuk',
+                `Ada pengajuan baru (${no_permohonan_final}) dari ${nama_instansi || nama_pemohon || 'Pelanggan'}`,
+                `/admin/submissions`
+            );
+
+            // Notifikasi ke user (pemohon)
+            await sendNotifications(
+                userId,
+                'Pengajuan Berhasil Dibuat',
+                `Pengajuan ${no_permohonan_final} berhasil dikirim. Mohon tunggu verifikasi dari admin.`,
+                `/user/history/${submissionId}`
             );
 
             console.log('✅ SUBMISSION SUCCESS:', submissionId, 'Qty:', finalQty);
@@ -6269,7 +6298,7 @@ const apiController = {
             // Ambil data submission
             const [submissions] = await db.query(`
                 SELECT 
-                    s.*,
+                    s.*,  -- s.* sudah mencakup semua kolom termasuk dokumen_tambahan
                     u.full_name,
                     u.email,
                     u.nama_instansi,
@@ -6487,6 +6516,85 @@ const apiController = {
         }
     },
 
+    // ==================== GET UNREAD NOTIFICATION COUNT ====================
+    getUnreadNotificationCount: async (req, res) => {
+        try {
+            const userId = req.user?.id;
+            
+            if (!userId) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Unauthorized'
+                });
+            }
+            
+            // Hitung notifikasi yang is_read = 0 (belum dibaca)
+            const [result] = await db.query(
+                'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0',
+                [userId]
+            );
+            
+            res.json({
+                success: true,
+                count: result[0]?.count || 0
+            });
+            
+        } catch (error) {
+            console.error('❌ Error getting unread notification count:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Gagal mengambil jumlah notifikasi'
+            });
+        }
+    },
+
+    // ==================== NOTIFICATION SETTINGS ====================
+    getNotificationSettings: async (req, res) => {
+        try {
+            const userId = req.user?.id;
+            if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+            const [users] = await db.query(
+                'SELECT notif_email, notif_wa FROM users WHERE id = ?',
+                [userId]
+            );
+            if (users.length === 0) {
+                return res.status(404).json({ success: false, message: 'User tidak ditemukan' });
+            }
+
+            res.json({
+                success: true,
+                data: {
+                    notif_email: users[0].notif_email === 1,
+                    notif_wa: users[0].notif_wa === 1
+                }
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    updateNotificationSettings: async (req, res) => {
+        try {
+            const userId = req.user?.id;
+            const { notif_email, notif_wa } = req.body;
+
+            if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+            await db.query(
+                'UPDATE users SET notif_email = ?, notif_wa = ? WHERE id = ?',
+                [notif_email ? 1 : 0, notif_wa ? 1 : 0, userId]
+            );
+
+            res.json({
+                success: true,
+                message: 'Pengaturan notifikasi berhasil diperbarui'
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
     // ==================== GET USER TRANSACTION DETAIL ====================
     getUserTransactionDetail: async (req, res) => {
         try {
@@ -6582,15 +6690,19 @@ const apiController = {
                 jumlah_dibayar: parseFloat(payment.jumlah_dibayar) || 0,
                 sisa_tagihan: parseFloat(payment.sisa_tagihan) || parseFloat(payment.total_tagihan) || 0,
                 status_pembayaran: payment.status_pembayaran,
+                
+                // 🔥 BUKTI PEMBAYARAN + TANGGAL UPLOAD
                 bukti_pembayaran_1: payment.bukti_pembayaran_1,
                 bukti_pembayaran_2: payment.bukti_pembayaran_2,
+                bukti_pembayaran_1_uploaded_at: payment.bukti_pembayaran_1_uploaded_at || null,  // 🔥 TAMBAHKAN
+                bukti_pembayaran_2_uploaded_at: payment.bukti_pembayaran_2_uploaded_at || null,  // 🔥 TAMBAHKAN
                 bukti_pembayaran_notes: payment.bukti_pembayaran_notes,
                 created_at: payment.created_at,
                 
                 // SKRD FILE
                 skrd_file: payment.skrd_file || null,
                 skrd_filename: payment.skrd_filename || null,
-                skrd_uploaded_at: payment.skrd_uploaded_at || null,
+                skrd_uploaded_at: payment.skrd_uploaded_at || null,  // 🔥 SUDAH ADA (TAMBAHKAN JUGA DI SINI)
                 
                 // Data pemohon
                 nama_pemohon: payment.nama_pemohon || payment.full_name,
@@ -6715,9 +6827,19 @@ const apiController = {
             console.log('✅ Payment proof uploaded successfully');
             
             // NOTIFY ADMIN (user_id = 0)
-            await db.query(
-                `INSERT INTO notifications (user_id, title, message, href) VALUES (?, ?, ?, ?)`,
-                [0, 'Bukti Pembayaran Diunggah', `Bukti pembayaran untuk Invoice ${check[0].no_invoice || '-'} telah diunggah`, `/admin/submissions`]
+            await sendNotifications(
+                0,
+                'Bukti Pembayaran Diunggah',
+                `Bukti pembayaran untuk Invoice ${check[0].no_invoice || '-'} telah diunggah oleh user.`,
+                `/admin/submissions`
+            );
+
+            // Notifikasi ke user (konfirmasi upload)
+            await sendNotifications(
+                userId,
+                'Bukti Pembayaran Terkirim',
+                `Bukti pembayaran untuk Invoice ${check[0].no_invoice} berhasil diunggah. Menunggu verifikasi admin.`,
+                `/user/transaction/${transactionId}`
             );
             
             res.json({
@@ -7219,6 +7341,38 @@ function generateVANumber(paymentId) {
     const random = Math.floor(1000 + Math.random() * 9000).toString();
     
     return `88${labCode}${dateStr}${random}`;
+}
+
+// ==================== HELPER: SEND NOTIFICATIONS ====================
+async function sendNotifications(userId, title, message, href = null) {
+    try {
+        // Ambil pengaturan user
+        const [users] = await db.query(
+            'SELECT email, nomor_telepon, notif_email, notif_wa FROM users WHERE id = ?',
+            [userId]
+        );
+        if (users.length === 0) return;
+        const user = users[0];
+
+        // Kirim EMAIL jika enabled
+        if (user.notif_email && user.email) {
+            try {
+                // Sementara pakai console.log dulu (nanti ganti dengan nodemailer)
+                console.log(`📧 [EMAIL] To: ${user.email}, Title: ${title}, Message: ${message}`);
+                // TODO: pasang nodemailer nanti
+            } catch (e) { console.error('Email error:', e.message); }
+        }
+
+        // Kirim WHATSAPP jika enabled
+        if (user.notif_wa && user.nomor_telepon) {
+            try {
+                console.log(`📱 [WA] To: ${user.nomor_telepon}, Title: ${title}, Message: ${message}`);
+                // TODO: pasang WATI/Twilio nanti
+            } catch (e) { console.error('WA error:', e.message); }
+        }
+    } catch (error) {
+        console.error('❌ sendNotifications error:', error);
+    }
 }
 
 module.exports = apiController;

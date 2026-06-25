@@ -134,7 +134,16 @@
         
         const formattedId = String(data.id).padStart(6, '0');
         setText('det-id', data.no_permohonan ? `#${data.no_permohonan}` : `#${formattedId}`);
-        setText('det-status', data.status || '-');
+        
+        // 🔥 PERBAIKI STATUS BADGE (kanan atas)
+        const statusBadge = document.getElementById('det-status');
+        if (statusBadge) {
+            const status = data.status || 'Menunggu Verifikasi';
+            const statusClass = getStatusBadgeClass(status);
+            statusBadge.className = `badge px-3 py-2 rounded-3 d-flex align-items-center shadow-sm ${statusClass}`;
+            statusBadge.innerHTML = `<i class="fas ${getStatusIcon(status)} me-1"></i> ${status}`;
+        }
+        
         setText('det-date', formatDate(data.created_at));
         
         // Perusahaan
@@ -180,7 +189,7 @@
             setText('det-total', formatRupiah(0));
         }
 
-        // Informasi Pembayaran
+        // 🔥 INFORMASI PEMBAYARAN (dengan status yang jelas)
         if (data.payment) {
             setText('det-invoice', data.payment.no_invoice || '-');
             setText('det-bill', formatRupiah(data.payment.total_tagihan || 0));
@@ -189,14 +198,26 @@
             const sisa = (data.payment.total_tagihan || 0) - (data.payment.jumlah_dibayar || 0);
             setText('det-remaining', formatRupiah(sisa));
             
-            let paymentStatus = data.payment.status_pembayaran || '-';
-            let statusClass = '';
-            if (paymentStatus === 'Lunas') statusClass = 'badge-soft-success';
-            else if (paymentStatus === 'Belum Lunas' || paymentStatus === 'Belum Bayar') statusClass = 'badge-soft-danger';
-            else if (paymentStatus === 'Menunggu SKRD Upload') statusClass = 'badge-soft-warning';
+            // 🔥 STATUS PEMBAYARAN (dengan badge yang jelas)
+            const paymentStatus = data.payment.status_pembayaran || 'Belum Bayar';
+            const statusEl = document.getElementById('det-payment-status');
+            if (statusEl) {
+                const paymentClass = getPaymentStatusClass(paymentStatus);
+                statusEl.innerHTML = `<span class="badge ${paymentClass}">${paymentStatus}</span>`;
+            }
             
-            document.getElementById('det-payment-status').innerHTML = `<span class="badge ${statusClass}">${paymentStatus}</span>`;
-            setText('det-payment-date', data.payment.bukti_pembayaran_1_uploaded_at ? formatDate(data.payment.bukti_pembayaran_1_uploaded_at) : '-');
+            // 🔥 TANGGAL PEMBAYARAN (ambil yang terbaru dari bukti 1 atau 2)
+            const date1 = data.payment.bukti_pembayaran_1_uploaded_at;
+            const date2 = data.payment.bukti_pembayaran_2_uploaded_at;
+            let latestDate = null;
+            if (date1 && date2) {
+                latestDate = new Date(date1) > new Date(date2) ? date1 : date2;
+            } else if (date1) {
+                latestDate = date1;
+            } else if (date2) {
+                latestDate = date2;
+            }
+            setText('det-payment-date', latestDate ? formatDate(latestDate) : '-');
             
             renderPaymentProofs(data.payment, token);
         } else {
@@ -208,10 +229,10 @@
             setText('det-payment-date', '-');
         }
         
-        // Dokumen
+        // Dokumen (termasuk lampiran tambahan)
         renderDocuments(data, token);
         
-        // 🔥 LAPORAN & KUIISIONER (Syarat: Laporan sudah diupload + Kuisioner belum diisi)
+        // Laporan & Kuisioner
         renderLaporanWithKuisioner(data, token);
         
         // Catatan Admin
@@ -313,6 +334,62 @@
         } else {
             setText('status-doc-ktp', '❌ Belum diupload');
             document.getElementById('action-doc-ktp').innerHTML = '';
+        }
+
+        // ====================================================================
+        // 🔥 LAMPIRAN PENDUKUNG – PAKAI dokumen_tambahan
+        // ====================================================================
+        const docList = document.querySelector('.document-list');
+        if (!docList) return;
+
+        // Hapus semua elemen lampiran yang sudah ada
+        const existingLampirans = docList.querySelectorAll('.document-optional, #lampiran-doc-wrapper');
+        existingLampirans.forEach(el => el.remove());
+
+        // Buat elemen lampiran baru
+        const lampiranSection = document.createElement('div');
+        lampiranSection.className = 'document-card p-3 border rounded mb-3 document-optional';
+        lampiranSection.style.borderLeft = '4px solid #8b5cf6';
+
+        let lampiranStatus = '';
+        let lampiranActions = '';
+
+        // 🔥 GUNAKAN data.dokumen_tambahan (bukan file_lampiran)
+        if (data.dokumen_tambahan) {
+            const fileName = normalizeFilename(data.dokumen_tambahan);
+            const fileUrl = buildProtectedFileUrl('lampiran', data.dokumen_tambahan, token);
+            lampiranStatus = `✅ Terupload: ${fileName}`;
+            lampiranActions = `
+                <a href="#" onclick="window.openFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-outline-primary me-1">Buka</a>
+                <a href="#" onclick="window.downloadFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-primary">Download</a>
+            `;
+        } else {
+            lampiranStatus = 'Belum ada lampiran pendukung';
+            lampiranActions = '';
+        }
+
+        lampiranSection.innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="bg-light rounded text-purple d-flex align-items-center justify-content-center me-3" style="width: 44px; height: 44px; border: 1px solid #dee2e6; color: #8b5cf6;">
+                    <i class="fas fa-paperclip fs-4"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fw-bold" style="color: #8b5cf6;">Lampiran Pendukung</span>
+                        <span class="badge" style="background-color: #8b5cf6; color: white; font-size: 0.7rem;">Opsional</span>
+                    </div>
+                    <small class="text-muted d-block mt-1" id="status-doc-lampiran">${lampiranStatus}</small>
+                </div>
+                <div id="action-doc-lampiran" class="ms-3">${lampiranActions}</div>
+            </div>
+        `;
+
+        // Sisipkan setelah KTP
+        const ktpCard = docList.querySelector('.document-card:has(#status-doc-ktp)');
+        if (ktpCard) {
+            ktpCard.insertAdjacentElement('afterend', lampiranSection);
+        } else {
+            docList.appendChild(lampiranSection);
         }
     }
 
@@ -690,6 +767,52 @@
 
     function formatRupiah(amount) {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+    }
+
+    // ==================== HELPER STATUS BADGE ====================
+    function getStatusBadgeClass(status) {
+        const classes = {
+            'Menunggu Verifikasi': 'bg-warning text-dark',
+            'Pengecekan Sampel': 'bg-info text-dark',
+            'Belum Bayar': 'bg-secondary text-white',
+            'Menunggu SKRD Upload': 'bg-warning text-dark',
+            'Belum Lunas': 'bg-danger text-white',
+            'Lunas': 'bg-success text-white',
+            'Sedang Diuji': 'bg-primary text-white',
+            'Selesai': 'bg-success text-white',
+            'Dibatalkan': 'bg-secondary text-white'
+        };
+        return classes[status] || 'bg-secondary text-white';
+    }
+
+    function getStatusIcon(status) {
+        const icons = {
+            'Menunggu Verifikasi': 'fa-clock',
+            'Pengecekan Sampel': 'fa-search',
+            'Belum Bayar': 'fa-credit-card',
+            'Menunggu SKRD Upload': 'fa-file-invoice',
+            'Belum Lunas': 'fa-hourglass-half',
+            'Lunas': 'fa-check-circle',
+            'Sedang Diuji': 'fa-flask',
+            'Selesai': 'fa-check-double',
+            'Dibatalkan': 'fa-ban'
+        };
+        return icons[status] || 'fa-circle';
+    }
+
+    function getPaymentStatusClass(status) {
+        const classes = {
+            'Lunas': 'badge-soft-success',
+            'Belum Lunas': 'badge-soft-danger',
+            'Belum Bayar': 'badge-soft-danger',
+            'Menunggu SKRD Upload': 'badge-soft-warning',
+            'Menunggu Verifikasi': 'badge-soft-warning',
+            'Pengecekan Sampel': 'badge-soft-info',
+            'Sedang Diuji': 'badge-soft-primary',
+            'Selesai': 'badge-soft-success',
+            'Dibatalkan': 'badge-soft-secondary'
+        };
+        return classes[status] || 'badge-soft-secondary';
     }
 
     function showError(message) {

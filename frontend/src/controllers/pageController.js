@@ -624,16 +624,52 @@ const pageController = {
     },
 
     userProfile: async (req, res) => {
-        console.log('➡️ userProfile');
-        res.render('user/profile', { 
-            title: 'Profil Saya', 
-            pageTitle: 'Profil Saya',
-            active: 'profile',
-            user: {
-                ...req.session?.user,
-                name: req.session?.user?.full_name || req.session?.user?.name
+        try {
+            const token = req.session?.token;
+            let notificationCount = 0;
+            let notif_email = true;
+            let notif_wa = false;
+
+            if (token) {
+                const API_URL = process.env.API_URL || 'http://localhost:5000/api';
+                // Ambil notifikasi count
+                const notifRes = await axios.get(`${API_URL}/user/notifications/count`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (notifRes.data?.success) notificationCount = notifRes.data.count || 0;
+
+                // Ambil pengaturan notifikasi
+                const settingsRes = await axios.get(`${API_URL}/user/notification-settings`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (settingsRes.data?.success) {
+                    notif_email = settingsRes.data.data.notif_email;
+                    notif_wa = settingsRes.data.data.notif_wa;
+                }
             }
-        });
+
+            res.render('user/profile', {
+                title: 'Profil Saya',
+                pageTitle: 'Profil Saya',
+                active: 'profile',
+                user: {
+                    ...req.session?.user,
+                    name: req.session?.user?.full_name || req.session?.user?.name,
+                    notif_email: notif_email,
+                    notif_wa: notif_wa
+                },
+                notificationCount
+            });
+        } catch (error) {
+            console.error('Error loading profile:', error);
+            res.render('user/profile', {
+                title: 'Profil Saya',
+                pageTitle: 'Profil Saya',
+                active: 'profile',
+                user: { ...req.session?.user, notif_email: true, notif_wa: false },
+                notificationCount: 0
+            });
+        }
     },
 
     userHistory: async (req, res) => {
@@ -871,21 +907,18 @@ const pageController = {
                 }
             });
             
-            // 🔥 APPEND FILES dengan validasi
-            // Append files jika ada
+            // 🔥 APPEND FILES (termasuk lampiran_pendukung)
             if (req.files) {
-                if (req.files['surat_permohonan'] && req.files['surat_permohonan'].length > 0) {
-                    const file = req.files['surat_permohonan'][0];
-                    if (file.path && fs.existsSync(file.path)) {
-                        formData.append('surat_permohonan', fs.createReadStream(file.path));
+                const fileFields = ['surat_permohonan', 'scan_ktp', 'lampiran_pendukung'];
+                fileFields.forEach(fieldName => {
+                    if (req.files[fieldName] && req.files[fieldName].length > 0) {
+                        const file = req.files[fieldName][0];
+                        if (file.path && fs.existsSync(file.path)) {
+                            formData.append(fieldName, fs.createReadStream(file.path));
+                            console.log(`📁 ${fieldName} file appended:`, file.path);
+                        }
                     }
-                }
-                if (req.files['scan_ktp'] && req.files['scan_ktp'].length > 0) {
-                    const file = req.files['scan_ktp'][0];
-                    if (file.path && fs.existsSync(file.path)) {
-                        formData.append('scan_ktp', fs.createReadStream(file.path));
-                    }
-                }
+                });
             }
 
             console.log('📡 Sending to backend:', `${API_URL}/user/submission`);
@@ -924,7 +957,6 @@ const pageController = {
                 console.error('❌ Response data:', error.response.data);
             }
             
-            // Cek apakah error karena backend mengembalikan HTML (bukan JSON)
             let errorMessage = 'Gagal mengirim pengajuan. Silakan coba lagi.';
             if (error.response && typeof error.response.data === 'string' && error.response.data.includes('<head>')) {
                 errorMessage = 'Server backend mengembalikan error (lihat log server).';

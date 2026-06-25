@@ -274,7 +274,10 @@ function updateAll() {
         document.getElementById('timeEstimation').innerText = '-';
         
         const metodeUji = document.getElementById('metodeUji');
-        if (metodeUji) metodeUji.value = '';
+        if (metodeUji) {
+            metodeUji.value = '';
+            metodeUji.removeAttribute('readonly');
+        }
         
         document.getElementById('testTypeId').value = '';
         document.getElementById('testCategoryId').value = '';
@@ -330,9 +333,15 @@ function updateAll() {
         }
     }
     
-    // Update metode uji
+    // 🔥 Update metode uji - isi value, tapi jangan readonly agar user bisa edit
     const metodeUji = document.getElementById('metodeUji');
-    if (metodeUji) metodeUji.value = method;
+    if (metodeUji) {
+        metodeUji.value = method;
+        // Hapus readonly jika ada
+        metodeUji.removeAttribute('readonly');
+        // Pastikan background putih
+        metodeUji.style.background = 'white';
+    }
     
     // Hitung total
     const total = price * minSampleNumber;

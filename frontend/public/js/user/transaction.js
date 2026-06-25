@@ -3,32 +3,11 @@
 (function() {
     'use strict';
 
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('✅ Transaction.js initialized');
-        
-        const dataElement = document.getElementById('transaction-data');
-        if (!dataElement) {
-            console.error('❌ Element transaction-data tidak ditemukan');
-            return;
-        }
-        
-        try {
-            const rawData = dataElement.dataset.transactions;
-            const transactions = rawData ? JSON.parse(rawData) : [];
-            
-            console.log('📦 Jumlah transaksi:', transactions.length);
-            if (transactions.length > 0) {
-                console.log('Contoh data transaksi:', transactions[0]);
-            }
-            
-            calculateStats(transactions);
-            renderTable(transactions);
-            setupFilters(transactions);
-            
-        } catch (error) {
-            console.error('❌ Error parsing data:', error);
-        }
-    });
+    // ==================== STATE ====================
+    let allTransactions = [];
+    let filteredTransactions = [];
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 10;
 
     // ========== STATUS CONFIG (9 STATUS) ==========
     const STATUS_CONFIG = {
@@ -48,6 +27,36 @@
         return `<span class="status-badge ${config.class}">${config.label}</span>`;
     }
 
+    // ==================== INIT ====================
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('✅ Transaction.js initialized');
+        
+        const dataElement = document.getElementById('transaction-data');
+        if (!dataElement) {
+            console.error('❌ Element transaction-data tidak ditemukan');
+            return;
+        }
+        
+        try {
+            const rawData = dataElement.dataset.transactions;
+            allTransactions = rawData ? JSON.parse(rawData) : [];
+            filteredTransactions = [...allTransactions];
+            
+            console.log('📦 Jumlah transaksi:', allTransactions.length);
+            if (allTransactions.length > 0) {
+                console.log('Contoh data transaksi:', allTransactions[0]);
+            }
+            
+            calculateStats(allTransactions);
+            renderTable();
+            setupFilters();
+            
+        } catch (error) {
+            console.error('❌ Error parsing data:', error);
+        }
+    });
+
+    // ==================== STATS ====================
     function calculateStats(transactions) {
         let totalTagihan = 0;
         let totalDibayar = 0;
@@ -113,11 +122,16 @@
         if (statsEl) statsEl.innerHTML = statsHtml;
     }
 
-    function renderTable(transactions) {
+    // ==================== RENDER TABLE (dengan pagination) ====================
+    function renderTable() {
         const tbody = document.getElementById('transactionTableBody');
         if (!tbody) return;
         
-        if (transactions.length === 0) {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const paginatedItems = filteredTransactions.slice(start, end);
+        
+        if (paginatedItems.length === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="8" class="text-center py-5">
@@ -126,11 +140,13 @@
                     </td>
                 </tr>
             `;
+            updatePagination();
+            updateTableInfo();
             return;
         }
         
         let html = '';
-        transactions.forEach(item => {
+        paginatedItems.forEach(item => {
             const total = parseFloat(item.total_tagihan) || 0;
             const dibayar = parseFloat(item.jumlah_dibayar) || 0;
             const sisa = total - dibayar;
@@ -168,9 +184,67 @@
         });
         
         tbody.innerHTML = html;
+        updatePagination();
+        updateTableInfo();
     }
 
-    function setupFilters(transactions) {
+    // ==================== PAGINATION ====================
+    function updatePagination() {
+        const container = document.getElementById('transactionPagination');
+        if (!container) return;
+
+        const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
+        
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        
+        html += `<button class="page-nav" ${currentPage === 1 ? 'disabled' : ''} 
+                    onclick="window.goToTransactionPage(${currentPage - 1})">
+                    <i class="fas fa-chevron-left"></i>
+                </button>`;
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (
+                i === 1 || 
+                i === totalPages || 
+                (i >= currentPage - 2 && i <= currentPage + 2)
+            ) {
+                html += `<button class="page-number ${i === currentPage ? 'active' : ''}" 
+                            onclick="window.goToTransactionPage(${i})">${i}</button>`;
+            } else if (i === currentPage - 3 || i === currentPage + 3) {
+                html += `<span class="page-dots">...</span>`;
+            }
+        }
+
+        html += `<button class="page-nav" ${currentPage === totalPages ? 'disabled' : ''} 
+                    onclick="window.goToTransactionPage(${currentPage + 1})">
+                    <i class="fas fa-chevron-right"></i>
+                </button>`;
+
+        container.innerHTML = html;
+    }
+
+    function updateTableInfo() {
+        const info = document.getElementById('transactionTableInfo');
+        if (!info) return;
+
+        if (filteredTransactions.length === 0) {
+            info.innerText = 'Menampilkan 0 data';
+            return;
+        }
+
+        const start = (currentPage - 1) * ITEMS_PER_PAGE + 1;
+        const end = Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length);
+        
+        info.innerText = `Menampilkan ${start}-${end} dari ${filteredTransactions.length} transaksi`;
+    }
+
+    // ==================== FILTERS ====================
+    function setupFilters() {
         const searchInput = document.getElementById('searchInput');
         const statusFilter = document.getElementById('statusFilter');
         if (!searchInput || !statusFilter) return;
@@ -179,7 +253,7 @@
             const search = searchInput.value.toLowerCase();
             const status = statusFilter.value;
             
-            const filtered = transactions.filter(item => {
+            filteredTransactions = allTransactions.filter(item => {
                 const noInvoice = (item.no_invoice || '').toLowerCase();
                 const namaProyek = (item.nama_proyek || '').toLowerCase();
                 const matchSearch = noInvoice.includes(search) || namaProyek.includes(search);
@@ -188,26 +262,30 @@
                 return matchSearch && matchStatus;
             });
             
-            renderTable(filtered);
-            calculateStats(filtered);
+            currentPage = 1;
+            renderTable();
+            calculateStats(filteredTransactions);
         }
         
         searchInput.addEventListener('input', filterData);
         statusFilter.addEventListener('change', filterData);
     }
 
+    // ==================== HELPERS ====================
     function formatRupiah(amount) {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency', currency: 'IDR', minimumFractionDigits: 0
         }).format(amount);
     }
 
-    // Export CSV
+    // ==================== EXPORT CSV ====================
     document.getElementById('exportBtn')?.addEventListener('click', function() {
-        const dataElement = document.getElementById('transaction-data');
-        if (!dataElement) return;
+        if (!allTransactions || allTransactions.length === 0) {
+            alert('Tidak ada data untuk diexport');
+            return;
+        }
         try {
-            const transactions = JSON.parse(dataElement.dataset.transactions);
+            const transactions = allTransactions;
             const headers = ['No. Invoice', 'Layanan', 'Total', 'Dibayar', 'Sisa', 'Status', 'Tanggal'];
             const rows = transactions.map(item => {
                 const total = parseFloat(item.total_tagihan) || 0;
@@ -234,4 +312,13 @@
             alert('Gagal export data');
         }
     });
+
+    // ==================== WINDOW FUNCTIONS ====================
+    window.goToTransactionPage = function(page) {
+        if (page < 1 || page > Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE)) return;
+        currentPage = page;
+        renderTable();
+        document.querySelector('.transaction-table-container')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
 })();

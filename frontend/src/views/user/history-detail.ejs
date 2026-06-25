@@ -9,6 +9,31 @@ const submissionId = locals.id || '';
 const token = locals.token || '';
 %>
 
+<style>
+    /* Perbaikan status badge */
+    #det-status {
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 6px 14px;
+    }
+    #det-payment-status .badge {
+        font-size: 0.8rem;
+        padding: 4px 12px;
+    }
+    .badge-soft-success { background: #d1fae5; color: #065f46; }
+    .badge-soft-danger { background: #fee2e2; color: #991b1b; }
+    .badge-soft-warning { background: #fef3c7; color: #92400e; }
+    .badge-soft-info { background: #dbeafe; color: #1e40af; }
+    .badge-soft-primary { background: #e0e7ff; color: #3730a3; }
+    .badge-soft-secondary { background: #f1f5f9; color: #475569; }
+    
+    /* Lampiran pendukung */
+    .document-optional {
+        border-left: 4px solid #8b5cf6 !important;
+    }
+    .text-purple { color: #8b5cf6; }
+</style>
+
 <%- include('partials/header', { title }) %>
 <%- include('partials/sidebar', { currentPage, user }) %>
 

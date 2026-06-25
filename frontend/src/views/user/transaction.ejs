@@ -16,57 +16,333 @@ const transactions = locals.transactions || [];
     
     <div class="content-body">
         <div class="transaction-container">
-        <div class="transaction-header">
-            <h2><i class="fas fa-exchange-alt"></i> Billing & Payments</h2>
-        </div>
-        
-        <!-- Data dari backend disimpan di atribut data -->
-        <div id="transaction-data" 
-             data-transactions='<%- JSON.stringify(transactions).replace(/'/g, "\\'") %>'
-             style="display: none;"></div>
-        
-        <div class="transaction-stats" id="transactionStats">
-            <!-- Akan diisi JavaScript -->
-        </div>
-        
-        <div class="transaction-controls">
-            <div class="filter-controls">
-                <input type="text" id="searchInput" placeholder="Cari ID Transaksi atau Layanan...">
-                <select id="statusFilter" class="filter-select">
-                    <option value="all">Semua Status</option>
-                    <option value="Lunas">Lunas</option>
-                    <option value="Belum Lunas">Belum Lunas</option>
-                    <option value="Belum Bayar">Belum Bayar</option>
-                </select>
+            <div class="transaction-header">
+                <h2><i class="fas fa-exchange-alt"></i> Billing & Payments</h2>
             </div>
-            <button class="export-btn" id="exportBtn">
-                Export Data
-            </button>
-        </div>
-        
-        <div class="transaction-table-container">
-            <table class="transaction-table">
-                <thead>
-                    <tr>
-                        <th>No. Invoice</th>
-                        <th>Layanan</th>
-                        <th>Total</th>
-                        <th>Dibayar</th>
-                        <th>Sisa</th>
-                        <th>Status</th>
-                        <th>Tanggal</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="transactionTableBody">
-                    <!-- Akan diisi JavaScript -->
-                </tbody>
-            </table>
-        </div>
+            
+            <!-- Data dari backend disimpan di atribut data -->
+            <div id="transaction-data" 
+                 data-transactions='<%- JSON.stringify(transactions).replace(/'/g, "\\'") %>'
+                 style="display: none;"></div>
+            
+            <div class="transaction-stats" id="transactionStats">
+                <!-- Akan diisi JavaScript -->
+            </div>
+            
+            <div class="transaction-controls">
+                <div class="filter-controls">
+                    <input type="text" id="searchInput" placeholder="Cari ID Transaksi atau Layanan...">
+                    <select id="statusFilter" class="filter-select">
+                        <option value="all">Semua Status</option>
+                        <option value="Lunas">Lunas</option>
+                        <option value="Belum Lunas">Belum Lunas</option>
+                        <option value="Belum Bayar">Belum Bayar</option>
+                        <option value="Menunggu SKRD Upload">Menunggu SKRD Upload</option>
+                        <option value="Sedang Diuji">Sedang Diuji</option>
+                        <option value="Selesai">Selesai</option>
+                        <option value="Dibatalkan">Dibatalkan</option>
+                    </select>
+                </div>
+                <button class="export-btn" id="exportBtn">
+                    <i class="fas fa-file-export"></i> Export Data
+                </button>
+            </div>
+            
+            <!-- 🔥 CARD KAYAK HISTORY -->
+            <div class="card-custom p-0 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="transaction-table table-hover align-middle mb-0" style="width: 100%;">
+                        <thead class="bg-light">
+                            <tr class="text-muted small text-uppercase fw-bold">
+                                <th class="ps-4 py-3">No. Invoice</th>
+                                <th class="py-3">Layanan</th>
+                                <th class="py-3">Total</th>
+                                <th class="py-3">Dibayar</th>
+                                <th class="py-3">Sisa</th>
+                                <th class="py-3">Status</th>
+                                <th class="py-3">Tanggal</th>
+                                <th class="pe-4 py-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionTableBody">
+                            <!-- Akan diisi JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 🔥 PAGINATION WRAPPER -->
+                <div class="transaction-pagination-wrapper">
+                    <div class="pagination-info" id="transactionTableInfo">Menampilkan 0 data</div>
+                    <div class="pagination" id="transactionPagination"></div>
+                </div>
+            </div>
         </div>
     </div>
     
-<script src="/js/user/transaction.js"></script>
+    <script src="/js/user/transaction.js"></script>
 
 </main>
 <%- include('partials/footer') %>
+
+<style>
+    /* ===== TRANSACTION STATS ===== */
+    .transaction-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border: 1px solid #f1f4f9;
+    }
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+    }
+    .stat-icon.bg-primary { background: #4361ee; }
+    .stat-icon.bg-success { background: #2ecc71; }
+    .stat-icon.bg-warning { background: #f39c12; }
+    .stat-icon.bg-info { background: #3498db; }
+    .stat-info .stat-label {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        font-weight: 500;
+        display: block;
+    }
+    .stat-info .stat-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    /* ===== CONTROLS ===== */
+    .transaction-controls {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .filter-controls {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .filter-controls input,
+    .filter-controls select {
+        padding: 10px 14px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: white;
+        font-size: 0.9rem;
+        min-width: 200px;
+    }
+    .filter-controls input:focus,
+    .filter-controls select:focus {
+        outline: none;
+        border-color: #4361ee;
+        box-shadow: 0 0 0 3px rgba(67,97,238,0.1);
+    }
+    .export-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        background: #1e293b;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .export-btn:hover {
+        background: #0f172a;
+    }
+
+    /* ===== TABLE ===== */
+    .transaction-table {
+        width: 100% !important;
+        border-collapse: collapse;
+    }
+    .transaction-table thead th {
+        background: #f8fafc !important;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.04em;
+    }
+    .transaction-table tbody td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f1f4f9;
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+    .transaction-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .status-lunas { background: #d1fae5; color: #065f46; }
+    .status-belum-lunas { background: #fee2e2; color: #991b1b; }
+    .status-belum-bayar { background: #fef3c7; color: #92400e; }
+    .status-menunggu-skrd { background: #fef3c7; color: #92400e; }
+    .status-sedang-diuji { background: #dbeafe; color: #1e40af; }
+    .status-selesai { background: #d1fae5; color: #065f46; }
+    .status-dibatalkan { background: #f1f5f9; color: #475569; }
+    .status-menunggu-verifikasi { background: #fef3c7; color: #92400e; }
+    .status-pengecekan-sampel { background: #dbeafe; color: #1e40af; }
+    .status-default { background: #f1f5f9; color: #475569; }
+
+    /* ===== PAGINATION ===== */
+    .transaction-pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 16px 20px;
+        border-top: 1px solid #e2e8f0;
+        background: white;
+    }
+    .pagination-info {
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+    .pagination {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .pagination .page-number,
+    .pagination .page-nav {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 8px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        background: white;
+        color: #1e293b;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .pagination .page-number:hover,
+    .pagination .page-nav:hover:not(:disabled) {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+    .pagination .page-number.active {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: white;
+    }
+    .pagination .page-nav:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    .pagination .page-dots {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 30px;
+        color: #94a3b8;
+        font-weight: 500;
+        user-select: none;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .transaction-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .filter-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .filter-controls input,
+        .filter-controls select {
+            min-width: unset;
+            width: 100%;
+        }
+        .transaction-table thead th,
+        .transaction-table tbody td {
+            padding: 10px 12px;
+            font-size: 0.8rem;
+        }
+        .transaction-pagination-wrapper {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .pagination {
+            justify-content: center;
+        }
+        .pagination-info {
+            text-align: center;
+        }
+    }
+    @media (max-width: 480px) {
+        .transaction-table tbody td {
+            padding: 8px 6px;
+            font-size: 0.7rem;
+        }
+        .transaction-table thead th {
+            font-size: 0.65rem;
+            padding: 8px 6px;
+        }
+        .transaction-table .btn-detail {
+            padding: 4px 8px;
+            font-size: 0.7rem;
+        }
+    }
+
+    .layanan-info {
+        display: flex;
+        flex-direction: column;
+    }
+    .layanan-nama {
+        font-weight: 600;
+        color: #1e293b;
+    }
+    .layanan-sampel {
+        color: #94a3b8;
+        font-size: 0.75rem;
+    }
+
+    .action-icon {
+        color: #94a3b8;
+        transition: color 0.2s;
+        font-size: 1.1rem;
+    }
+    .action-icon:hover {
+        color: #2563eb;
+    }
+</style>

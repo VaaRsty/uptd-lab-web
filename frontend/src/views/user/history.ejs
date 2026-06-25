@@ -15,171 +15,250 @@ const historyData = locals.submissions || [];
     <%- include('partials/top-navbar', { pageTitle, user, notificationCount }) %>
 
     <div class="content-body">
-        <!-- Di bagian atas halaman history, tampilkan notifikasi jika ada -->
+        <!-- Notifikasi -->
         <% if (locals.success) { %>
         <div class="alert alert-success" style="background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
             <i class="fas fa-check-circle"></i>
             <span><%= locals.message || 'Pengajuan berhasil dikirim' %></span>
         </div>
-    <% } %>
-    
-    <div class="history-container">
-        <div class="history-header">
-            <h2><i class="fas fa-history"></i> Riwayat Pengajuan</h2>
-            <p class="history-description">
-                Lacak dan kelola semua pengajuan pengujian material Anda secara real-time.
-            </p>
-        </div>
+        <% } %>
         
-        <!-- Data dari backend disimpan di atribut data -->
-        <div id="history-data" 
-             data-history='<%- JSON.stringify(historyData).replace(/'/g, "\\'") %>'
-             data-user='<%- JSON.stringify(user).replace(/'/g, "\\'") %>'
-             style="display: none;"></div>
-        
-        <div class="history-controls">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Cari No. Urut, No. Permohonan, atau Proyek...">
+        <div class="history-container">
+            <div class="history-header">
+                <h2><i class="fas fa-history"></i> Riwayat Pengajuan</h2>
+                <p class="history-description">Lacak dan kelola semua pengajuan pengujian material Anda secara real-time.</p>
             </div>
             
-            <div class="filter-controls">
-                <select class="filter-select" id="serviceTypeFilter">
-                    <option value="all">Semua Jenis</option>
-                    <option value="PENGUJIAN BAHAN">Pengujian Bahan</option>
-                    <option value="PENGUJIAN KONSTRUKSI">Pengujian Konstruksi</option>
-                </select>
+            <!-- Data dari backend disimpan di atribut data -->
+            <div id="history-data" 
+                 data-history='<%- JSON.stringify(historyData).replace(/'/g, "\\'") %>'
+                 data-user='<%- JSON.stringify(user).replace(/'/g, "\\'") %>'
+                 style="display: none;"></div>
+            
+            <div class="history-controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Cari No. Urut, No. Permohonan, atau Proyek...">
+                </div>
                 
-                <select class="filter-select" id="statusFilter">
-                    <option value="all">Semua Status</option>
-                    <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
-                    <option value="Pengecekan Sampel">Pengecekan Sampel</option>
-                    <option value="Menunggu Pembayaran">Menunggu Pembayaran</option>
-                    <option value="Belum Bayar">Belum Bayar</option>
-                    <option value="Belum Lunas">Belum Lunas</option>
-                    <option value="Lunas">Lunas</option>
-                    <option value="Sedang Diuji">Sedang Diuji</option>
-                    <option value="Selesai">Selesai</option>
-                </select>
-                
-                <a href="/user/submission" class="btn-new-submission">
-                    <span>Buat Pengajuan Baru</span>
-                </a>
+                <div class="filter-controls">
+                    <select class="filter-select" id="serviceTypeFilter">
+                        <option value="all">Semua Jenis</option>
+                        <option value="PENGUJIAN BAHAN">Pengujian Bahan</option>
+                        <option value="PENGUJIAN KONSTRUKSI">Pengujian Konstruksi</option>
+                    </select>
+                    
+                    <select class="filter-select" id="statusFilter">
+                        <option value="all">Semua Status</option>
+                        <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                        <option value="Pengecekan Sampel">Pengecekan Sampel</option>
+                        <option value="Menunggu Pembayaran">Menunggu Pembayaran</option>
+                        <option value="Belum Bayar">Belum Bayar</option>
+                        <option value="Belum Lunas">Belum Lunas</option>
+                        <option value="Lunas">Lunas</option>
+                        <option value="Sedang Diuji">Sedang Diuji</option>
+                        <option value="Selesai">Selesai</option>
+                    </select>
+                    
+                    <a href="/user/submission" class="btn-new-submission">
+                        <span>Buat Pengajuan Baru</span>
+                    </a>
+                </div>
             </div>
-        </div>
-        
-        <div class="history-table-container">
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>No. Urut</th>
-                        <th>No. Permohonan</th>
-                        <th>Jenis Pengujian</th>
-                        <th>Proyek</th>
-                        <th>Tanggal</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="historyTableBody">
-                    <% if (historyData && historyData.length > 0) { %>
-                        <% historyData.forEach((item) => { 
-                            // Format tanggal dengan aman
-                            let formattedDate = '-';
-                            try {
-                                const dateStr = item.created_at;
-                                if (dateStr) {
-                                    const date = new Date(dateStr);
-                                    formattedDate = date.toLocaleDateString('id-ID', {
-                                        day: '2-digit',
-                                        month: 'long',
-                                        year: 'numeric'
-                                    });
+            
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>No. Urut</th>
+                            <th>No. Permohonan</th>
+                            <th>Jenis Pengujian</th>
+                            <th>Proyek</th>
+                            <th>Tanggal</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <% if (historyData && historyData.length > 0) { %>
+                            <% historyData.forEach((item) => { 
+                                let formattedDate = '-';
+                                try {
+                                    const dateStr = item.created_at;
+                                    if (dateStr) {
+                                        const date = new Date(dateStr);
+                                        formattedDate = date.toLocaleDateString('id-ID', {
+                                            day: '2-digit',
+                                            month: 'long',
+                                            year: 'numeric'
+                                        });
+                                    }
+                                } catch (e) {
+                                    formattedDate = '-';
                                 }
-                            } catch (e) {
-                                formattedDate = '-';
-                            }
-                            
-                            // Format nomor urut dari ID dengan 6 digit (contoh: #000001)
-                            const formattedId = String(item.id).padStart(6, '0');
-                            
-                            // Tentukan jenis pengujian
-                            let jenisPengujian = 'PENGUJIAN BAHAN'; // Default
-                            if (item.service_type) {
-                                if (item.service_type.includes('KONSTRUKSI')) {
-                                    jenisPengujian = 'PENGUJIAN KONSTRUKSI';
+                                
+                                const formattedId = String(item.id).padStart(6, '0');
+                                let jenisPengujian = 'PENGUJIAN BAHAN';
+                                if (item.service_type) {
+                                    if (item.service_type.includes('KONSTRUKSI')) {
+                                        jenisPengujian = 'PENGUJIAN KONSTRUKSI';
+                                    }
+                                } else if (item.service_id) {
+                                    const serviceId = parseInt(item.service_id);
+                                    if (serviceId >= 20 && serviceId <= 32) {
+                                        jenisPengujian = 'PENGUJIAN KONSTRUKSI';
+                                    }
                                 }
-                            } else if (item.service_id) {
-                                // Service ID 1-19 adalah BAHAN, 20-32 adalah KONSTRUKSI
-                                const serviceId = parseInt(item.service_id);
-                                if (serviceId >= 20 && serviceId <= 32) {
-                                    jenisPengujian = 'PENGUJIAN KONSTRUKSI';
-                                }
-                            }
-                            
-                            const jenisClass = jenisPengujian === 'PENGUJIAN BAHAN' ? 'badge-bahan' : 'badge-konstruksi';
-                            
-                            // Tentukan class untuk status
-                            let statusClass = 'status-default';
-                            let statusText = item.status || '-';
-                            
-                            if (statusText === 'Menunggu Verifikasi') statusClass = 'status-pending';
-                            else if (statusText === 'Pengecekan Sampel') statusClass = 'status-info';
-                            else if (statusText === 'Menunggu Pembayaran' || statusText === 'Menunggu SKRD Upload') statusClass = 'status-warning';
-                            else if (statusText === 'Belum Bayar' || statusText === 'Belum Lunas') statusClass = 'status-warning';
-                            else if (statusText === 'Lunas') statusClass = 'status-success';
-                            else if (statusText === 'Sedang Diuji') statusClass = 'status-primary';
-                            else if (statusText === 'Selesai') statusClass = 'status-completed';
-                        %>
+                                const jenisClass = jenisPengujian === 'PENGUJIAN BAHAN' ? 'badge-bahan' : 'badge-konstruksi';
+                                
+                                let statusClass = 'status-default';
+                                let statusText = item.status || '-';
+                                if (statusText === 'Menunggu Verifikasi') statusClass = 'status-pending';
+                                else if (statusText === 'Pengecekan Sampel') statusClass = 'status-info';
+                                else if (statusText === 'Menunggu Pembayaran' || statusText === 'Menunggu SKRD Upload') statusClass = 'status-warning';
+                                else if (statusText === 'Belum Bayar' || statusText === 'Belum Lunas') statusClass = 'status-warning';
+                                else if (statusText === 'Lunas') statusClass = 'status-success';
+                                else if (statusText === 'Sedang Diuji') statusClass = 'status-primary';
+                                else if (statusText === 'Selesai') statusClass = 'status-completed';
+                            %>
+                                <tr>
+                                    <td><strong class="text-monospace">#<%= formattedId %></strong></td>
+                                    <td><strong><%= item.no_permohonan || '-' %></strong></td>
+                                    <td>
+                                        <span class="jenis-badge <%= jenisClass %>">
+                                            <%= jenisPengujian %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight:600; color:#1e293b;"><%= item.nama_proyek || '-' %></div>
+                                        <div style="font-size:0.8rem; color:#64748b;">
+                                            <% if (item.total_samples) { %>
+                                                <%= item.total_samples %> sampel
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                    <td><%= formattedDate %></td>
+                                    <td>
+                                        <span class="status-badge <%= statusClass %>">
+                                            <%= statusText %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="/user/history/<%= item.id %>" class="action-icon text-secondary" title="Detail">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
                             <tr>
-                                <td><strong class="text-monospace">#<%= formattedId %></strong></td>
-                                <td><strong><%= item.no_permohonan || '-' %></strong></td>
-                                <td>
-                                    <span class="jenis-badge <%= jenisClass %>">
-                                        <%= jenisPengujian %>
-                                    </span>
-                                </td>
-                                <td>
-                                    <div style="font-weight:600; color:#1e293b;"><%= item.nama_proyek || '-' %></div>
-                                    <div style="font-size:0.8rem; color:#64748b;">
-                                        <% if (item.total_samples) { %>
-                                            <%= item.total_samples %> sampel
-                                        <% } %>
-                                    </div>
-                                </td>
-                                <td><%= formattedDate %></td>
-                                <td>
-                                    <span class="status-badge <%= statusClass %>">
-                                        <%= statusText %>
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="/user/history/<%= item.id %>" class="action-icon text-secondary" title="Detail">
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
+                                <td colspan="7" class="empty-state">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p>Belum ada data pengajuan</p>
                                 </td>
                             </tr>
-                        <% }); %>
-                    <% } else { %>
-                        <tr>
-                            <td colspan="7" class="empty-state">
-                                <i class="fas fa-inbox fa-3x mb-3"></i>
-                                <p>Belum ada data pengajuan</p>
-                            </td>
-                        </tr>
-                    <% } %>
-                </tbody>
-            </table>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 🔥 PAGINATION WRAPPER - PASTIKAN MUNCUL -->
+            <div class="history-pagination-wrapper" id="paginationWrapper">
+                <div class="pagination-info" id="tableInfo">
+                    Menampilkan <%= historyData.length %> data
+                </div>
+                <div class="pagination" id="pagination"></div>
+            </div>
         </div>
-        
-        <!-- Pagination Info -->
-        <div class="pagination-info" id="tableInfo">Menampilkan <%= historyData.length %> data</div>
-        <div class="pagination" id="pagination"></div>
-    </div>
     </div>
     
-<script src="/js/user/history.js"></script>
-
-
+    <script src="/js/user/history.js"></script>
 
 </main>
 <%- include('partials/footer') %>
+
+<style>
+    /* ===== PAGINATION STYLES ===== */
+    .history-pagination-wrapper {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+        margin-top: 20px !important;
+        padding-top: 15px !important;
+        border-top: 1px solid #e2e8f0 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .pagination-info {
+        font-size: 0.9rem !important;
+        color: #64748b !important;
+    }
+
+    .pagination {
+        display: flex !important;
+        gap: 5px !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+    }
+
+    .pagination .page-number,
+    .pagination .page-nav {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 36px !important;
+        height: 36px !important;
+        padding: 0 8px !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 6px !important;
+        background: white !important;
+        color: #1e293b !important;
+        font-size: 0.9rem !important;
+        font-weight: 500 !important;
+        cursor: pointer !important;
+        transition: all 0.2s !important;
+    }
+
+    .pagination .page-number:hover,
+    .pagination .page-nav:hover:not(:disabled) {
+        background: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    .pagination .page-number.active {
+        background: #2563eb !important;
+        border-color: #2563eb !important;
+        color: white !important;
+    }
+
+    .pagination .page-nav:disabled {
+        opacity: 0.4 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+    }
+
+    .pagination .page-dots {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 30px !important;
+        color: #94a3b8 !important;
+        font-weight: 500 !important;
+        user-select: none !important;
+    }
+
+    @media (max-width: 600px) {
+        .history-pagination-wrapper {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        .pagination {
+            justify-content: center !important;
+        }
+        .pagination-info {
+            text-align: center !important;
+        }
+    }
+</style>

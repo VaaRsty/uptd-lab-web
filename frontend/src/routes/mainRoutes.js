@@ -51,8 +51,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
     storage: storage,
     limits: { 
-        fileSize: 5 * 1024 * 1024,
-        files: 2
+        fileSize: 5 * 1024 * 1024
     },
     fileFilter: fileFilter
 });
@@ -105,6 +104,7 @@ router.post('/user/submission',
     upload.fields([
         { name: 'surat_permohonan', maxCount: 1 },
         { name: 'scan_ktp', maxCount: 1 },
+        { name: 'lampiran_pendukung', maxCount: 1 }
     ]), 
     pageController.postSubmission
 );
