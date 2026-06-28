@@ -6,6 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const globalSettings = require('../middleware/globalSettings');
 const checkUploadSize = require('../middleware/checkUploadSize');
+const maintenanceCheck = require('../middleware/maintenanceCheck');
 
 // Konfigurasi storage untuk upload file
 const storage = multer.diskStorage({
@@ -58,8 +59,6 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-router.use(globalSettings);
-
 // ==================== HALAMAN PUBLIK ====================
 router.get('/', pageController.getLandingPage || pageController.getHomePage);
 router.get('/services', pageController.getServicesPage);
@@ -101,24 +100,39 @@ router.get('/admin/users/:id', authMiddleware.verifyPageAccess, pageController.a
 router.get('/admin/settings', authMiddleware.verifyPageAccess, pageController.adminSettings);
 
 // ==================== HALAMAN USER (PEMOHON) ====================
-router.get('/user/dashboard', authMiddleware.verifyUserAccess, pageController.userDashboard);
-router.get('/user/submission', authMiddleware.verifyUserAccess, pageController.userSubmission);
+router.get('/user/dashboard', authMiddleware.verifyUserAccess, maintenanceCheck, pageController.userDashboard);
+router.get('/user/submission', authMiddleware.verifyUserAccess, maintenanceCheck, pageController.userSubmission);
 router.post('/user/submission', 
     authMiddleware.verifyUserAccess,
-    upload.fields([]), checkUploadSize, 
+    maintenanceCheck, // <- tambahkan di sini
+    upload.fields([
+        { name: 'surat_permohonan', maxCount: 1 },
+        { name: 'scan_ktp', maxCount: 1 },
+        { name: 'lampiran_pendukung', maxCount: 1 }
+    ]), 
+    checkUploadSize, 
     pageController.postSubmission
 );
-router.get('/user/history', authMiddleware.verifyUserAccess, pageController.userHistory);
-router.get('/user/history/:id', authMiddleware.verifyUserAccess, pageController.userHistoryDetail);
-router.get('/user/transaction', authMiddleware.verifyUserAccess, pageController.userTransaction);
-router.get('/user/transaction/:id', authMiddleware.verifyUserAccess, pageController.userTransactionDetail);
+router.get('/user/history', authMiddleware.verifyUserAccess, maintenanceCheck, pageController.userHistory);
+router.get('/user/history/:id', authMiddleware.verifyUserAccess, maintenanceCheck, pageController.userHistoryDetail);
+router.get('/user/transaction', authMiddleware.verifyUserAccess, maintenanceCheck, pageController.userTransaction);
+router.get('/user/transaction/:id', authMiddleware.verifyUserAccess, maintenanceCheck, pageController.userTransactionDetail);
 router.post('/user/transaction/:id/upload', 
     authMiddleware.verifyUserAccess,
-    upload.single(''), checkUploadSize,
+    maintenanceCheck, // <- tambahkan di sini
+    upload.single('payment_proof'),
+    checkUploadSize,
     pageController.uploadPaymentProof
 );
-router.get('/user/profile', authMiddleware.verifyUserAccess, pageController.userProfile);
-router.post('/user/profile', authMiddleware.verifyUserAccess, pageController.updateProfile);
+router.get('/user/profile', authMiddleware.verifyUserAccess, maintenanceCheck, pageController.userProfile);
+router.post('/user/profile', authMiddleware.verifyUserAccess, maintenanceCheck, pageController.updateProfile);
+
+router.get('/maintenance', (req, res) => {
+    res.render('maintenance', {
+        title: 'Mode Pemeliharaan - UPTD Lab',
+        layout: false
+    });
+});
 
 // ==================== HALAMAN KHUSUS (PUBLIC) ====================
 // router.get('/kuisioner/:submissionId', (req, res) => {

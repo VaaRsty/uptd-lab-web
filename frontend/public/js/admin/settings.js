@@ -95,20 +95,17 @@
     // ==================== UPDATE FORMS ====================
     function updateProfileForm(data) {
         document.getElementById('fullName').value = data.name || '';
-        document.getElementById('employeeId').value = data.employee_id || '';
+        // document.getElementById('employeeId').value = data.employee_id || ''; // <-- HAPUS/KOMENTARI
         document.getElementById('officialEmail').value = data.email || '';
         document.getElementById('phoneNumber').value = data.phone || '';
         document.getElementById('position').value = data.position || 'Super Administrator (Kepala Teknis)';
         
         let newAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name || 'Admin+Lab')}&background=047857&color=fff&size=150`;
-        
         if (data.avatar) {
             newAvatarUrl = data.avatar;
-        } 
-        
+        }
         document.getElementById('profileImage').src = newAvatarUrl;
         
-        // Update avatar di top navbar jika ada
         const navbarAvatar = document.querySelector('.avatar-image');
         if (navbarAvatar) {
             navbarAvatar.src = newAvatarUrl;
@@ -119,11 +116,6 @@
 
     // ==================== SYSTEM CONFIG FUNCTIONS ====================
     function updateSystemForm(data) {
-        document.getElementById('institutionName').value = data.institution_name || '';
-        document.getElementById('officeAddress').value = data.address || '';
-        document.getElementById('officePhone').value = data.phone || '';
-        document.getElementById('officeEmail').value = data.email || '';
-        
         document.getElementById('maintenanceMode').checked = data.maintenance_mode || false;
         document.getElementById('maxUploadSize').value = data.max_upload_size || '5';
     }
@@ -134,7 +126,6 @@
         
         const formData = {
             name: document.getElementById('fullName').value,
-            employee_id: document.getElementById('employeeId').value,
             email: document.getElementById('officialEmail').value,
             phone: document.getElementById('phoneNumber').value
         };
@@ -158,7 +149,8 @@
 
             if (result.success) {
                 showAlert('Profil berhasil diperbarui', 'success');
-                loadSettings();
+                // 🔥 Reload data agar tampilan terbaru
+                await loadSettings();
             } else {
                 showAlert(result.message || 'Gagal memperbarui profil', 'danger');
             }
@@ -352,11 +344,6 @@
         event.preventDefault();
         
         const config = {
-            institution_name: document.getElementById('institutionName').value,
-            address: document.getElementById('officeAddress').value,
-            phone: document.getElementById('officePhone').value,
-            email: document.getElementById('officeEmail').value,
-            
             maintenance_mode: document.getElementById('maintenanceMode').checked,
             max_upload_size: parseInt(document.getElementById('maxUploadSize').value)
         };

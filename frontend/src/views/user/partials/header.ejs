@@ -1,23 +1,40 @@
-<%# views/user/partials/header.ejs %>
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title || 'UPTD Lab' %></title>
-    <link rel="icon" type="image/png" href="/img/logo.png">
+    <title><%= typeof title !== 'undefined' ? title : 'UPTD Pengujian Bahan Konstruksi Bangunan & Informasi Konstruksi' %></title>
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/img/logo.png">
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Bootstrap CSS -->
+    <!-- 🔥 BOOTSTRAP CSS (WAJIB UNTUK DASHBOARD) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- User Styles - Satu file CSS untuk semua halaman user -->
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- 🔥 USER STYLES (WAJIB UNTUK DASHBOARD USER) -->
     <link rel="stylesheet" href="/css/user-style.css">
+    
+    <!-- Main Style (custom tambahan) -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Settings dari server via data attribute -->
+    <div data-settings='<%- JSON.stringify(locals.settings || {}).replace(/'/g, "\\'") %>' style="display:none;"></div>
+    <script>
+        (function() {
+            try {
+                var el = document.querySelector('[data-settings]');
+                if (el) {
+                    window.settings = JSON.parse(el.getAttribute('data-settings') || '{}');
+                } else {
+                    window.settings = {};
+                }
+            } catch (e) {
+                console.warn('Settings parse error:', e);
+                window.settings = {};
+            }
+        })();
+    </script>
 </head>
-<body>
-    <div class="app-wrapper">

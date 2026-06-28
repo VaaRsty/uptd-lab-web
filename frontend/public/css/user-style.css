@@ -3718,6 +3718,24 @@ body {
     width: calc(100% - var(--sidebar-offset));
 }
 
+.app-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1 0 auto;
+}
+
+.footer {
+    flex-shrink: 0;
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+    padding: 25px 20px;
+    font-size: 0.9rem;
+}
+
 .footer-content {
     display: flex;
     justify-content: center;

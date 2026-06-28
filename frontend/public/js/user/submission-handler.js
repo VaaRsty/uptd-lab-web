@@ -417,6 +417,10 @@ function validateFiles() {
     let isValid = true;
     let errorMessage = '';
     
+    // 🔥 Ambil batas upload dari setting admin
+    const maxUploadMB = window.settings?.max_upload_size || 5;
+    const maxUploadBytes = maxUploadMB * 1024 * 1024;
+    
     // Validasi Surat Permohonan
     if (suratFileInput && suratFileInput.files.length > 0) {
         const file = suratFileInput.files[0];
@@ -434,6 +438,9 @@ function validateFiles() {
             isValid = false;
         } else if (file.size < 100) {
             errorMessage = 'File surat permohonan terlalu kecil. Pastikan file yang diupload valid dan tidak corrupt.';
+            isValid = false;
+        } else if (file.size > maxUploadBytes) {
+            errorMessage = `File surat permohonan melebihi batas maksimal ${maxUploadMB}MB!`;
             isValid = false;
         }
     } else {
@@ -458,6 +465,9 @@ function validateFiles() {
             isValid = false;
         } else if (file.size < 100) {
             errorMessage = 'File scan KTP terlalu kecil. Pastikan file yang diupload valid dan tidak corrupt.';
+            isValid = false;
+        } else if (file.size > maxUploadBytes) {
+            errorMessage = `File scan KTP melebihi batas maksimal ${maxUploadMB}MB!`;
             isValid = false;
         }
     } else if (isValid) {
@@ -530,7 +540,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
-    // Preview file dengan validasi
+    // 🔥 Preview file dengan validasi - PAKAI SETTING ADMIN
+    const maxUploadMB = window.settings?.max_upload_size || 5;
+    const maxUploadBytes = maxUploadMB * 1024 * 1024;
+    
     const fileInputs = document.querySelectorAll('input[type="file"]');
     fileInputs.forEach(input => {
         input.addEventListener('change', function() {
@@ -544,13 +557,23 @@ document.addEventListener('DOMContentLoaded', async function() {
                     type: file.type
                 });
                 
-                // Validasi saat preview
+                // 🔥 VALIDASI UKURAN FILE PAKAI SETTING ADMIN
                 if (file.size === 0) {
                     alert(`File ${this.name} kosong! Silakan pilih file yang valid.`);
                     this.value = '';
-                } else if (file.size < 100) {
+                    return;
+                }
+                
+                if (file.size > maxUploadBytes) {
+                    alert(`File ${this.name} melebihi batas maksimal ${maxUploadMB}MB!`);
+                    this.value = '';
+                    return;
+                }
+                
+                if (file.size < 100) {
                     alert(`File ${this.name} terlalu kecil (${file.size} bytes). Pastikan file yang dipilih valid.`);
                     this.value = '';
+                    return;
                 }
                 
                 const label = this.nextElementSibling;

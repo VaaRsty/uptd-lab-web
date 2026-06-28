@@ -263,7 +263,9 @@
                                         style="border-style: dashed !important; cursor: pointer;">
                                         <i class="fas fa-cloud-upload-alt text-primary fa-2x mb-2"></i>
                                         <div class="small text-muted fw-bold">Klik atau drag & drop file</div>
-                                        <small class="text-muted d-block" style="font-size: 0.7rem;">PDF, maksimal 5MB</small>
+                                        <small class="text-muted d-block" style="font-size: 0.7rem;">
+                                            PDF/JPG, maksimal <%= locals.settings?.max_upload_size || 5 %>MB
+                                        </small>
                                         <input type="file" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" 
                                             id="fileInput" accept=".pdf,.jpg,.jpeg,.png" style="cursor: pointer;">
                                     </div>

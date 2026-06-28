@@ -278,12 +278,13 @@ const formData = locals.formData || {};
                         </div>
                         
                         <div class="upload-grid">
-                            <div class="input-group"> 
+                            <div class="input-group">
                                 <label>Surat Permohonan (PDF/JPG) <span class="required">*</span></label>
-                                <div class="upload-area"> 
+                                <div class="upload-area">
                                     <i class="fas fa-file-pdf"></i>
                                     <input type="file" name="surat_permohonan" accept=".pdf,.jpg,.jpeg,.png" required>
                                     <p>Pilih file permohonan</p>
+                                    <small class="field-note">Maksimal <%= locals.settings?.max_upload_size || 5 %>MB</small>
                                 </div>
                             </div>
                             
@@ -293,6 +294,7 @@ const formData = locals.formData || {};
                                     <i class="fas fa-id-card"></i>
                                     <input type="file" name="scan_ktp" accept=".pdf,.jpg,.jpeg,.png" required>
                                     <p>Pilih file KTP</p>
+                                    <small class="field-note">Maksimal <%= locals.settings?.max_upload_size || 5 %>MB</small>
                                 </div>
                             </div>
                         </div>
@@ -304,8 +306,8 @@ const formData = locals.formData || {};
                                 <i class="fas fa-paperclip"></i>
                                 <input type="file" name="lampiran_pendukung" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
                                 <p>Pilih file pendukung (opsional)</p>
+                                <small class="field-note">Maksimal <%= locals.settings?.max_upload_size || 5 %>MB</small>
                             </div>
-                            <small class="field-note">Dokumen tambahan seperti surat dukung, spesifikasi teknis, dll. Maksimal 2MB.</small>
                         </div>
                     </section>
 

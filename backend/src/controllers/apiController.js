@@ -1316,6 +1316,7 @@ const apiController = {
                     s.jadwal_sampling,
                     s.file_surat_permohonan,
                     s.file_ktp,
+                    s.dokumen_tambahan, 
                     u.full_name as pic_name,
                     u.email as pic_email,
                     u.nomor_telepon as pic_phone,
@@ -1459,6 +1460,7 @@ const apiController = {
 
                 file_surat_permohonan: submission.file_surat_permohonan,
                 file_ktp: submission.file_ktp,
+                dokumen_tambahan: submission.dokumen_tambahan,
 
                 status: submission.status,
                 created_at: submission.created_at,
@@ -4899,7 +4901,8 @@ const apiController = {
             const [users] = await db.query(
                 `SELECT 
                     id, 
-                    full_name as name, 
+                    full_name as name,
+                    employee_id,
                     email, 
                     nomor_telepon as phone, 
                     avatar, 
@@ -4918,7 +4921,6 @@ const apiController = {
             const user = users[0];
             const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
 
-            // 🔥 Jika avatar ada, pastikan URL lengkap
             let avatarUrl = null;
             if (user.avatar) {
                 if (user.avatar.startsWith('http')) {
@@ -4931,7 +4933,7 @@ const apiController = {
             const profile = {
                 id: user.id,
                 name: user.name,
-                employee_id: 'NIP-' + String(user.id).padStart(3, '0'),
+                employee_id: user.employee_id || 'NIP-' + String(user.id).padStart(3, '0'),
                 email: user.email,
                 phone: user.phone || '',
                 avatar: avatarUrl,
@@ -4954,7 +4956,7 @@ const apiController = {
                 return res.status(401).json({ success: false, message: 'Unauthorized' });
             }
 
-            const { name, email, phone } = req.body; // employee_id diabaikan
+            const { name, email, phone } = req.body; // employee_id dihapus
 
             if (!name || !email) {
                 return res.status(400).json({
@@ -4963,7 +4965,7 @@ const apiController = {
                 });
             }
 
-            // Cek email sudah digunakan atau belum
+            // Cek email sudah digunakan oleh user lain
             const [existing] = await db.query(
                 'SELECT id FROM users WHERE email = ? AND id != ?',
                 [email, userId]
@@ -4979,9 +4981,16 @@ const apiController = {
             // Update user
             await db.query(
                 `UPDATE users 
-                SET full_name = ?, email = ?, nomor_telepon = ?, updated_at = NOW() 
+                SET full_name = ?, email = ?, nomor_telepon = ?, updated_at = NOW()
                 WHERE id = ?`,
                 [name, email, phone || null, userId]
+            );
+
+            // Ambil data user terbaru
+            const [updatedUser] = await db.query(
+                `SELECT id, email, full_name, nomor_telepon, avatar, role, updated_at 
+                FROM users WHERE id = ?`,
+                [userId]
             );
 
             // Catat aktivitas
@@ -4993,7 +5002,8 @@ const apiController = {
 
             res.json({
                 success: true,
-                message: 'Profile berhasil diupdate'
+                message: 'Profile berhasil diupdate',
+                data: updatedUser[0]
             });
 
         } catch (error) {
@@ -5181,41 +5191,33 @@ const apiController = {
     // Get system configuration
     getSystemConfig: async (req, res) => {
         try {
-            // Default config
             let config = {
-                institution_name: 'UPTD Laboratorium Konstruksi Dinas PUPR',
-                address: 'Jl. Raya Lab Pengujian No. 123, Banten',
-                phone: '(021) 555-1234',
-                email: 'info@lab-uptd.gov.id',
-                website: 'https://lab-uptd.banten.go.id',
                 maintenance_mode: false,
                 max_upload_size: 5
             };
-            
-            // Ambil dari tabel settings
+
             try {
                 const [rows] = await db.query(
-                    'SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE "system_%"'
+                    'SELECT setting_key, setting_value FROM settings WHERE setting_key IN ("maintenance_mode", "max_upload_size")'
                 );
                 
                 rows.forEach(row => {
-                    if (row.setting_key === 'system_institution_name') config.institution_name = row.setting_value;
-                    if (row.setting_key === 'system_address') config.address = row.setting_value;
-                    if (row.setting_key === 'system_phone') config.phone = row.setting_value;
-                    if (row.setting_key === 'system_email') config.email = row.setting_value;
-                    if (row.setting_key === 'system_website') config.website = row.setting_value;
-                    if (row.setting_key === 'system_maintenance_mode') config.maintenance_mode = row.setting_value === 'true';
-                    if (row.setting_key === 'system_max_upload_size') config.max_upload_size = parseInt(row.setting_value) || 5;
+                    if (row.setting_key === 'maintenance_mode') {
+                        config.maintenance_mode = row.setting_value === 'true';
+                    }
+                    if (row.setting_key === 'max_upload_size') {
+                        config.max_upload_size = parseInt(row.setting_value) || 5;
+                    }
                 });
             } catch (dbError) {
                 console.log('Settings table not ready:', dbError.message);
             }
-            
+
             res.json({
                 success: true,
                 data: config
             });
-            
+
         } catch (error) {
             console.error('Error getting system config:', error);
             res.status(500).json({
@@ -5229,36 +5231,18 @@ const apiController = {
     updateSystemConfig: async (req, res) => {
         try {
             const userId = req.user?.id;
-            
             if (!userId) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Unauthorized'
-                });
+                return res.status(401).json({ success: false, message: 'Unauthorized' });
             }
-            
-            const config = req.body;
-            
-            if (!config.institution_name) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Nama instansi harus diisi'
-                });
-            }
-            
-            // Simpan ke database
+
+            const { maintenance_mode, max_upload_size } = req.body;
+
             const settings = [
-                { key: 'system_institution_name', value: config.institution_name },
-                { key: 'system_address', value: config.address || '' },
-                { key: 'system_phone', value: config.phone || '' },
-                { key: 'system_email', value: config.email || '' },
-                { key: 'system_website', value: config.website || '' },
-                { key: 'system_maintenance_mode', value: config.maintenance_mode ? 'true' : 'false' },
-                { key: 'system_max_upload_size', value: config.max_upload_size.toString() }
+                { key: 'maintenance_mode', value: maintenance_mode ? 'true' : 'false' },
+                { key: 'max_upload_size', value: (max_upload_size || 5).toString() }
             ];
-            
+
             for (const setting of settings) {
-                // 🔴 HAPUS updated_by
                 await db.query(
                     `INSERT INTO settings (setting_key, setting_value) 
                     VALUES (?, ?)
@@ -5268,20 +5252,18 @@ const apiController = {
                     [setting.key, setting.value]
                 );
             }
-            
-            // Catat aktivitas
+
             await db.query(
                 `INSERT INTO activities (user_id, activity_name, ip_address, user_agent) 
                 VALUES (?, ?, ?, ?)`,
                 [userId, 'Update System Config', req.ip, req.headers['user-agent']]
             );
-            
+
             res.json({
                 success: true,
-                message: 'Konfigurasi berhasil disimpan',
-                data: config
+                message: 'Konfigurasi berhasil disimpan'
             });
-            
+
         } catch (error) {
             console.error('Error updating system config:', error);
             res.status(500).json({
@@ -6419,7 +6401,8 @@ const apiController = {
                 'ktp': 'ktp',
                 'payment': 'payment',
                 'laporan': 'laporan',
-                'skrd': 'skrd'
+                'skrd': 'skrd',
+                'tambahan': 'tambahan'
             };
             
             const targetFolder = folderMap[fileType] || 'others';

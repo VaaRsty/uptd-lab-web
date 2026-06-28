@@ -15,7 +15,6 @@
                 <!-- Alert Message -->
                 <div id="alertMessage" class="alert alert-dismissible fade show" style="display: none;"></div>
 
-
                 <!-- Main Invoice -->
                 <div class="invoice-box" id="invoiceContainer">
                     <!-- Skeleton Loading -->
@@ -219,22 +218,21 @@
                                         <a href="#" class="btn btn-sm btn-outline-success fw-bold px-3" id="downloadSkrdBtn" download>
                                             Download
                                         </a>
-                                        <button class="btn btn-sm btn-outline-secondary fw-bold px-3" onclick="window.showUploadSKRDModal()">
+                                        <button class="btn btn-sm btn-outline-secondary fw-bold px-3" onclick="window.uploadNewSkrd()">
                                             Upload Ulang
                                         </button>
                                     </div>
                                 </div>
                             </div>
                                 
-                                <!-- Upload form -->
-                                <div id="skrdUploadSection">
-                                    <div class="upload-card" onclick="document.getElementById('skrdFileInput').click()">
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                        <h6 class="fw-bold">Upload SKRD (Format A4)</h6>
-                                        <p class="text-muted small mb-0">Klik untuk upload file PDF</p>
-                                        <p class="text-muted small">Maksimal 2MB</p>
-                                        <input type="file" id="skrdFileInput" class="d-none" accept=".pdf" onchange="window.uploadSkrdFile()">
-                                    </div>
+                            <!-- Upload form -->
+                            <div id="skrdUploadSection">
+                                <div class="upload-card" onclick="document.getElementById('skrdFileInput').click()">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <h6 class="fw-bold">Upload SKRD (Format A4)</h6>
+                                    <p class="text-muted small mb-0">Klik untuk upload file PDF</p>
+                                    <p class="text-muted small">Maksimal <%= (locals.settings && locals.settings.max_upload_size) || 5 %>MB</p>
+                                    <input type="file" id="skrdFileInput" class="d-none" accept=".pdf" onchange="window.uploadSkrdFile()">
                                 </div>
                             </div>
                         </div>

@@ -5,15 +5,14 @@ const globalSettings = async (req, res, next) => {
         const [rows] = await db.query('SELECT setting_key, setting_value FROM settings');
         const settings = {};
         rows.forEach(row => {
-            settings[row.setting_key] = row.setting_value;
+            let key = row.setting_key;
+            if (key.startsWith('system_')) {
+                key = key.replace('system_', '');
+            }
+            settings[key] = row.setting_value;
         });
-        
-        // Pass to Express Locals for EJS
         res.locals.settings = settings;
-        
-        // Pass to Request Object for Controllers
         req.settings = settings;
-        
         next();
     } catch (error) {
         console.error('Error fetching global settings:', error);

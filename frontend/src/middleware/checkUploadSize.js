@@ -1,8 +1,9 @@
 const fs = require('fs');
 
 const checkUploadSize = (req, res, next) => {
-    // req.settings.system_max_upload_size is in MB
-    const maxSize = (parseFloat(req.settings?.system_max_upload_size) || 5) * 1024 * 1024;
+    // Ambil dari req.settings (sudah tanpa prefix)
+    const maxSizeMB = parseFloat(req.settings?.max_upload_size) || 5;
+    const maxSize = maxSizeMB * 1024 * 1024;
     let exceeded = false;
     let filesToDelete = [];
 
@@ -17,7 +18,7 @@ const checkUploadSize = (req, res, next) => {
                 if (file.size > maxSize) {
                     exceeded = true;
                 }
-                filesToDelete.push(file.path); 
+                filesToDelete.push(file.path);
             });
         });
     }
@@ -32,7 +33,7 @@ const checkUploadSize = (req, res, next) => {
         });
         return res.status(400).json({
             success: false,
-            message: `Ukuran file melebihi batas maksimal (${req.settings?.max_upload_size || 5}MB)`
+            message: `Ukuran file melebihi batas maksimal (${maxSizeMB}MB)`
         });
     }
 

@@ -476,6 +476,43 @@ III. **KAJI ULANG PERMINTAAN**
             internalNotes.value = data.catatan_admin || '';
         }
         
+        // 🔥 SEMBUNYIKAN ATAU TAMPILKAN AREA UPLOAD BERDASARKAN ADA/TIDAK LAPORAN
+        const uploadAreaEl = document.getElementById('uploadArea');
+        const uploadLabel = document.querySelector('.mb-3 label[for="fileInput"]') || document.querySelector('.mb-3 label');
+        const fileInputEl = document.getElementById('fileInput');
+        const filePreviewEl = document.getElementById('filePreview');
+        
+        // Jika laporan sudah ada, sembunyikan area upload
+        if (data.report && data.report.file_laporan) {
+            if (uploadAreaEl) {
+                uploadAreaEl.style.display = 'none';
+                uploadAreaEl.style.pointerEvents = 'none';
+            }
+            if (uploadLabel) {
+                uploadLabel.style.display = 'none';
+            }
+            if (fileInputEl) {
+                fileInputEl.disabled = true;
+            }
+            // Sembunyikan preview jika ada
+            if (filePreviewEl) {
+                filePreviewEl.style.display = 'none';
+                filePreviewEl.innerHTML = '';
+            }
+        } else {
+            // Jika tidak ada laporan, tampilkan area upload
+            if (uploadAreaEl) {
+                uploadAreaEl.style.display = 'block';
+                uploadAreaEl.style.pointerEvents = 'auto';
+            }
+            if (uploadLabel) {
+                uploadLabel.style.display = 'block';
+            }
+            if (fileInputEl) {
+                fileInputEl.disabled = false;
+            }
+        }
+        
         // Tampilkan file laporan jika sudah ada
         if (data.report && data.report.file_laporan) {
             const reportName = normalizeFilename(data.report.file_laporan);
@@ -514,10 +551,34 @@ III. **KAJI ULANG PERMINTAAN**
             if (targetSection) {
                 targetSection.insertAdjacentHTML('beforebegin', reportInfo);
             } else {
-                // Fallback jika elemen tidak ditemukan
                 const uploadArea = document.getElementById('uploadArea');
                 if (uploadArea) uploadArea.insertAdjacentHTML('afterend', reportInfo);
             }
+            
+            // 🔥 SEMBUNYIKAN AREA UPLOAD DAN LABELNYA
+            const uploadAreaEl = document.getElementById('uploadArea');
+            if (uploadAreaEl) {
+                uploadAreaEl.style.display = 'none';
+                uploadAreaEl.style.pointerEvents = 'none';
+            }
+            const uploadLabel = document.querySelector('.mb-3 label[for="fileInput"]') || document.querySelector('.mb-3 label');
+            if (uploadLabel) uploadLabel.style.display = 'none';
+            const fileInputEl = document.getElementById('fileInput');
+            if (fileInputEl) fileInputEl.disabled = true;
+            const filePreview = document.getElementById('filePreview');
+            if (filePreview) filePreview.style.display = 'none';
+            
+        } else {
+            // Jika tidak ada laporan, tampilkan area upload
+            const uploadAreaEl = document.getElementById('uploadArea');
+            if (uploadAreaEl) {
+                uploadAreaEl.style.display = 'block';
+                uploadAreaEl.style.pointerEvents = 'auto';
+            }
+            const uploadLabel = document.querySelector('.mb-3 label[for="fileInput"]') || document.querySelector('.mb-3 label');
+            if (uploadLabel) uploadLabel.style.display = 'block';
+            const fileInputEl = document.getElementById('fileInput');
+            if (fileInputEl) fileInputEl.disabled = false;
         }
 
         // Blok status kuisioner (hanya tampil jika laporan sudah ada)
@@ -829,8 +890,16 @@ III. **KAJI ULANG PERMINTAAN**
         const newFileInput = newUploadArea.querySelector('#fileInput');
         const finalUploadArea = document.getElementById('uploadArea');
         
-        // 🔥 KLIK AREA UNTUK MEMILIH FILE (HANYA 1 KALI)
         finalUploadArea.addEventListener('click', (e) => {
+            // 🔥 CEK STATUS UPLOAD
+            if (isUploading) {
+                console.log('⏳ Upload in progress, ignore click');
+                return;
+            }
+            // Jangan trigger jika area upload tidak visible atau disabled
+            if (finalUploadArea.style.display === 'none' || finalUploadArea.style.pointerEvents === 'none') {
+                return;
+            }
             // Jangan trigger jika klik pada preview atau tombol
             if (e.target.closest('#filePreview')) return;
             e.stopPropagation();
@@ -869,8 +938,18 @@ III. **KAJI ULANG PERMINTAAN**
         });
     }
 
-    // Fungsi untuk handle file yang dipilih
+    // Fungsi untuk handle file yang dipilih - PAKAI SETTING ADMIN
     function handleFileSelect(file) {
+        // 🔥 CEK APAKAH AREA UPLOAD VISIBLE DAN TIDAK DISABLED
+        const uploadAreaEl = document.getElementById('uploadArea');
+        if (uploadAreaEl && (uploadAreaEl.style.display === 'none' || uploadAreaEl.style.pointerEvents === 'none')) {
+            console.log('⛔ Upload area disabled, ignore file selection');
+            // Reset file input agar tidak memicu lagi
+            const fileInputEl = document.getElementById('fileInput');
+            if (fileInputEl) fileInputEl.value = '';
+            return;
+        }
+
         if (isUploading) {
             console.log('⏳ Upload sedang berlangsung, tunggu...');
             return;
@@ -878,9 +957,13 @@ III. **KAJI ULANG PERMINTAAN**
         
         console.log('📁 File selected:', file.name, 'size:', file.size, 'type:', file.type);
         
-        // Validasi ukuran file (maks 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            showToast('Ukuran file maksimal 5MB', 'danger');
+        // 🔥 Validasi ukuran file - PAKAI SETTING DARI ADMIN
+        const maxUploadMB = window.settings?.max_upload_size || 5;
+        if (file.size > maxUploadMB * 1024 * 1024) {
+            showToast(`Ukuran file maksimal ${maxUploadMB}MB`, 'danger');
+            // Reset file input
+            const fileInputEl = document.getElementById('fileInput');
+            if (fileInputEl) fileInputEl.value = '';
             return;
         }
         
@@ -963,6 +1046,7 @@ III. **KAJI ULANG PERMINTAAN**
 
             const result = await response.json();
 
+            // Di dalam window.uploadSelectedFile
             if (result.success) {
                 showToast('Laporan berhasil diupload!', 'success');
                 
@@ -971,18 +1055,22 @@ III. **KAJI ULANG PERMINTAAN**
                 filePreview.innerHTML = '';
                 window.selectedFile = null;
                 
+                // 🔥 SEMBUNYIKAN AREA UPLOAD SEGERA
+                const uploadAreaEl = document.getElementById('uploadArea');
+                if (uploadAreaEl) {
+                    uploadAreaEl.style.display = 'none';
+                    uploadAreaEl.style.pointerEvents = 'none';
+                }
+                const uploadLabel = document.querySelector('.mb-3 label');
+                if (uploadLabel) uploadLabel.style.display = 'none';
+                
                 // Kembalikan tampilan upload area
                 uploadArea.innerHTML = originalHTML;
                 
-                // Refresh data untuk update status
-                setTimeout(() => loadSubmissionDetail(), 1000);
-            } else {
-                showToast(result.message || 'Gagal upload', 'danger');
-                uploadArea.innerHTML = originalHTML;
-                if (uploadBtn) {
-                    uploadBtn.disabled = false;
-                    uploadBtn.innerHTML = '<i class="fas fa-upload"></i>';
-                }
+                // Refresh data untuk update status (dengan delay lebih lama)
+                setTimeout(() => {
+                    loadSubmissionDetail();
+                }, 1500);
             }
         } catch (error) {
             console.error('Error uploading:', error);
@@ -1004,7 +1092,10 @@ III. **KAJI ULANG PERMINTAAN**
         filePreview.innerHTML = '';
         window.selectedFile = null;
         const fileInputElement = document.getElementById('fileInput');
-        if (fileInputElement) fileInputElement.value = '';
+        if (fileInputElement) {
+            fileInputElement.value = '';
+            // 🔥 Jangan trigger click otomatis
+        }
         console.log('🗑️ File removed');
     };
 
@@ -1109,7 +1200,7 @@ III. **KAJI ULANG PERMINTAAN**
         try {
             const API_BASE_URL = 'http://localhost:5000/api';
             const submissionId = document.getElementById('submissionId').value;
-            const response = await fetch(`${API_BASE_URL}/admin/submissions/${submissionId}/cancel`, {
+            const response = await fetch(`${API_BASE_URL}/submissions/${submissionId}/cancel`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -1162,11 +1253,30 @@ III. **KAJI ULANG PERMINTAAN**
                     reportBlock.remove();
                 }
                 
+                // 🔥 TAMPILKAN KEMBALI AREA UPLOAD
+                const uploadAreaEl = document.getElementById('uploadArea');
+                const uploadLabel = document.querySelector('.mb-3 label');
+                const fileInputEl = document.getElementById('fileInput');
+                
+                if (uploadAreaEl) {
+                    uploadAreaEl.style.display = 'block';
+                    uploadAreaEl.style.pointerEvents = 'auto';
+                }
+                if (uploadLabel) {
+                    uploadLabel.style.display = 'block';
+                }
+                if (fileInputEl) {
+                    fileInputEl.disabled = false;
+                }
+                
                 // Hapus juga blok status kuisioner jika ada karena laporan sudah dihapus
                 const kuisionerBlock = document.getElementById('kuisionerStatusBlock');
                 if (kuisionerBlock) {
                     kuisionerBlock.remove();
                 }
+                
+                // Reload data untuk update
+                await loadSubmissionDetail();
             } else {
                 showToast(result.message || 'Gagal menghapus laporan', 'danger');
             }

@@ -11,3 +11,23 @@
 <link rel="stylesheet" href="/css/user-style.css?v=2">
 <!-- Admin Styles (Specific Admin Overrides) -->
 <link rel="stylesheet" href="/css/admin-style.css?v=2">
+
+<!-- 
+    🔥 Pass settings from server to JavaScript using data attribute.
+    This avoids linter errors because EJS is not inside <script> tag.
+-->
+<script>
+    (function() {
+        try {
+            var settingsEl = document.getElementById('app-settings');
+            if (settingsEl) {
+                window.settings = JSON.parse(settingsEl.dataset.settings || '{}');
+            } else {
+                window.settings = {};
+            }
+        } catch (e) {
+            console.warn('Failed to parse settings:', e);
+            window.settings = {};
+        }
+    })();
+</script>
