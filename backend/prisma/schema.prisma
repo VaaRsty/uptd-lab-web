@@ -40,6 +40,7 @@ model kuisioner {
   jawaban_json    Json?
   pertanyaan_json Json?
   created_at      DateTime?   @default(now()) @db.Timestamp(0)
+  skor_17         Int?        @db.TinyInt
   submissions     submissions @relation(fields: [submission_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "kuisioner_ibfk_1")
 }
 
@@ -222,6 +223,7 @@ model users {
   password           String               @db.VarChar(255)
   role               users_role?          @default(pelanggan)
   full_name          String               @db.VarChar(100)
+  employee_id        String?              @db.VarChar(50)
   nama_instansi      String?              @db.VarChar(255)
   alamat             String?              @db.Text
   nomor_telepon      String?              @db.VarChar(20)
