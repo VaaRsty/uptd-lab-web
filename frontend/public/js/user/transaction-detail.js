@@ -35,10 +35,12 @@
     }
 
     function buildProtectedFileUrl(fileType, filename) {
-        const safeFilename = normalizeFilename(filename);
-        if (!safeFilename) return '#';
+        if (!filename) return '#';
+        if (filename.startsWith('http')) return filename;
+        const safeName = normalizeFilename(filename);
+        if (!safeName) return '#';
         const baseUrl = window.__APP_CONFIG__?.API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
-        return `${baseUrl}/api/files/${fileType}/${encodeURIComponent(safeFilename)}`;
+        return `${baseUrl}/api/files/${fileType}/${encodeURIComponent(safeName)}`;
     }
 
     async function fetchProtectedFileBlob(url, token) {

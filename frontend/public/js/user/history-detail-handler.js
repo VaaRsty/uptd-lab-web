@@ -55,6 +55,8 @@
 
     // Fungsi membuat URL yang akan di-fetch
     function buildProtectedFileUrl(fileType, filename, token) {
+        if (!filename) return '#';
+        if (filename.startsWith('http')) return filename;
         const safeName = normalizeFilename(filename);
         if (!safeName) return '#';
         

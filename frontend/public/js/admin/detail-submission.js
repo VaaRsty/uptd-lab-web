@@ -138,8 +138,9 @@ III. **KAJI ULANG PERMINTAAN**
     }
 
     function buildProtectedFileUrl(fileType, filename) {
+        if (!filename) return '#';
+        if (filename.startsWith('http')) return filename;
         const safeFilename = normalizeFilename(filename);
-        if (!safeFilename) return '#';
 
         // 🔥 KEMBALIKAN URL TANPA TOKEN (karena akan dikirim via header)
         return `${BACKEND_BASE_URL}/api/files/${fileType}/${encodeURIComponent(safeFilename)}`;
