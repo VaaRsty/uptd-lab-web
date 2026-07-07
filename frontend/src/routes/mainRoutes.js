@@ -11,33 +11,7 @@ const checkUploadSize = require('../middleware/checkUploadSize');
 const maintenanceCheck = require('../middleware/maintenanceCheck');
 
 // Konfigurasi storage untuk upload file
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        let uploadPath = 'public/uploads/';
-        if (file.fieldname === 'surat_permohonan') {
-            uploadPath += 'surat';
-        } else if (file.fieldname === 'scan_ktp') {
-            uploadPath += 'ktp';
-        } else if (file.fieldname === 'payment_proof') {
-            uploadPath += 'payment';
-        } else {
-            uploadPath += 'others';
-        }
-        
-        const fs = require('fs');
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        const sanitizedName = file.fieldname.replace(/[^a-z0-9]/gi, '_');
-        cb(null, sanitizedName + '-' + uniqueSuffix + ext);
-    }
-});
+const storage = multer.memoryStorage();
 
 // Di mainroutes.js, cek konfigurasi multer
 const fileFilter = (req, file, cb) => {

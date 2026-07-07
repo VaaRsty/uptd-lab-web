@@ -305,8 +305,11 @@ exports.createSubmission = async (req, res) => {
             ['surat_permohonan', 'scan_ktp', 'lampiran_pendukung'].forEach((field) => {
                 if (req.files[field]?.[0]) {
                     const file = req.files[field][0];
-                    if (file.path && fs.existsSync(file.path)) {
-                        formData.append(field, fs.createReadStream(file.path));
+                    if (file.buffer) {
+                        formData.append(field, file.buffer, {
+                            filename: file.originalname,
+                            contentType: file.mimetype
+                        });
                     }
                 }
             });
@@ -413,7 +416,10 @@ exports.uploadPaymentProof = async (req, res) => {
 
     try {
         const formData = new FormData();
-        formData.append('payment_proof', fs.createReadStream(req.file.path), req.file.originalname);
+        formData.append('payment_proof', req.file.buffer, {
+            filename: req.file.originalname,
+            contentType: req.file.mimetype
+        });
         if (req.body.notes) formData.append('notes', req.body.notes);
 
         const response = await api.skrd.uploadPaymentProof(token, transactionId, formData);

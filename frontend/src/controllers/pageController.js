@@ -15,13 +15,13 @@ exports.postSubmission = async (req, res) => {
 
         // 2. Oper filenya! Ambil dari folder temporary frontend, kirim ke API
         if (req.files) {
-            if (req.files['surat_permohonan']) {
+            if (req.files['surat_permohonan'] && req.files['surat_permohonan'][0]) {
                 const file = req.files['surat_permohonan'][0];
-                formToAPI.append('surat_permohonan', fs.createReadStream(file.path));
+                formToAPI.append('surat_permohonan', file.buffer, { filename: file.originalname, contentType: file.mimetype });
             }
-            if (req.files['scan_ktp']) {
+            if (req.files['scan_ktp'] && req.files['scan_ktp'][0]) {
                 const file = req.files['scan_ktp'][0];
-                formToAPI.append('scan_ktp', fs.createReadStream(file.path));
+                formToAPI.append('scan_ktp', file.buffer, { filename: file.originalname, contentType: file.mimetype });
             }
         }
 
@@ -912,9 +912,9 @@ const pageController = {
                 fileFields.forEach(fieldName => {
                     if (req.files[fieldName] && req.files[fieldName].length > 0) {
                         const file = req.files[fieldName][0];
-                        if (file.path && fs.existsSync(file.path)) {
-                            formData.append(fieldName, fs.createReadStream(file.path));
-                            console.log(`📁 ${fieldName} file appended:`, file.path);
+                        if (file.buffer) {
+                            formData.append(fieldName, file.buffer, { filename: file.originalname, contentType: file.mimetype });
+                            console.log(`📁 ${fieldName} file appended (buffer)`);
                         }
                     }
                 });
