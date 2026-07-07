@@ -233,8 +233,8 @@ exports.submissionPage = async (req, res) => {
 
         const [services] = await db.query(`
             SELECT 
-                tt.id AS type_id, tt.type_name AS typeName,
-                tc.id AS category_id, tc.category_name AS categoryName,
+                tt.id AS type_id, tt.type_name AS "typeName",
+                tc.id AS category_id, tc.category_name AS "categoryName",
                 s.id AS service_id, s.service_name AS name,
                 s.min_sample AS sample_value, s.satuan AS sample_unit,
                 CONCAT(s.min_sample, ' ', s.satuan) AS sample,
@@ -255,10 +255,10 @@ exports.submissionPage = async (req, res) => {
             if (active) {
                 const [periods] = await db.query(
                     `SELECT id, keterangan,
-                            DATE_FORMAT(tanggal_mulai, '%Y-%m-%d') AS tanggal_mulai,
-                            DATE_FORMAT(tanggal_selesai, '%Y-%m-%d') AS tanggal_selesai
+                            TO_CHAR(tanggal_mulai, 'YYYY-MM-DD') AS tanggal_mulai,
+                            TO_CHAR(tanggal_selesai, 'YYYY-MM-DD') AS tanggal_selesai
                      FROM jadwal_sibuk
-                     WHERE tanggal_selesai >= CURDATE()
+                     WHERE tanggal_selesai >= CURRENT_DATE
                      ORDER BY tanggal_mulai ASC`
                 );
                 busyMode = { active: true, activePeriods: periods };

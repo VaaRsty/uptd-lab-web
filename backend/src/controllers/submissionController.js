@@ -363,11 +363,11 @@ exports.userDashboard = async (req, res, next) => {
 
         // Hitung aktivitas 7 hari terakhir
         const [weeklyStats] = await db.query(`
-            SELECT DATE(created_at) as date, COUNT(*) as count 
+            SELECT TO_CHAR(created_at, 'YYYY-MM-DD') as date, COUNT(*) as count 
             FROM submissions 
             WHERE user_id = ? 
               AND created_at >= CURRENT_DATE - INTERVAL '6 DAY'
-            GROUP BY DATE(created_at)
+            GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD')
         `, [req.user.id]);
 
         const weeklyActivity = [0, 0, 0, 0, 0, 0, 0];

@@ -793,9 +793,9 @@ const pageController = {
             const [services] = await db.query(`
                 SELECT 
                     tt.id as type_id,
-                    tt.type_name as typeName,
+                    tt.type_name as "typeName",
                     tc.id as category_id,
-                    tc.category_name as categoryName,
+                    tc.category_name as "categoryName",
                     s.id as service_id,
                     s.service_name as name,
                     s.min_sample as sample_value,
@@ -825,10 +825,10 @@ const pageController = {
                         `SELECT 
                             id, 
                             keterangan, 
-                            DATE_FORMAT(tanggal_mulai, '%Y-%m-%d') as tanggal_mulai,
-                            DATE_FORMAT(tanggal_selesai, '%Y-%m-%d') as tanggal_selesai
+                            TO_CHAR(tanggal_mulai, 'YYYY-MM-DD') as tanggal_mulai,
+                            TO_CHAR(tanggal_selesai, 'YYYY-MM-DD') as tanggal_selesai
                         FROM jadwal_sibuk 
-                        WHERE tanggal_selesai >= CURDATE()
+                        WHERE tanggal_selesai >= CURRENT_DATE
                         ORDER BY tanggal_mulai ASC`
                     );
                     
