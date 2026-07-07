@@ -2,14 +2,8 @@ require('dotenv').config();
 
 const required = [
     'NODE_ENV',
-    'PORT',
-    'DB_HOST',
-    'DB_USER',
-    'DB_NAME',
-    'DB_PORT',
     'JWT_ACCESS_SECRET',
-    'JWT_REFRESH_SECRET',
-    'CORS_ORIGINS'
+    'JWT_REFRESH_SECRET'
 ];
 
 const missing = required.filter((key) => !process.env[key]);
@@ -30,7 +24,7 @@ if (process.env.JWT_ACCESS_SECRET.length < 32) {
 module.exports = {
     NODE_ENV: process.env.NODE_ENV,
     PORT: parseInt(process.env.PORT, 10) || 5000,
-    CORS_ORIGINS: process.env.CORS_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean),
+    CORS_ORIGINS: (process.env.CORS_ORIGINS || '*').split(',').map((s) => s.trim()).filter(Boolean),
     JWT: {
         accessSecret: process.env.JWT_ACCESS_SECRET,
         refreshSecret: process.env.JWT_REFRESH_SECRET,
