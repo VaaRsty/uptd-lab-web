@@ -85,3 +85,5 @@ app.listen(PORT, () => {
     console.log(`URL: ${process.env.FRONTEND_URL || 'http://localhost:' + PORT}`);
     console.log('=================================');
 });
+
+module.exports = app;

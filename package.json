@@ -2,6 +2,10 @@
   "name": "uptd-lab",
   "version": "2.0.0",
   "description": "UPTD Lab Pengujian - monorepo root",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
     "dev": "npm run dev --prefix backend & npm run dev --prefix frontend",
     "dev:backend": "npm run dev --prefix backend",
