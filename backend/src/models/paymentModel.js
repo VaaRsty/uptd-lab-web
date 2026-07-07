@@ -62,13 +62,13 @@ exports.list = async ({ status, limit = 20, offset = 0, search, start_date, end_
 
 exports.count = async ({ status, search, start_date, end_date } = {}) => {
     const params = [];
-    let sql = `SELECT COUNT(*) as total FROM payments p LEFT JOIN submissions s ON s.id = p.submission_id WHERE 1=1`;
+    let sql = `SELECT COUNT(*) as total FROM payments p LEFT JOIN submissions s ON s.id = p.submission_id LEFT JOIN users u ON u.id = s.user_id WHERE 1=1`;
     if (status) {
         sql += ' AND p.status_pembayaran = ?';
         params.push(status);
     }
     if (search) {
-        sql += ' AND (p.no_invoice LIKE ? OR s.nama_pemohon LIKE ? OR s.nama_instansi LIKE ? OR s.no_permohonan LIKE ?)';
+        sql += ' AND (p.no_invoice LIKE ? OR u.full_name LIKE ? OR u.nama_instansi LIKE ? OR s.no_permohonan LIKE ?)';
         const q = `%${search}%`;
         params.push(q, q, q, q);
     }
@@ -150,8 +150,8 @@ exports.stats = async () => {
         SELECT SUM(total_tagihan) as total 
         FROM payments 
         WHERE status_pembayaran = 'Lunas' 
-        AND MONTH(created_at) = MONTH(CURRENT_DATE) 
-        AND YEAR(created_at) = YEAR(CURRENT_DATE)
+        AND EXTRACT(MONTH FROM created_at) = EXTRACT(MONTH FROM CURRENT_DATE) 
+        AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
     `);
 
     const formatRp = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num || 0);
