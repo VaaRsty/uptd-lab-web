@@ -345,8 +345,8 @@ exports.userDashboard = async (req, res, next) => {
         
         let totalSubmissions = 0, completedTests = 0;
         statsArray.forEach(s => {
-            totalSubmissions += s.total;
-            if (s.status === 'Selesai') completedTests += s.total;
+            totalSubmissions += parseInt(s.total, 10);
+            if (s.status === 'Selesai') completedTests += parseInt(s.total, 10);
         });
 
         const db = require('../config/database');
