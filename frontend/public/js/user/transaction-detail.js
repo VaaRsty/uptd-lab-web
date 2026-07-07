@@ -73,6 +73,10 @@
     }
 
     window.downloadFileWithToken = async function(url, token, filename) {
+        if (url.startsWith('http')) {
+            window.open(url, '_blank');
+            return;
+        }
         try {
             const blob = await fetchProtectedFileBlob(url, token);
             if (!blob) return;
@@ -92,6 +96,10 @@
     };
 
     window.openFileWithToken = async function(url, token) {
+        if (url.startsWith('http')) {
+            window.open(url, '_blank');
+            return;
+        }
         const newTab = window.open('', '_blank');
         if (!newTab) return alert('Izinkan popup browser!');
         newTab.document.write('<html><body style="background:#333;color:white;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif;">Memproses dokumen...</body></html>');

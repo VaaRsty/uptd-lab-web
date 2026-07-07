@@ -190,6 +190,10 @@ III. **KAJI ULANG PERMINTAAN**
     }
 
     window.openFileWithToken = async function(url, token) {
+        if (url.startsWith('http')) {
+            window.open(url, '_blank');
+            return;
+        }
         const newTab = window.open('', '_blank');
         if (!newTab) return alert('Izinkan popup browser!');
         
@@ -211,6 +215,10 @@ III. **KAJI ULANG PERMINTAAN**
     };
 
     window.downloadFileWithToken = async function(url, token) {
+        if (url.startsWith('http')) {
+            window.open(url, '_blank');
+            return;
+        }
         try {
             console.log('📥 Downloading file:', url);
             const blob = await fetchProtectedFileBlob(url, token);
