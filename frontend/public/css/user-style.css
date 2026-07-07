@@ -550,8 +550,9 @@ body {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: #fff;
+    background-color: #047857 !important;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark)) !important;
+    color: #ffffff !important;
     font-size: 0.75rem;
     font-weight: 700;
     display: flex;
@@ -3165,8 +3166,9 @@ main.main-content,
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: #ffffff;
+    background-color: #047857 !important;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark)) !important;
+    color: #ffffff !important;
     font-size: 2.8rem;
     font-weight: 700;
     font-family: 'Inter', sans-serif;
