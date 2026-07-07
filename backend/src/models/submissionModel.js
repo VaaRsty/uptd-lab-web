@@ -35,11 +35,11 @@ exports.list = async ({ status, search, user_id, start_date, end_date, test_type
         params.push(q, q, q, q);
     }
     if (start_date) {
-        sql += ' AND DATE(s.created_at) >= ?';
+        sql += ' AND CAST(s.created_at AS DATE) >= ?';
         params.push(start_date);
     }
     if (end_date) {
-        sql += ' AND DATE(s.created_at) <= ?';
+        sql += ' AND CAST(s.created_at AS DATE) <= ?';
         params.push(end_date);
     }
     if (test_type) {
@@ -77,11 +77,11 @@ exports.count = async ({ status, user_id, search, start_date, end_date, test_typ
         params.push(q, q, q, q);
     }
     if (start_date) {
-        sql += ' AND DATE(s.created_at) >= ?';
+        sql += ' AND CAST(s.created_at AS DATE) >= ?';
         params.push(start_date);
     }
     if (end_date) {
-        sql += ' AND DATE(s.created_at) <= ?';
+        sql += ' AND CAST(s.created_at AS DATE) <= ?';
         params.push(end_date);
     }
     if (test_type) {

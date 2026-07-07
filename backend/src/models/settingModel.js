@@ -25,7 +25,7 @@ exports.set = async (key, value) => {
     const [result] = await db.query(
         `INSERT INTO settings (setting_key, setting_value, created_at, updated_at)
          VALUES (?, ?, NOW(), NOW())
-         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = NOW()`,
+         ON CONFLICT (setting_key) DO UPDATE SET setting_value = EXCLUDED.setting_value, updated_at = NOW()`,
         [key, value]
     );
     return result.affectedRows;
@@ -39,7 +39,7 @@ exports.setBulk = async (settings) => {
             await conn.query(
                 `INSERT INTO settings (setting_key, setting_value, created_at, updated_at)
                  VALUES (?, ?, NOW(), NOW())
-                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = NOW()`,
+                 ON CONFLICT (setting_key) DO UPDATE SET setting_value = EXCLUDED.setting_value, updated_at = NOW()`,
                 [key, typeof value === 'object' ? JSON.stringify(value) : String(value)]
             );
         }
@@ -73,7 +73,7 @@ exports.findBusyPeriodById = async (id) => {
 exports.findActiveBusyPeriods = async () => {
     const [rows] = await db.query(
         `SELECT id, tanggal_mulai as start_date, tanggal_selesai as end_date, keterangan as reason, created_at FROM jadwal_sibuk 
-         WHERE CURDATE() BETWEEN tanggal_mulai AND tanggal_selesai
+         WHERE CURRENT_DATE BETWEEN tanggal_mulai AND tanggal_selesai
          ORDER BY tanggal_mulai ASC`
     );
     return rows;

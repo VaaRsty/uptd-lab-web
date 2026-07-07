@@ -15,11 +15,11 @@ exports.list = async ({ limit = 50, offset = 0, start_date, end_date } = {}) => 
     
     // 🔥 FILTER TANGGAL
     if (start_date) {
-        sql += ' AND DATE(k.created_at) >= ?';
+        sql += ' AND CAST(k.created_at AS DATE) >= ?';
         params.push(start_date);
     }
     if (end_date) {
-        sql += ' AND DATE(k.created_at) <= ?';
+        sql += ' AND CAST(k.created_at AS DATE) <= ?';
         params.push(end_date);
     }
     
@@ -54,11 +54,11 @@ exports.count = async ({ start_date, end_date } = {}) => {
     let params = [];
     let sql = 'SELECT COUNT(*) AS total FROM kuisioner k WHERE 1=1';
     if (start_date) {
-        sql += ' AND DATE(k.created_at) >= ?';
+        sql += ' AND CAST(k.created_at AS DATE) >= ?';
         params.push(start_date);
     }
     if (end_date) {
-        sql += ' AND DATE(k.created_at) <= ?';
+        sql += ' AND CAST(k.created_at AS DATE) <= ?';
         params.push(end_date);
     }
     const [rows] = await db.query(sql, params);
@@ -165,11 +165,11 @@ exports.stats = async ({ start_date, end_date } = {}) => {
     let params = [];
     let sql = 'SELECT jawaban_json FROM kuisioner WHERE 1=1';
     if (start_date) {
-        sql += ' AND DATE(created_at) >= ?';
+        sql += ' AND CAST(created_at AS DATE) >= ?';
         params.push(start_date);
     }
     if (end_date) {
-        sql += ' AND DATE(created_at) <= ?';
+        sql += ' AND CAST(created_at AS DATE) <= ?';
         params.push(end_date);
     }
     const [rows] = await db.query(sql, params);

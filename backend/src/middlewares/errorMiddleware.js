@@ -44,9 +44,7 @@ exports.errorHandler = (err, req, res, next) => {
     const statusCode = err.statusCode || err.status || 500;
     res.status(statusCode).json({
         success: false,
-        message:
-            env.NODE_ENV === 'production' && statusCode === 500
-                ? 'Terjadi kesalahan server'
-                : err.message
+        message: err.message,
+        stack: err.stack
     });
 };

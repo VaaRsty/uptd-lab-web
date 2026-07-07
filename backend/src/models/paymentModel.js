@@ -47,11 +47,11 @@ exports.list = async ({ status, limit = 20, offset = 0, search, start_date, end_
         params.push(q, q, q, q);
     }
     if (start_date) {
-        sql += ' AND DATE(p.created_at) >= ?';
+        sql += ' AND CAST(p.created_at AS DATE) >= ?';
         params.push(start_date);
     }
     if (end_date) {
-        sql += ' AND DATE(p.created_at) <= ?';
+        sql += ' AND CAST(p.created_at AS DATE) <= ?';
         params.push(end_date);
     }
     sql += ' ORDER BY p.created_at DESC LIMIT ? OFFSET ?';
@@ -73,11 +73,11 @@ exports.count = async ({ status, search, start_date, end_date } = {}) => {
         params.push(q, q, q, q);
     }
     if (start_date) {
-        sql += ' AND DATE(p.created_at) >= ?';
+        sql += ' AND CAST(p.created_at AS DATE) >= ?';
         params.push(start_date);
     }
     if (end_date) {
-        sql += ' AND DATE(p.created_at) <= ?';
+        sql += ' AND CAST(p.created_at AS DATE) <= ?';
         params.push(end_date);
     }
     const [rows] = await db.query(sql, params);
