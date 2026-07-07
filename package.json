@@ -2,6 +2,7 @@
   "name": "uptd-lab",
   "version": "2.0.0",
   "description": "UPTD Lab Pengujian - monorepo root",
+  "private": true,
   "workspaces": [
     "frontend",
     "backend"
