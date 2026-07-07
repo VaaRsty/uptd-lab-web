@@ -9,25 +9,13 @@ const logger = winston.createLogger({
         winston.format.json()
     ),
     transports: [
-        new winston.transports.File({
-            filename: path.join('logs', 'frontend-error.log'),
-            level: 'error'
-        }),
-        new winston.transports.File({
-            filename: path.join('logs', 'frontend-combined.log')
-        })
-    ]
-});
-
-if (process.env.NODE_ENV !== 'production') {
-    logger.add(
         new winston.transports.Console({
             format: winston.format.combine(
                 winston.format.colorize(),
                 winston.format.simple()
             )
         })
-    );
-}
+    ]
+});
 
 module.exports = logger;
