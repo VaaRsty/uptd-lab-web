@@ -126,64 +126,44 @@
         }
     }
 
-    window.downloadFileWithToken = function(url, token, filename) {
-        if (url.startsWith('http') && !url.includes('/api/files')) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.target = '_blank';
-            a.download = filename || 'download';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+    // Buka URL file secara langsung - simpel dan tidak diblokir browser
+    function openFileDirectly(url) {
+        if (!url || url === '#') {
+            showAlert('URL file tidak ditemukan', 'warning');
             return;
         }
-        (async () => {
-            try {
-                const blob = await fetchProtectedFileBlob(url, token);
-                if (!blob) return;
-                const blobUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = blobUrl;
-                link.download = filename || 'file';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
-                console.log('✅ Download selesai:', filename);
-            } catch (error) {
-                console.error('❌ Error download:', error);
-                alert('Gagal download file: ' + error.message);
-            }
-        })();
-    };
-
-    window.openFileWithToken = function(url, token) {
-        if (url.startsWith('http') && !url.includes('/api/files')) {
+        // Jika URL publik (Supabase), buka langsung di tab baru
+        if (url.startsWith('http')) {
             window.open(url, '_blank');
             return;
         }
-        const newTab = window.open('', '_blank');
-        if (!newTab) {
-            alert('Mohon izinkan popup di browser Anda untuk melihat dokumen.');
-            return;
+        // Untuk URL lokal /api/files, tambahkan token di query param
+        const token = getToken();
+        const separator = url.includes('?') ? '&' : '?';
+        window.open(`${url}${separator}token=${token}`, '_blank');
+    }
+
+    // Tetap sediakan openFileWithToken untuk kompatibilitas backward
+    window.openFileWithToken = function(url, token) {
+        openFileDirectly(url);
+    };
+
+    // Download file
+    window.downloadFileWithToken = function(url, token, filename) {
+        if (!url || url === '#') return;
+        const a = document.createElement('a');
+        if (url.startsWith('http')) {
+            a.href = url;
+        } else {
+            const separator = url.includes('?') ? '&' : '?';
+            a.href = `${url}${separator}token=${token}`;
         }
-        newTab.document.write('Memuat dokumen...');
-        
-        (async () => {
-            try {
-                const blob = await fetchProtectedFileBlob(url, token);
-                if (!blob) {
-                    newTab.close();
-                    return;
-                }
-                const blobUrl = window.URL.createObjectURL(blob);
-                newTab.location.href = blobUrl;
-                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
-            } catch (e) {
-                newTab.close();
-                alert('Gagal memuat file.');
-            }
-        })();
+        a.target = '_blank';
+        a.download = filename || 'download';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     };
 
     // ==================== LOAD DATA ====================
@@ -421,28 +401,32 @@
         </html>
         `;
 
+        // Buka tab DULU saat masih synchronous (user gesture), lalu isi kontennya
         const printWindow = window.open('', '_blank');
-        if (printWindow) {
-            printWindow.document.write(printContent);
-            printWindow.document.close();
-        } else {
-            // Fallback jika diblokir popup blocker
+        if (!printWindow) {
+            // Fallback: gunakan iframe tersembunyi
             let iframe = document.getElementById('print-invoice-iframe');
             if (!iframe) {
                 iframe = document.createElement('iframe');
                 iframe.id = 'print-invoice-iframe';
-                iframe.style.position = 'absolute';
-                iframe.style.width = '0';
-                iframe.style.height = '0';
-                iframe.style.border = 'none';
+                iframe.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;border:none;z-index:9999;background:white;';
                 document.body.appendChild(iframe);
+                // Tambah tombol tutup
+                const closeBtn = document.createElement('button');
+                closeBtn.textContent = '✕ Tutup Preview';
+                closeBtn.style.cssText = 'position:fixed;top:10px;right:10px;z-index:10000;padding:8px 16px;background:#dc3545;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;';
+                closeBtn.id = 'close-print-btn';
+                closeBtn.onclick = () => {
+                    iframe.remove();
+                    closeBtn.remove();
+                };
+                document.body.appendChild(closeBtn);
             }
             iframe.srcdoc = printContent;
-            setTimeout(() => {
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
-            }, 1000);
+            return;
         }
+        printWindow.document.write(printContent);
+        printWindow.document.close();
     }
 
     // Helper function untuk generate rows items (untuk print)
@@ -1237,22 +1221,23 @@
     }
 
     function viewProof() {
-        if (window.currentProofUrl) {
-            if (window.currentProofUrl.startsWith('http') && !window.currentProofUrl.includes('/api/files')) {
-                window.open(window.currentProofUrl, '_blank');
-            } else {
-                window.openFileWithToken(window.currentProofUrl, getToken());
+        // Dapatkan URL dari data yang sedang ditampilkan
+        let url = null;
+        
+        if (invoiceData) {
+            // Cek bukti pembayaran terbaru
+            const file = invoiceData.bukti_pembayaran_2 || invoiceData.bukti_pembayaran_1;
+            if (file) {
+                url = buildProtectedFileUrl('payment', file);
             }
-        } else if (invoiceData?.bukti_pembayaran_1) {
-            const fileUrl = buildProtectedFileUrl('payment', invoiceData.bukti_pembayaran_1);
-            if (fileUrl.startsWith('http') && !fileUrl.includes('/api/files')) {
-                window.open(fileUrl, '_blank');
-            } else {
-                window.openFileWithToken(fileUrl, getToken());
-            }
-        } else {
-            showAlert('File bukti pembayaran tidak ditemukan', 'warning');
         }
+        
+        if (!url) {
+            showAlert('File bukti pembayaran tidak ditemukan', 'warning');
+            return;
+        }
+        
+        openFileDirectly(url);
     }
 
     async function rejectProof() {

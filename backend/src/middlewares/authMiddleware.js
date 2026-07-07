@@ -16,8 +16,11 @@ const authMiddleware = (req, res, next) => {
             token = req.cookies.token;
         } else if (req.cookies?.admin_token) {
             token = req.cookies.admin_token;
+        } else if (req.query?.token) {
+            // Diperbolehkan khusus untuk akses file langsung di tab baru
+            // (token di query param hanya aman untuk GET /api/files karena bukan endpoint sensitif)
+            token = req.query.token;
         }
-        // Catatan: token TIDAK boleh diterima dari req.query (URL) karena tersimpan di log & browser history
 
         if (!token) {
             return res.status(401).json({

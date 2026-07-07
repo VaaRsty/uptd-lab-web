@@ -43,94 +43,41 @@
         return `${baseUrl}/api/files/${fileType}/${encodeURIComponent(safeName)}`;
     }
 
-    async function fetchProtectedFileBlob(url, token) {
-        try {
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (response.status === 401) {
-                alert('Sesi habis. Silakan login ulang.');
-                window.location.href = '/login';
-                return null;
-            }
-            if (!response.ok) {
-                alert('Gagal mengambil file dari server (Error ' + response.status + ')');
-                return null;
-            }
-            const blob = await response.blob();
-            if (blob.size < 50) {
-                const text = await blob.text();
-                if (text.includes('not found') || text.includes('error')) {
-                    alert('File di server rusak atau tidak terbaca.');
-                    return null;
-                }
-            }
-            return blob;
-        } catch (error) {
-            console.error('❌ Network Error:', error);
-            alert('Terjadi kesalahan jaringan saat mengambil file.');
-            return null;
-        }
+    function getToken() {
+        return localStorage.getItem('token');
     }
 
-    window.downloadFileWithToken = function(url, token, filename) {
-        if (url.startsWith('http') && !url.includes('/api/files')) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.target = '_blank';
-            a.download = filename || 'download';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            return;
-        }
-        (async () => {
-            try {
-                const blob = await fetchProtectedFileBlob(url, token);
-                if (!blob) return;
-                const blobUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = blobUrl;
-                link.download = filename || 'file';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
-                console.log('✅ Download selesai:', filename);
-            } catch (error) {
-                console.error('❌ Error download:', error);
-                alert('Gagal download file: ' + error.message);
-            }
-        })();
-        window.openFileWithToken = function(url, token) {
-        if (url.startsWith('http') && !url.includes('/api/files')) {
-            window.open(url, '_blank');
-            return;
-        }
-        const newTab = window.open('', '_blank');
-        if (!newTab) {
-            alert('Mohon izinkan popup di browser Anda untuk melihat dokumen.');
-            return;
-        }
-        newTab.document.write('Memuat dokumen...');
-        
-        (async () => {
-            try {
-                const blob = await fetchProtectedFileBlob(url, token);
-                if (!blob) {
-                    newTab.close();
-                    return;
-                }
-                const blobUrl = window.URL.createObjectURL(blob);
-                newTab.location.href = blobUrl;
-                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
-            } catch (e) {
-                newTab.close();
-                alert('Gagal memuat file.');
-            }
-        })();
+    // Buka URL file secara langsung
+    function openFileDirectly(url) {
+        if (!url || url === '#') { alert('URL file tidak ditemukan'); return; }
+        if (url.startsWith('http')) { window.open(url, '_blank'); return; }
+        const token = getToken();
+        const sep = url.includes('?') ? '&' : '?';
+        window.open(`${url}${sep}token=${token}`, '_blank');
+    }
+
+    window.openFileWithToken = function(url, token) {
+        openFileDirectly(url);
     };
+
+    window.downloadFileWithToken = function(url, token, filename) {
+        if (!url || url === '#') return;
+        const a = document.createElement('a');
+        if (url.startsWith('http')) {
+            a.href = url;
+        } else {
+            const t = token || getToken();
+            const sep = url.includes('?') ? '&' : '?';
+            a.href = `${url}${sep}token=${t}`;
+        }
+        a.target = '_blank';
+        a.download = filename || 'download';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+
 
     document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Transaction Detail Handler initialized');

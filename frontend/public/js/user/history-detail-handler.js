@@ -731,67 +731,35 @@
         }
     }
 
-    // Fungsi Preview (Buka Tab Baru Tanpa Diblokir Browser)
-    window.openFileWithToken = function(url, token) {
-        if (url.startsWith('http') && !url.includes('/api/files')) {
-            window.open(url, '_blank');
-            return;
-        }
-        const newTab = window.open('', '_blank');
-        if (!newTab) return alert('Izinkan popup browser!');
-        
-        newTab.document.write('<html><body style="background:#333;color:white;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif;">Memproses dokumen...</body></html>');
+    // Buka URL file secara langsung
+    function openFileDirectly(url) {
+        if (!url || url === '#') { alert('URL file tidak ditemukan'); return; }
+        if (url.startsWith('http')) { window.open(url, '_blank'); return; }
+        const token = getToken();
+        const sep = url.includes('?') ? '&' : '?';
+        window.open(`${url}${sep}token=${token}`, '_blank');
+    }
 
-        (async () => {
-            try {
-                // fetchProtectedFileBlob adalah fungsi yang Jey buat untuk fetch dengan Header Auth
-                const blob = await fetchProtectedFileBlob(url, token);
-                if (!blob) {
-                    newTab.close();
-                    return;
-                }
-                const blobUrl = window.URL.createObjectURL(blob);
-                newTab.location.href = blobUrl;
-                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
-            } catch (e) {
-                newTab.close();
-                alert('Gagal memuat file.');
-            }
-        })();
+    window.openFileWithToken = function(url, token) {
+        openFileDirectly(url);
     };
 
-    window.downloadFileWithToken = function(url, token) {
-        if (url.startsWith('http') && !url.includes('/api/files')) {
-            const a = document.createElement('a');
+    window.downloadFileWithToken = function(url, token, filename) {
+        if (!url || url === '#') return;
+        const a = document.createElement('a');
+        if (url.startsWith('http')) {
             a.href = url;
-            a.target = '_blank';
-            a.download = 'download';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            return;
+        } else {
+            const t = token || getToken();
+            const sep = url.includes('?') ? '&' : '?';
+            a.href = `${url}${sep}token=${t}`;
         }
-        (async () => {
-            try {
-                console.log('📥 Downloading file:', url);
-                const blob = await fetchProtectedFileBlob(url, token);
-                if (!blob) return;
-                const blobUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = blobUrl;
-                const urlParts = url.split('/');
-                const filename = decodeURIComponent(urlParts[urlParts.length - 1].split('?')[0]);
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
-                console.log('✅ Download selesai:', filename);
-            } catch (error) {
-                console.error('❌ Error download:', error);
-                alert('Gagal download file: ' + error.message);
-            }
-        })();
+        a.target = '_blank';
+        a.download = filename || 'download';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     };
 
     function setText(id, text) {
