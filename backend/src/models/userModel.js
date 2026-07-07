@@ -70,7 +70,6 @@ exports.updateProfile = async (userId, data) => {
         'avatar',
         'notif_email',
         'notif_wa',
-        'email',
         'employee_id',
         'role'
     ];
