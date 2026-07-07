@@ -12,8 +12,24 @@
             <a href="/" class="<%= active === 'home' ? 'active' : '' %>">Beranda</a>
             <a href="/services" class="<%= active === 'services' ? 'active' : '' %>">Pelayanan</a>
             <a href="/profile" class="<%= active === 'profile' ? 'active' : '' %>">Profil</a>
+            <a href="/login" class="btn-auth-base btn-action-login mobile-only-auth">Login</a>
         </div>
 
-        <a href="/login" class="btn-auth-base btn-action-login">Login</a>
+        <a href="/login" class="btn-auth-base btn-action-login desktop-auth">Login</a>
+        <button class="mobile-menu-toggle" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
     </div>
 </nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('mobileMenuBtn');
+        const links = document.querySelector('.nav-links');
+        if(btn && links) {
+            btn.addEventListener('click', () => {
+                links.classList.toggle('active');
+            });
+        }
+    });
+</script>

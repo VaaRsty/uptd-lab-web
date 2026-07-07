@@ -169,19 +169,41 @@ exports.create = async (req, res, next) => {
 
         // 7. Simpan sample jika service_id ada
         if (sampleData.service_id) {
-            // Pastikan method createSamples sudah ada di submissionModel
-            await submissionModel.createSamples(id, [sampleData]);
-            console.log('✅ Sample berhasil disimpan');
+            try {
+                await submissionModel.createSamples(id, [sampleData]);
+                console.log('✅ Sample berhasil disimpan');
+            } catch (sampleErr) {
+                console.error('⚠️ Gagal menyimpan sample:', sampleErr.message);
+                // Kita tidak throw error agar submission utama tetap berhasil
+            }
         } else {
             console.warn('⚠️ Tidak ada service_id, sample tidak disimpan');
         }
 
+        // --- TAMBAHAN BARU: Buat transaksi (payment) otomatis sesuai dengan tagihan awal ---
+        try {
+            const estimasiTagihan = (sampleData.price_at_time || 0) * (sampleData.jumlah_sample_angka || 1);
+            const paymentModel = require('../models/paymentModel');
+            await paymentModel.create({
+                submission_id: id,
+                nominal: estimasiTagihan,
+                keterangan: 'Estimasi awal (belum terbit SKRD)'
+            });
+            console.log(`✅ Transaksi berhasil dibuat (Total ${estimasiTagihan})`);
+        } catch (paymentErr) {
+            console.error('⚠️ Gagal membuat transaksi awal:', paymentErr.message);
+        }
+
         // 8. Notifikasi admin
-        await notificationModel.createAdmin({
-            title: 'Pengajuan Baru',
-            message: `${payload.nama_pemohon} mengajukan ${payload.nama_proyek}`,
-            href: `/admin/submissions/${id}`
-        });
+        try {
+            await notificationModel.createAdmin({
+                title: 'Pengajuan Baru',
+                message: `${payload.nama_pemohon} mengajukan ${payload.nama_proyek}`,
+                href: `/admin/submissions/${id}`
+            });
+        } catch (notifErr) {
+            console.error('⚠️ Gagal mengirim notifikasi admin:', notifErr.message);
+        }
 
         return success(res, 'Submission berhasil dibuat', { id }, 201);
     } catch (err) {

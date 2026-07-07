@@ -1,7 +1,7 @@
 <footer class="footer container" style="margin-top: 40px; padding: 40px 0; border-top: 1px solid #eee;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 40px;">
+    <div class="footer-row">
         
-        <div style="flex: 2; min-width: 320px; max-width: 600px;">
+        <div class="footer-col-main">
             <p style="font-weight: 700; margin-bottom: 8px; color: #334155; line-height: 1.4; font-size: 1rem;">
                 UPTD Pengujian Bahan Konstruksi Bangunan & Informasi Konstruksi
             </p>
@@ -10,7 +10,7 @@
             </p>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 12px; min-width: 280px;">
+        <div class="footer-col-contact">
             <div style="display: flex; gap: 12px;">
                 <i class="fas fa-map-marker-alt" style="margin-top: 4px; color: #e11d48; width: 16px; text-align: center;"></i> 
                 <span style="font-size: 0.9rem; color: #475569; line-height: 1.5; white-space: pre-line;"><%= locals.settings && locals.settings.address ? locals.settings.address : 'Jalan Bhayangkara No.21, Cipocok Jaya,\nSerang, Banten - 42118' %></span>

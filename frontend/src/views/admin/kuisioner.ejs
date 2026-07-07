@@ -1,11 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
-    <%- include('partials/head') %>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <%- include('partials/head') %>    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/socket-listener.js"></script>
 </head>
 <body>
     <div class="app-wrapper">
@@ -44,8 +41,6 @@
                         </button>
                     </div>
                 </div>
-
-                
 
                 <!-- Stats Overview -->
                 <div class="row g-3 mb-4" id="statsOverview">
@@ -106,14 +101,6 @@
                             <i class="fas fa-search text-muted me-2" style="font-size: 0.95rem;"></i>
                             <input type="text" class="form-control bg-transparent border-0 shadow-none px-0 m-0 w-100" id="searchInput" placeholder="Cari nama pemohon atau instansi..." style="font-size: 0.95rem;">
                         </div>
-                        
-                        <!-- Filter Tanggal
-                        <div class="d-flex align-items-center bg-white rounded-pill shadow-sm px-4" style="height: 46px; border: 1px solid #f8f9fa;">
-                            <span class="text-muted fw-bold me-2" style="font-size: 0.9rem;">Periode:</span>
-                            <input type="date" class="form-control bg-transparent border-0 shadow-none px-0 py-0 m-0 text-muted" id="startDate" onchange="applyDateFilter()" style="font-size: 0.9rem; width: 105px;">
-                            <span class="text-muted mx-2">-</span>
-                            <input type="date" class="form-control bg-transparent border-0 shadow-none px-0 py-0 m-0 text-muted" id="endDate" onchange="applyDateFilter()" style="font-size: 0.9rem; width: 105px;">
-                        </div> -->
                     </div>
                 </div>
 
@@ -302,7 +289,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <!-- Custom JS -->
     <script src="/js/admin/kuisioner.js"></script>
 </body>

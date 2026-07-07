@@ -94,6 +94,7 @@ exports.login = async (req, res) => {
                 email: userData.email,
                 full_name: userData.full_name || userData.name,
                 role: userData.role || 'pelanggan',
+                avatar: userData.avatar || null,
                 token
             },
             redirect:
@@ -135,6 +136,7 @@ exports.adminLogin = async (req, res) => {
                 email: userData.email,
                 full_name: userData.full_name || userData.name,
                 role: userData.role || 'admin',
+                avatar: userData.avatar || null,
                 token
             },
             redirect: '/admin/dashboard'

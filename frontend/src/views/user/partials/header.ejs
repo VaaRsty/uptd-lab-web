@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,29 +17,33 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <!-- 🔥 USER STYLES (WAJIB UNTUK DASHBOARD USER) -->
-    <link rel="stylesheet" href="/css/user-style.css">
-    
-    <!-- Main Style (custom tambahan) -->
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/user-style.css?v=25">
 
-    <!-- Settings dari server via data attribute -->
-    <div data-settings='<%- JSON.stringify(locals.settings || {}).replace(/'/g, "\\'") %>' style="display:none;"></div>
-    <script>
-        window.__APP_CONFIG__ = <%- JSON.stringify(locals.appConfig || {}).replace(/</g, '\\u003c') %>;
-    </script>
+    <!-- Settings & Config dari server via data attribute untuk mencegah linter error -->
+    <div id="serverData" 
+         data-settings='<%- JSON.stringify(locals.settings || {}).replace(/&apos;/g, "\\'") %>' 
+         data-config='<%- JSON.stringify(locals.appConfig || {}).replace(/&apos;/g, "\\'") %>' 
+         style="display:none;"></div>
     <script>
         (function() {
             try {
-                var el = document.querySelector('[data-settings]');
+                var el = document.getElementById('serverData');
                 if (el) {
                     window.settings = JSON.parse(el.getAttribute('data-settings') || '{}');
+                    window.__APP_CONFIG__ = JSON.parse(el.getAttribute('data-config') || '{}');
                 } else {
                     window.settings = {};
+                    window.__APP_CONFIG__ = {};
                 }
             } catch (e) {
-                console.warn('Settings parse error:', e);
+                console.warn('Config parse error:', e);
                 window.settings = {};
+                window.__APP_CONFIG__ = {};
             }
         })();
     </script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/socket-listener.js"></script>
 </head>
+<body>
+<div class="app-wrapper">

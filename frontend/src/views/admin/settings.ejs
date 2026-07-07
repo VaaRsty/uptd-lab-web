@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <%- include('partials/head') %>
-
+    <%- include('partials/head') %>    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/socket-listener.js"></script>
 </head>
 <body>
     
@@ -384,5 +384,5 @@
 
     <!-- Custom JS -->
     <script src="/js/admin/settings.js"></script>
-<script>setTimeout(() => { fetch('/log-src', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ src: document.getElementById('profileImage')?.src || 'not found' }) }); }, 1000);</script></body>
+</body>
 </html>

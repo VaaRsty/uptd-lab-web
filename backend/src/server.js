@@ -47,7 +47,7 @@ app.use('/uploads', (req, res, next) => {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
-const apiRoutes = require('./routes/api');
+const apiRoutes = require('./routes');
 app.use('/api', apiRoutes);
 
 // Test route

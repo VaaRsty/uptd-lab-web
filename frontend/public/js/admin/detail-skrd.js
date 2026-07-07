@@ -656,7 +656,7 @@
                 
                 let actionButtonsHtml = `
                     <button onclick="window.openFileWithToken('${fileUrl}', '${token}')" class="btn btn-outline-primary action-btn" title="Lihat Bukti">
-                        <i class="fas fa-eye"></i>
+                        <i class="fas fa-external-link-alt"></i>
                     </button>
                     <button onclick="window.downloadFileWithToken('${fileUrl}', '${token}', '${fileName}')" class="btn btn-outline-success action-btn ms-1" title="Download">
                         <i class="fas fa-download"></i>
@@ -753,18 +753,8 @@
                 downloadSkrdBtn.href = '#';
             }
             
-            // Tambahkan tombol "Buka" jika belum ada
-            const actionDiv = downloadSkrdBtn?.parentElement;
-            if (actionDiv && !actionDiv.querySelector('.open-skrd-btn')) {
-                const openBtn = document.createElement('button');
-                openBtn.className = 'btn btn-sm btn-outline-primary fw-bold px-3 me-2 open-skrd-btn';
-                openBtn.innerHTML = '<i class="fas fa-eye me-1"></i>Buka';
-                openBtn.onclick = function(e) {
-                    e.preventDefault();
-                    window.openFileWithToken(fileUrl, token);
-                };
-                downloadSkrdBtn.parentNode.insertBefore(openBtn, downloadSkrdBtn);
-            }
+
+
             
         } else {
             // Belum ada SKRD

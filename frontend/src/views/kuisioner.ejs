@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -10,12 +10,17 @@
     <style>
         /* ===== RESET & BASE ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
+        html {
+            min-height: 100%;
+            background: #f4f7f6;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background: #f4f7f6;
             color: #1e293b;
             min-height: 100vh;
             display: flex;
+            align-items: flex-start;
             justify-content: center;
             padding: 24px 16px;
             line-height: 1.6;
@@ -343,23 +348,42 @@
             height: 18px;
             border-radius: 4px;
         }
-        @media (max-width: 600px) {
-            .page-wrap { padding: 24px 20px; }
+
+        /* === MOBILE RESPONSIVE === */
+        @media (max-width: 768px) {
+            body { padding: 12px 10px; align-items: flex-start; }
+            .page-wrap { padding: 20px 16px; border-radius: 14px; }
             .title-card h1 { font-size: 20px; }
-            .q-card, .saran-wrap { padding: 16px 20px; }
-            .likert-table th { font-size: 12px; min-width: 28px; padding: 6px 2px; }
-            .likert-table td { padding: 4px 2px; font-size: 13px; }
+            .title-card .desc { font-size: 13px; }
+        }
+        @media (max-width: 600px) {
+            body { padding: 8px 6px; }
+            .page-wrap { padding: 16px 12px; border-radius: 12px; }
+            .title-card { padding: 16px 0 20px 0; }
+            .title-card h1 { font-size: 18px; }
+            .title-card .desc { font-size: 12px; }
+            .q-card, .saran-wrap { padding: 14px 12px; border-radius: 12px; }
+            .q-card .q-text { font-size: 14px; }
+            .likert-table { display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+            .likert-table th { font-size: 11px; min-width: 28px; padding: 6px 2px; }
+            .likert-table td { padding: 4px 2px; font-size: 12px; }
             .likert-radio { width: 16px; height: 16px; }
-            .submit-row { flex-direction: column-reverse; align-items: stretch; margin-top: 24px; }
-            .btn-submit { justify-content: center; }
-            .btn-clear { text-align: center; }
+            .submit-row { flex-direction: column-reverse; align-items: stretch; margin-top: 20px; gap: 8px; }
+            .btn-submit { justify-content: center; width: 100%; padding: 13px 24px; }
+            .btn-clear { text-align: center; width: 100%; }
+            .success-card { padding: 32px 16px; }
+            .success-card h2 { font-size: 18px; }
+            .filled-banner { padding: 14px 16px; font-size: 13px; }
         }
         @media (max-width: 400px) {
+            body { padding: 4px; }
+            .page-wrap { padding: 12px 10px; border-radius: 10px; }
             .likert-table td:first-child { font-size: 12px; padding-left: 6px; }
             .likert-table th { font-size: 10px; min-width: 22px; }
+            .btn-submit { font-size: 14px; padding: 11px 18px; }
         }
-    </style>
-</head>
+    </style>    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/socket-listener.js"></script>
 <body>
 <div class="page-wrap">
 

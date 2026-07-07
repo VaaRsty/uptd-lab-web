@@ -1,16 +1,29 @@
 :root {
     /* --- PALET WARNA HIJAU (GOV STYLE) --- */
-    --primary-green: #16a34a;       /* Hijau Utama (Base) */
-    --primary-hover: #15803d;       /* Hijau Gelap (Hover) */
-    --primary-light: #dcfce7;       /* Hijau Sangat Muda (Bg Icon) */
+    --primary-green: #047857;       /* Hijau Utama (Base) */
+    --primary-hover: #065F46;       /* Hijau Gelap (Hover) */
+    --primary-light: #d1fae5;       /* Hijau Sangat Muda (Bg Icon) */
     --primary-subtle: #f0fdf4;      /* Hijau Pudar (Backgrounds) */
     
     /* --- DIMENSI & WARNA DASAR --- */
-    --sidebar-width: 272px;
+    --sidebar-width: 240px;         /* Harus sama dengan .sidebar { width } */
     --bg-light: #f8fafc;            /* Background Body */
     --text-dark: #1e293b;           /* Text Utama */
     --text-muted: #64748b;          /* Text Secondary */
     --border-color: #e2e8f0;        /* Garis Tipis */
+    --border: #e2e8f0;
+    --white: #ffffff;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    background-color: var(--bg-light);
+    min-height: 100%;
 }
 
 body {
@@ -18,6 +31,7 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: var(--text-dark);
     -webkit-font-smoothing: antialiased; /* Font lebih halus di Mac/Chrome */
+    min-height: 100vh;
 }
 
 /* =========================================
@@ -28,9 +42,10 @@ body {
 .layout,
 .main-wrapper {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     min-height: 100vh;
     width: 100%;
+    background-color: var(--bg-light);
 }
 
 .sidebar {
@@ -81,7 +96,7 @@ body {
 
 .main-menu {
     flex: 1;
-    padding: 10px 8px;
+    padding: 12px 10px;
     overflow-y: auto;
 }
 
@@ -94,29 +109,39 @@ body {
     margin: 0;
 }
 
-.menu-item {
+/* Spesifisitas tinggi agar konsisten dan tidak tertimpa Bootstrap */
+.sidebar .menu-item,
+.main-menu .menu-item {
     display: flex;
     align-items: center;
     border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    /* Hanya animasikan color (bukan background) agar tidak terlihat flash hijau */
+    transition: color 0.2s ease;
     width: 100%;
     padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    background: transparent;      /* Default: tidak ada background */
 }
 
-.menu-link {
+.sidebar .menu-link,
+.main-menu .menu-link {
     text-decoration: none !important;
     color: var(--text-muted) !important;
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 12px 14px;
-    gap: 12px;
+    padding: 13px 16px;
+    gap: 13px;
     line-height: 1;
+    box-sizing: border-box;
 }
 
-.menu-icon {
+.sidebar .menu-icon,
+.main-menu .menu-icon {
     width: 24px;
+    min-width: 24px;
     font-size: 16px;
     text-align: center;
     flex-shrink: 0;
@@ -124,30 +149,37 @@ body {
     align-items: center;
     justify-content: center;
     margin: 0;
+    padding: 0;
 }
 
-.menu-text {
-    font-size: 14px;
-    font-weight: 500;
+.sidebar .menu-text,
+.main-menu .menu-text {
+    font-size: 14px !important;
+    font-weight: 600 !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1;
 }
 
-.menu-item.active {
-    background: var(--primary-light);
+.sidebar .menu-item.active,
+.main-menu .menu-item.active {
+    background: #f1f5f9;            /* Abu-abu sama seperti hover, bukan hijau */
 }
 
-.menu-item.active .menu-link {
+.sidebar .menu-item.active .menu-link,
+.main-menu .menu-item.active .menu-link {
     color: var(--primary-green) !important;
-    font-weight: 700;
+    font-weight: 600;
 }
 
-.menu-item:not(.active):hover {
+.sidebar .menu-item:not(.active):hover,
+.main-menu .menu-item:not(.active):hover {
     background-color: #f1f5f9;
 }
 
-.menu-item:hover .menu-link {
+.sidebar .menu-item:hover .menu-link,
+.main-menu .menu-item:hover .menu-link {
     color: var(--primary-green) !important;
 }
 
@@ -198,6 +230,16 @@ body {
     align-items: center;
     gap: 12px;
     flex: 1;
+}
+
+.mobile-sidebar-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--text-dark);
+    cursor: pointer;
+    padding: 4px;
 }
 
 .page-heading {
@@ -268,15 +310,18 @@ body {
     font-weight: 500;
 }
 
+main.main-content,
 .main-content {
     flex: 1;
-    margin-left: 240px; /* SAME AS SIDEBAR WIDTH */
-    padding: 16px 24px;
-    min-height: 0;
+    margin-left: 240px;             /* Sama dengan sidebar width */
+    padding: 0;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     width: calc(100% - 240px);
-    overflow-x: hidden; /* Fix horizontal overflow */
+    background-color: var(--bg-light);
+    box-sizing: border-box;
+    /* JANGAN pakai overflow:hidden — merusak position:sticky pada top-navbar */
 }
 
 .content-body {
@@ -286,7 +331,8 @@ body {
     max-width: 1360px;
     margin: 0 auto;
     width: 100%;
-    padding-bottom: 12px;
+    padding: 0 24px 16px;
+    box-sizing: border-box;
 }
 
 /* =========================================
@@ -1305,6 +1351,7 @@ body {
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .chart-row  { grid-template-columns: 1fr; }
     .stats-row  { grid-template-columns: 1fr; }
+    .login-card { padding: 20px; max-width: 100%; width: 95%; margin: 15px auto; border-radius: 12px; }
 }
 
 
@@ -1316,10 +1363,10 @@ body {
     background-color: rgba(0, 0, 0, 0.6) !important;
     opacity: 1 !important;
     position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
+    top: -10% !important;
+    left: -10% !important;
+    width: 150vw !important;
+    height: 150vh !important;
     z-index: 1040 !important;
 }
 /* ==================================================== */
@@ -1776,3 +1823,166 @@ body {
 .nilai-1 { background-color: #dc3545; }
 
 .image-upload-wrapper { position: relative; display: inline-block; }
+
+/* MOBILE SIDEBAR OVERRIDES */
+.mobile-sidebar-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--dark);
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-right: 15px;
+    z-index: 1050;
+    position: relative;
+    padding: 10px;
+}
+
+@media (max-width: 768px) {
+    .mobile-sidebar-toggle {
+        display: block !important;
+    }
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    .sidebar.active {
+        transform: translateX(0);
+        box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+    }
+    main.main-content,
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 0;
+    }
+    .content-body {
+        padding: 0 12px 12px;
+        max-width: 100%;
+    }
+    .table-responsive, .table-container, .card-body {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .card, .dashboard-card, .stat-card {
+        padding: 15px !important;
+    }
+}
+
+/* Sidebar overlay backdrop — menutup seluruh layar saat mobile sidebar aktif */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    cursor: pointer;
+}
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* ================================================================
+   COMPREHENSIVE MOBILE STYLES — ADMIN PANEL (max-width: 768px)
+   Hanya mengubah tampilan HP, tidak menyentuh desktop/laptop
+   ================================================================ */
+@media (max-width: 768px) {
+
+    /* === TOP NAVBAR ADMIN === */
+    .top-navbar { padding: 10px 12px; }
+    .page-title { font-size: 16px; }
+    .account-details { display: none; }
+    .mobile-sidebar-toggle { display: flex; align-items: center; justify-content: center; }
+
+    /* === DASHBOARD ADMIN === */
+    .stats-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px;
+    }
+    .chart-row {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+    }
+    .stats-row {
+        grid-template-columns: 1fr !important;
+    }
+    .admin-dashboard-content .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* === SUBMISSIONS TABLE === */
+    .submissions-container { padding: 0; }
+    .page-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .page-header h2 { font-size: 1.2rem; }
+    .search-filter-bar { flex-direction: column; gap: 10px; }
+    .search-filter-bar input,
+    .search-filter-bar select { width: 100%; box-sizing: border-box; }
+    .filter-bar { flex-wrap: wrap; gap: 8px; }
+    .filter-bar select { flex: 1 1 120px; }
+
+    /* === DETAIL SUBMISSION === */
+    .detail-submission-grid { grid-template-columns: 1fr; gap: 16px; }
+    .detail-card-header { flex-wrap: wrap; gap: 8px; }
+    .status-actions { flex-direction: column; gap: 10px; }
+    .status-actions select,
+    .status-actions button { width: 100%; box-sizing: border-box; }
+
+    /* === SKRD PAGE === */
+    .skrd-header { flex-direction: column; gap: 12px; }
+    .skrd-actions { flex-wrap: wrap; gap: 8px; }
+    .skrd-actions button,
+    .skrd-actions a { flex: 1 1 120px; min-width: 100px; justify-content: center; }
+
+    /* === DETAIL SKRD / INVOICE === */
+    .invoice-container { padding: 12px; }
+    .invoice-top { flex-direction: column; gap: 12px; text-align: center; }
+    .invoice-logo { margin: 0 auto; }
+    .invoice-meta { text-align: left; }
+    .invoice-table th, .invoice-table td { font-size: 12px; padding: 8px 6px; }
+
+    /* === REPORTS PAGE === */
+    .reports-filter { flex-direction: column; gap: 10px; }
+    .reports-filter input,
+    .reports-filter select,
+    .reports-filter button { width: 100%; box-sizing: border-box; }
+    .reports-grid { grid-template-columns: 1fr; gap: 16px; }
+    .chart-container { height: 220px !important; }
+
+    /* === USERS PAGE === */
+    .users-header { flex-direction: column; gap: 12px; }
+    .users-search { flex-direction: column; gap: 10px; }
+    .users-search input { width: 100%; }
+    .user-actions-bar { flex-wrap: wrap; gap: 8px; }
+
+    /* === SETTINGS PAGE === */
+    .settings-grid { grid-template-columns: 1fr; gap: 16px; }
+    .settings-card { padding: 16px; }
+    .settings-card .form-row { flex-direction: column; gap: 10px; }
+    .settings-upload-area { flex-direction: column; align-items: center; text-align: center; gap: 12px; }
+
+    /* === KUISIONER ADMIN === */
+    .kuisioner-stats { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .kuisioner-table th, .kuisioner-table td { font-size: 12px; padding: 8px 6px; }
+
+    /* === GENERAL === */
+    .btn-group { flex-wrap: wrap; gap: 6px; }
+    .btn-group .btn { flex: 1 1 100px; }
+    .modal-dialog { margin: 10px; }
+    .modal-content { padding: 16px; }
+    .form-row { flex-direction: column; gap: 10px; }
+    .action-buttons { flex-wrap: wrap; gap: 8px; }
+    .action-buttons .btn { flex: 1 1 100%; }
+    h1.page-title-main { font-size: 1.3rem; }
+    h2.section-title { font-size: 1.1rem; }
+}
+
+@media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr !important; }
+    .kuisioner-stats { grid-template-columns: 1fr; }
+    .skrd-actions button, .skrd-actions a { flex: 1 1 100%; }
+}

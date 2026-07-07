@@ -1,10 +1,8 @@
 <div class="top-navbar">
     <div class="navbar-left">
-        <% if (locals.backLink) { %>
-            <a href="<%= backLink.url %>" class="back-link me-2" title="<%= backLink.text || 'Kembali' %>">
-                <i class="fas fa-arrow-left"></i>
-            </a>
-        <% } %>
+        <button class="mobile-sidebar-toggle" id="mobileSidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
         <div class="page-heading">
             <h2 class="page-title"><%= locals.pageTitle || 'Admin Panel' %></h2>
             <p class="page-datetime" id="currentDateTime">Loading...</p>
@@ -146,51 +144,90 @@
                     }
                 }).catch(err => console.error("Error fetching avatar:", err));
 
-            // 2. Fetch True Admin Notifications
-            fetch(`${API_BASE_URL}/notifications/admin`, { headers })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.data) {
-                        const notifications = data.data;
-                        const unreadNotifs = notifications.filter(n => !n.is_read);
-                        const list = document.getElementById('notificationList');
-                        
-                        if (notifications.length > 0) {
-                            list.innerHTML = notifications.slice(0, 10).map(act => `
-                                <a href="${act.href || '#'}" class="notification-item ${!act.is_read ? 'unread' : ''}" style="display: block; padding: 12px; border-bottom: 1px solid #f1f5f9; text-decoration: none; color: inherit; ${!act.is_read ? 'background-color: #f8fafc;' : ''}">
-                                    <div style="font-weight: 600; font-size: 0.9rem; color: #1e293b;">${act.title}</div>
-                                    <div style="font-size: 0.85rem; color: #475569; margin: 4px 0;">${act.message}</div>
-                                </a>
-                            `).join('');
+            function fetchAdminNotifications() {
+                // 2. Fetch True Admin Notifications
+                fetch(`${API_BASE_URL}/notifications/admin`, { headers })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.data) {
+                            const notifications = data.data;
+                            const unreadNotifs = notifications.filter(n => !n.is_read);
+                            const list = document.getElementById('notificationList');
                             
-                            // Update badge
-                            if (unreadNotifs.length > 0) {
-                                let badge = document.querySelector('.notification-badge');
-                                if (!badge) {
-                                    badge = document.createElement('span');
-                                    badge.className = 'notification-badge';
-                                    document.getElementById('notificationBtn').appendChild(badge);
+                            if (notifications.length > 0) {
+                                list.innerHTML = notifications.slice(0, 10).map(act => `
+                                    <a href="${act.href || '#'}" class="notification-item ${!act.is_read ? 'unread' : ''}" style="display: block; padding: 12px; border-bottom: 1px solid #f1f5f9; text-decoration: none; color: inherit; ${!act.is_read ? 'background-color: #f8fafc;' : ''}">
+                                        <div style="font-weight: 600; font-size: 0.9rem; color: #1e293b;">${act.title}</div>
+                                        <div style="font-size: 0.85rem; color: #475569; margin: 4px 0;">${act.message}</div>
+                                    </a>
+                                `).join('');
+                                
+                                // Update badge
+                                if (unreadNotifs.length > 0) {
+                                    let badge = document.querySelector('.notification-badge');
+                                    if (!badge) {
+                                        badge = document.createElement('span');
+                                        badge.className = 'notification-badge';
+                                        document.getElementById('notificationBtn').appendChild(badge);
+                                    }
+                                    badge.textContent = unreadNotifs.length > 9 ? '9+' : unreadNotifs.length;
+                                } else {
+                                    const badge = document.querySelector('.notification-badge');
+                                    if (badge) badge.remove();
                                 }
-                                badge.textContent = unreadNotifs.length > 9 ? '9+' : unreadNotifs.length;
                             } else {
+                                list.innerHTML = `
+                                    <div class="notification-empty" style="padding: 20px; text-align: center; color: #94a3b8;">
+                                        <i class="far fa-bell-slash" style="font-size: 24px; margin-bottom: 8px;"></i>
+                                        <p style="margin: 0; font-size: 0.9rem;">Tidak ada notifikasi baru</p>
+                                    </div>
+                                `;
                                 const badge = document.querySelector('.notification-badge');
                                 if (badge) badge.remove();
                             }
-                        } else {
-                            list.innerHTML = `
-                                <div class="notification-empty" style="padding: 20px; text-align: center; color: #94a3b8;">
-                                    <i class="far fa-bell-slash" style="font-size: 24px; margin-bottom: 8px;"></i>
-                                    <p style="margin: 0; font-size: 0.9rem;">Tidak ada notifikasi baru</p>
-                                </div>
-                            `;
-                            const badge = document.querySelector('.notification-badge');
-                            if (badge) badge.remove();
                         }
-                    }
-                }).catch(err => console.error("Error fetching notifications:", err));
+                    }).catch(err => console.error("Error fetching notifications:", err));
+            }
+            
+            fetchAdminNotifications();
+            
+            // Listen for Realtime Socket.IO Events
+            window.addEventListener('socket_notification', function(e) {
+                console.log('Admin Realtime notification received:', e.detail);
+                fetchAdminNotifications();
+            });
 
         } catch (error) {
             console.error("Error initializing top navbar:", error);
         }
+
+        // Mobile Sidebar Toggle
+        const toggleBtn = document.getElementById('mobileSidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (toggleBtn && sidebar) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+                if (overlay) overlay.classList.toggle('active');
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
+        
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                if (sidebar && !sidebar.contains(e.target) && toggleBtn && !toggleBtn.contains(e.target)) {
+                    sidebar.classList.remove('active');
+                    if (overlay) overlay.classList.remove('active');
+                }
+            }
+        });
     });
 </script>

@@ -1,9 +1,77 @@
 <%- include('layout/header') %>
 <header class="header-light">
     <%- include('layout/navbar', { active: 'estimasi' }) %>
-</div>
+</header>
 
 <main class="estimasi-body">
+    <style>
+        .service-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .service-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .detail-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .estimasi-body {
+                min-height: 100vh;
+                padding-bottom: 100px;
+            }
+            .estimasi-body .container {
+                padding-top: 100px !important;
+                padding-bottom: 60px !important;
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+            }
+            .estimasi-body .card {
+                padding: 32px 24px 50px 24px !important;
+                margin: 0 0 80px 0 !important;
+                min-height: 70vh;
+            }
+            .result-container {
+                flex-direction: column !important;
+                gap: 12px !important;
+                padding: 16px !important;
+            }
+            .result-container > div {
+                min-width: 100% !important;
+                flex: none !important;
+            }
+            #totalDisplay {
+                font-size: 1.4rem !important;
+            }
+            .btn-auth-base.btn-full {
+                padding: 14px !important;
+                font-size: 0.95rem !important;
+            }
+            .service-option {
+                padding: 14px !important;
+            }
+            .text-center h1.section-title {
+                font-size: 1.5rem !important;
+            }
+        }
+        @media (max-width: 480px) {
+            .estimasi-body .card {
+                padding: 14px !important;
+            }
+            #totalDisplay {
+                font-size: 1.2rem !important;
+            }
+        }
+    </style>
     <section class="container" style="padding-top: 80px; padding-bottom: 80px;">
         <div class="text-center mb-5">
             <span class="section-subtitle">Simulasi Biaya</span>
@@ -20,7 +88,7 @@
                     <h3 class="mb-4" style="color: var(--dark); font-size: 1.1rem; font-weight: 700;">
                         1. Tipe Layanan
                     </h3>
-                    <div class="service-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="service-grid">
                         <div class="service-option active" onclick="filterLayanan('PENGUJIAN BAHAN', this)">
                             <div class="icon-circle">🧱</div>
                             <h4>Bahan</h4>
@@ -39,7 +107,7 @@
                     <h3 class="mb-4" style="color: var(--dark); font-size: 1.1rem; font-weight: 700;">
                         2. Detail Pengujian
                     </h3>
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
+                    <div class="detail-grid">
                         <div class="form-group">
                             <label class="form-label">Nama Pengujian</label>
                             <div class="input-wrapper">

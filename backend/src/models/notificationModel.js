@@ -5,6 +5,7 @@
  *   user_notifications: id, user_id, title, message, type, is_read, created_at
  */
 const db = require('../config/database');
+// const socketUtil = require('../utils/socket'); // Dihapus untuk Vercel
 
 // =========== ADMIN NOTIFICATIONS (tabel: notifications) ===========
 // Catatan: tabel notifications tidak punya kolom type atau related_id
@@ -23,6 +24,25 @@ exports.createAdmin = async ({ user_id = null, title, message, href = '#' }) => 
          VALUES (?, ?, ?, ?, 0, NOW())`,
         [user_id, title, message, href]
     );
+    
+    // Emit ke Socket.IO room admin (Dihapus karena Vercel)
+    /*
+    try {
+        const io = socketUtil.getIO();
+        if (io) {
+            io.to('admin_room').emit('new_notification', {
+                id: result.insertId,
+                title,
+                message,
+                href,
+                created_at: new Date()
+            });
+        }
+    } catch (e) {
+        console.warn('Socket emit error for admin notification:', e);
+    }
+    */
+    
     return result.insertId;
 };
 
@@ -65,6 +85,25 @@ exports.createUser = async ({ user_id, title, message, type = 'info' }) => {
          VALUES (?, ?, ?, ?, 0, NOW())`,
         [user_id, title, message, type]
     );
+    
+    // Emit ke Socket.IO room spesifik user (Dihapus karena Vercel)
+    /*
+    try {
+        const io = socketUtil.getIO();
+        if (io) {
+            io.to(`user_${user_id}`).emit('new_notification', {
+                id: result.insertId,
+                title,
+                message,
+                type,
+                created_at: new Date()
+            });
+        }
+    } catch (e) {
+        console.warn('Socket emit error for user notification:', e);
+    }
+    */
+    
     return result.insertId;
 };
 

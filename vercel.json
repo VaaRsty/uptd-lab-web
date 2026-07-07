@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "frontend/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "frontend/src/views/**",
+          "frontend/public/**"
+        ]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/server.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

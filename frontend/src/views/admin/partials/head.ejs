@@ -1,4 +1,4 @@
-<meta charset="UTF-8">
+﻿<meta charset="UTF-8">
 <title>Admin Panel - UPTD Lab</title>
 <link rel="icon" type="image/png" href="/img/logo.png">
 <!-- Google Fonts (from user) -->
@@ -7,32 +7,42 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- User Styles (Layout and consistency) -->
-<link rel="stylesheet" href="/css/user-style.css?v=2">
-<!-- Admin Styles (Specific Admin Overrides) -->
-<link rel="stylesheet" href="/css/admin-style.css?v=2">
+<!-- Base Layout & Reset Styles -->
+<link rel="stylesheet" href="/css/user-style.css?v=12">
+<!-- Admin Styles (overrides user-style where needed) -->
+<link rel="stylesheet" href="/css/admin-style.css?v=5">
+<!-- Anti-FOUC: Pastikan sidebar admin tidak flash hijau saat CSS eksternal loading -->
+<style>
+  .sidebar .menu-item.active,
+  .main-menu .menu-item.active { background: #f1f5f9 !important; }
+  .sidebar .menu-item.active .menu-link,
+  .main-menu .menu-item.active .menu-link { color: #047857 !important; font-weight: 600 !important; }
+  /* Non-active item: tidak ada background, cegah glitch dari user-style */
+  .sidebar .menu-item:not(.active),
+  .main-menu .menu-item:not(.active) { background: transparent !important; }
+</style>
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    window.__APP_CONFIG__ = <%- JSON.stringify(locals.appConfig || {}).replace(/</g, '\\u003c') %>;
-</script>
-
-<!-- 
-    🔥 Pass settings from server to JavaScript using data attribute.
-    This avoids linter errors because EJS is not inside <script> tag.
--->
+<!-- Settings & Config dari server via data attribute untuk mencegah linter error -->
+<div id="serverData" 
+     data-settings='<%- JSON.stringify(locals.settings || {}).replace(/&apos;/g, "\\&apos;") %>' 
+     data-config='<%- JSON.stringify(locals.appConfig || {}).replace(/&apos;/g, "\\&apos;") %>' 
+     style="display:none;"></div>
 <script>
     (function() {
         try {
-            var settingsEl = document.getElementById('app-settings');
-            if (settingsEl) {
-                window.settings = JSON.parse(settingsEl.dataset.settings || '{}');
+            var el = document.getElementById('serverData');
+            if (el) {
+                window.settings = JSON.parse(el.getAttribute('data-settings') || '{}');
+                window.__APP_CONFIG__ = JSON.parse(el.getAttribute('data-config') || '{}');
             } else {
                 window.settings = {};
+                window.__APP_CONFIG__ = {};
             }
         } catch (e) {
-            console.warn('Failed to parse settings:', e);
+            console.warn('Config parse error:', e);
             window.settings = {};
+            window.__APP_CONFIG__ = {};
         }
     })();
 </script>

@@ -8,6 +8,10 @@
     let isSubmitting = false;
     let toastTimer = null;
 
+    function getInitials(name) {
+        return (name || 'U').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    }
+
     function getAvatarUrl(avatar) {
         if (!avatar) return '';
         if (avatar.startsWith('http')) return avatar;
@@ -17,11 +21,13 @@
 
     function buildAvatarMarkup(avatar, imageClass, iconClass) {
         const avatarUrl = getAvatarUrl(avatar);
+        const initials = getInitials(user.full_name || user.name);
         if (avatarUrl) {
-            return `<img src="${avatarUrl}" alt="Profile" class="${imageClass}">`;
+            return `<img src="${avatarUrl}" alt="Profile" class="${imageClass}" 
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="avatar-initials" style="display:none;">${initials}</div>`;
         }
-
-        return `<i class="fas fa-user-circle ${iconClass}"></i>`;
+        return `<div class="avatar-initials">${initials}</div>`;
     }
 
     function renderProfileAvatar() {
@@ -39,11 +45,15 @@
         const photoPreview = document.getElementById('photoPreview');
         if (!photoPreview) return;
 
-        photoPreview.innerHTML = buildAvatarMarkup(
-            user.avatar,
-            'profile-current-photo-image',
-            'profile-current-photo-icon'
-        );
+        const avatarUrl = getAvatarUrl(user.avatar);
+        const initials = getInitials(user.full_name || user.name);
+        if (avatarUrl) {
+            photoPreview.innerHTML = `<img src="${avatarUrl}" alt="Profile" class="profile-current-photo-image"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="avatar-initials" style="display:none; width:100px; height:100px; font-size:2rem; border-radius:50%;">${initials}</div>`;
+        } else {
+            photoPreview.innerHTML = `<div class="avatar-initials" style="width:100px; height:100px; font-size:2rem; border-radius:50%;">${initials}</div>`;
+        }
     }
 
     // ================ DOM CONTENT LOADED ================

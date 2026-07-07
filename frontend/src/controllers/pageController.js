@@ -862,8 +862,7 @@ const pageController = {
                 services: groupedServices,
                 busyMode: busyMode,
                 formData: {},
-                error: null,
-                token: req.csrfToken ? req.csrfToken() : ''
+                error: null
             });
             
         } catch (error) {

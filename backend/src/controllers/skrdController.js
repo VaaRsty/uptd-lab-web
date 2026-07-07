@@ -115,11 +115,8 @@ exports.downloadFile = async (req, res, next) => {
         if (!payment || !payment.file_skrd) {
             return error(res, 404, 'File SKRD tidak ditemukan');
         }
-        const filePath = path.join(__dirname, '../../uploads/laporan', payment.file_skrd);
-        if (!fs.existsSync(filePath)) {
-            return error(res, 404, 'File fisik tidak ditemukan');
-        }
-        res.download(filePath);
+        const fileUrl = payment.file_skrd;
+        return res.redirect(fileUrl);
     } catch (err) {
         next(err);
     }

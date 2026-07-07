@@ -16,6 +16,8 @@ router.post('/register', validate(registerSchema), authController.register);
 router.post('/login', loginLimiter, validate(loginSchema), authController.login);
 router.post('/admin/login', loginLimiter, validate(loginSchema), authController.adminLogin);
 router.post('/refresh', validate(refreshTokenSchema), authController.refresh);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
 
 // Protected
 router.post('/logout', authMiddleware, authController.logout);

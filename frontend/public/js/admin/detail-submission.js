@@ -382,7 +382,7 @@ III. **KAJI ULANG PERMINTAAN**
                 `;
                 document.getElementById('suratPermohonanActions').innerHTML = `
                     <button onclick="window.openFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-outline-primary me-1">
-                        <i class="fas fa-eye"></i>
+                        <i class="fas fa-external-link-alt"></i>
                     </button>
                     <button onclick="window.downloadFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-primary">
                         <i class="fas fa-download"></i>
@@ -404,7 +404,7 @@ III. **KAJI ULANG PERMINTAAN**
                 `;
                 document.getElementById('scanKTPActions').innerHTML = `
                     <button onclick="window.openFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-outline-primary me-1">
-                        <i class="fas fa-eye"></i>
+                        <i class="fas fa-external-link-alt"></i>
                     </button>
                     <button onclick="window.downloadFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-primary">
                         <i class="fas fa-download"></i>
@@ -427,7 +427,7 @@ III. **KAJI ULANG PERMINTAAN**
                 `;
                 document.getElementById('dokumenTambahanActions').innerHTML = `
                     <button onclick="window.openFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-outline-primary me-1">
-                        <i class="fas fa-eye"></i>
+                        <i class="fas fa-external-link-alt"></i>
                     </button>
                     <button onclick="window.downloadFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-primary">
                         <i class="fas fa-download"></i>
@@ -667,7 +667,7 @@ III. **KAJI ULANG PERMINTAAN**
                         <div class="d-flex gap-2">
                             <button onclick="window.deleteReport(${data.id})" class="btn btn-outline-danger px-3 shadow-sm">Hapus</button>
                             <button onclick="window.openFileWithToken('${reportUrl}', '${token}')" class="btn btn-outline-secondary px-3 shadow-sm">
-                                <i class="fas fa-eye"></i> Lihat
+                                <i class="fas fa-external-link-alt"></i> Lihat
                             </button>
                             <button onclick="window.downloadFileWithToken('${reportUrl}', '${token}', '${reportName}')" class="btn btn-success px-3 shadow-sm">
                                 <i class="fas fa-download"></i> Download

@@ -45,10 +45,6 @@
         return null;
     }
 
-    function getTokenFromMeta() {
-        const metaToken = document.querySelector('meta[name="csrf-token"]');
-        return metaToken ? metaToken.getAttribute('content') : null;
-    }
 
     // Fungsi untuk membersihkan nama file dari path database
     function normalizeFilename(filename) {
@@ -466,7 +462,7 @@
                 }
                 actionLaporan.innerHTML = `
                     <a href="#" onclick="window.openFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-outline-primary me-1">
-                        <i class="fas fa-eye"></i> Preview
+                        <i class="fas fa-external-link-alt"></i> Preview
                     </a>
                     <a href="#" onclick="window.downloadFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-success">
                         <i class="fas fa-download"></i> Download

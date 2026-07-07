@@ -11,6 +11,7 @@
     "axios": "^1.13.6",
     "body-parser": "^2.2.2",
     "compression": "^1.7.4",
+    "connect-pg-simple": "^10.0.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
@@ -23,6 +24,7 @@
     "http-proxy-middleware": "^4.1.1",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.17.5",
+    "pg": "^8.22.0",
     "winston": "^3.13.0"
   },
   "devDependencies": {

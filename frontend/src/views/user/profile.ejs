@@ -28,9 +28,15 @@ const profileAvatarSrc = user.avatar
                         <div class="profile-avatar-wrapper">
                             <div class="profile-avatar" id="profileAvatar">
                                 <% if (profileAvatarSrc) { %>
-                                    <img src="<%= profileAvatarSrc %>" alt="Profile" class="profile-avatar-image" onerror="this.outerHTML='<i class=\\\'fas fa-user-circle profile-avatar-icon\\\'></i>'">
+                                    <img src="<%= profileAvatarSrc %>" alt="Profile" class="profile-avatar-image"
+                                         onerror="this.style.display='none'; document.getElementById('avatarInitials').style.display='flex'">
+                                    <div class="avatar-initials" id="avatarInitials" style="display:none;">
+                                        <%= (user.full_name || user.name || 'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) %>
+                                    </div>
                                 <% } else { %>
-                                    <i class="fas fa-user-circle profile-avatar-icon"></i>
+                                    <div class="avatar-initials" id="avatarInitials">
+                                        <%= (user.full_name || user.name || 'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) %>
+                                    </div>
                                 <% } %>
                             </div>
                             <button class="btn-change-photo" id="changePhotoBtn" type="button" aria-label="Ubah foto profil">
@@ -118,29 +124,6 @@ const profileAvatarSrc = user.avatar
                             </button>
                         </div>
                         
-                        <!-- Toggle Notifikasi Email -->
-                        <div class="profile-setting-item">
-                            <div class="profile-setting-info">
-                                <strong>Notifikasi Email</strong>
-                                <p>Terima pemberitahuan via email</p>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="notifEmail" <%= user.notif_email !== false ? 'checked' : '' %>>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-
-                        <!-- Toggle Notifikasi WhatsApp -->
-                        <div class="profile-setting-item">
-                            <div class="profile-setting-info">
-                                <strong>Notifikasi WhatsApp</strong>
-                                <p>Terima pemberitahuan via WhatsApp</p>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="notifWa" <%= user.notif_wa === true ? 'checked' : '' %>>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -270,9 +253,15 @@ const profileAvatarSrc = user.avatar
             <div class="profile-modal-body text-center">
                 <div class="current-photo-preview" id="photoPreview">
                     <% if (profileAvatarSrc) { %>
-                        <img src="<%= profileAvatarSrc %>" alt="Profile" class="profile-current-photo-image">
+                        <img src="<%= profileAvatarSrc %>" alt="Profile" class="profile-current-photo-image"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                        <div class="avatar-initials" style="display:none; width:100px; height:100px; font-size:2rem; border-radius:50%;">
+                            <%= (user.full_name || user.name || 'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) %>
+                        </div>
                     <% } else { %>
-                        <i class="fas fa-user-circle profile-current-photo-icon"></i>
+                        <div class="avatar-initials" style="width:100px; height:100px; font-size:2rem; border-radius:50%;">
+                            <%= (user.full_name || user.name || 'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) %>
+                        </div>
                     <% } %>
                 </div>
                 

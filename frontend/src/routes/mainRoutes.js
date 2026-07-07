@@ -80,6 +80,8 @@ router.get('/login', authMiddleware.redirectIfAuthenticated, pageController.getL
 router.post('/login', pageController.postLogin);
 router.get('/register', authMiddleware.redirectIfAuthenticated, pageController.getRegisterPage);
 router.post('/register', pageController.postRegister);
+router.get('/forgot-password', authMiddleware.redirectIfAuthenticated, (req, res) => res.render('forgot-password', { title: 'Lupa Password' }));
+router.get('/reset-password', authMiddleware.redirectIfAuthenticated, (req, res) => res.render('reset-password', { title: 'Reset Password', token: req.query.token }));
 router.get('/logout', pageController.logout);
 
 // ==================== HALAMAN ADMIN ====================

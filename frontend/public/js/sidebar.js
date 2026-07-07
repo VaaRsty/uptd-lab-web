@@ -157,7 +157,14 @@ function initNotificationCenter() {
     }
 
     loadAndRender();
-    setInterval(loadAndRender, 60000);
+    // Fallback polling (every 5 mins instead of 1 min to save resources)
+    setInterval(loadAndRender, 300000);
+    
+    // Listen for realtime Socket.IO notifications
+    window.addEventListener('socket_notification', function(e) {
+        console.log('Realtime notification received via sidebar.js:', e.detail);
+        loadAndRender();
+    });
 
     async function loadAndRender() {
         notifications = await collectNotifications();

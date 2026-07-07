@@ -48,9 +48,8 @@ exports.downloadSubmissionReport = async (req, res, next) => {
         if (!reports.length) return error(res, 404, 'Laporan tidak ditemukan');
 
         const latest = reports[0];
-        const filePath = path.join(__dirname, '../../uploads/laporan', latest.file_path);
-        if (!fs.existsSync(filePath)) return error(res, 404, 'File fisik tidak ditemukan');
-
+        const fileUrl = latest.file_path;
+        
         // Cek ownership
         const submission = await submissionModel.findById(req.params.id);
         if (
@@ -60,7 +59,8 @@ exports.downloadSubmissionReport = async (req, res, next) => {
             return error(res, 403, 'Akses ditolak');
         }
 
-        res.download(filePath);
+        // Redirect ke URL publik Supabase Storage
+        return res.redirect(fileUrl);
     } catch (err) { next(err); }
 };
 

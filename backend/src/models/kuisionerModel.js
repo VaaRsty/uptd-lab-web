@@ -7,7 +7,7 @@ const db = require('../config/database');
 exports.list = async ({ limit = 50, offset = 0, start_date, end_date } = {}) => {
     let params = [];
     let sql = `
-        SELECT k.*, s.nama_pemohon, s.nama_proyek, s.nama_instansi 
+        SELECT k.*, s.nama_pemohon, s.nama_proyek, s.nama_instansi, s.nomor_telepon 
         FROM kuisioner k 
         LEFT JOIN submissions s ON s.id = k.submission_id 
         WHERE 1=1

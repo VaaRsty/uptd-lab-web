@@ -204,7 +204,7 @@
                 `;
                 skrdAction.innerHTML = `
                     <button onclick="window.openFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-outline-primary me-2">
-                        <i class="fas fa-eye"></i> Lihat
+                        <i class="fas fa-external-link-alt"></i> Lihat
                     </button>
                     <button onclick="window.downloadFileWithToken('${fileUrl}', '${token}', '${fileName}')" class="btn btn-sm btn-primary">
                         <i class="fas fa-download"></i> Download
@@ -242,7 +242,7 @@
                                 </div>
                                 <div class="d-flex gap-2">
                                     <button onclick="window.openFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i> Lihat
+                                        <i class="fas fa-external-link-alt"></i> Lihat
                                     </button>
                                     <button onclick="window.downloadFileWithToken('${fileUrl}', '${token}', '${fileName}')" class="btn btn-sm btn-outline-success">
                                         <i class="fas fa-download"></i> Download

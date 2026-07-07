@@ -1,12 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
-    <%- include('partials/head') %>
-    <link rel="stylesheet" href="/css/style.css">
-
+    <%- include('partials/head') %>    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/socket-listener.js"></script>
 </head>
 <body>
-    
+
     <div class="app-wrapper">
         <%- include('partials/sidebar', { page: 'users' }) %>
 

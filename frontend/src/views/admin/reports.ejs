@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
-    <%- include('partials/head') %>
-    <link rel="stylesheet" href="/css/style.css">
+    <%- include('partials/head') %>    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/socket-listener.js"></script>
 </head>
 <body>
-    
+
     <div class="app-wrapper">
         <%- include('partials/sidebar', { page: 'reports' }) %>
 
@@ -258,7 +258,7 @@
             if (cache.reports.data && 
                 cache.reports.params === paramsStr &&
                 (Date.now() - cache.reports.timestamp < CACHE_DURATION)) {
-                console.log('📦 Using cached reports');
+                console.log('Ã°Å¸â€œÂ¦ Using cached reports');
                 return cache.reports.data;
             }
             return null;
@@ -290,7 +290,7 @@
             // Cek cache dulu
             const cachedData = getCachedData();
             if (cachedData) {
-                console.log('📦 Using cached data');
+                console.log('Ã°Å¸â€œÂ¦ Using cached data');
                 reportData = cachedData;
                 updateAllCharts(cachedData);
                 showLoading(false);
@@ -301,7 +301,7 @@
             
             // Set timeout 5 detik
             loadingTimeout = setTimeout(() => {
-                console.log('⚠️ Loading timeout');
+                console.log('Ã¢Å¡Â Ã¯Â¸Â Loading timeout');
                 showLoading(false);
                 showAlert('Gagal memuat data: Server terlalu lama merespon', 'danger');
             }, 5000);
@@ -316,7 +316,7 @@
 
                 if (category) params.append('category', category);
 
-                console.log('📡 Fetching reports data...');
+                console.log('Ã°Å¸â€œÂ¡ Fetching reports data...');
                 console.log('URL:', `${API_BASE_URL}/reports?${params}`);
 
                 const response = await fetch(`${API_BASE_URL}/reports?${params}`, {
@@ -341,7 +341,7 @@
                 }
 
                 const result = await response.json();
-                console.log('📦 Response:', result);
+                console.log('Ã°Å¸â€œÂ¦ Response:', result);
 
                 if (result.success) {
                     reportData = result.data;
@@ -354,7 +354,7 @@
                 }
             } catch (error) {
                 clearTimeout(loadingTimeout);
-                console.error('❌ Error:', error);
+                console.error('Ã¢ÂÅ’ Error:', error);
                 
                 if (error.message.includes('Failed to fetch')) {
                     showAlert('Tidak dapat terhubung ke server. Pastikan backend running di port 5000', 'danger');
@@ -406,7 +406,7 @@
                 return;
             }
 
-            console.log('📊 Summary Stats:', summary); // Debug: lihat data summary
+            console.log('Ã°Å¸â€œÅ  Summary Stats:', summary); // Debug: lihat data summary
 
             const statsHtml = `
                 <div class="stat-box">
@@ -774,7 +774,7 @@
             if (endInput) endDate = endInput.value;
             if (categorySelect) category = categorySelect.value;
             
-            console.log('🎯 Filter berubah:', { startDate, endDate, category });
+            console.log('Ã°Å¸Å½Â¯ Filter berubah:', { startDate, endDate, category });
             
             // Reset ke halaman pertama
             currentPage = 1;
@@ -1125,3 +1125,4 @@
     </script>
 </body>
 </html>
+

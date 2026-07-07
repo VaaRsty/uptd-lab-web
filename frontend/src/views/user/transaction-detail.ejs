@@ -8,11 +8,255 @@ const notificationCount = locals.notificationCount || 0;
 const transactionId = locals.id || '';
 %>
 
+<style>
+/* ===== TRANSACTION DETAIL LAYOUT ===== */
+.transaction-detail-container {
+    max-width: 860px;
+    margin: 0 auto;
+}
+.transaction-detail-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #e9edf2;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+/* === HEADER === */
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px 28px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e9edf2;
+    gap: 12px;
+}
+.detail-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 4px 0;
+}
+.detail-header .text-muted { font-size: 0.875rem; color: #64748b; margin: 0; }
+
+/* === SECTION === */
+.info-section {
+    padding: 20px 28px;
+    border-bottom: 1px solid #f1f4f9;
+}
+.info-section:last-child { border-bottom: none; }
+.info-section h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 14px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.info-section h4 i { color: #4361ee; }
+
+/* === INFO GRID === */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+.info-item label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: block;
+    margin-bottom: 4px;
+}
+.info-item p {
+    font-size: 0.9rem;
+    color: #1e293b;
+    font-weight: 500;
+    margin: 0;
+    word-break: break-word;
+}
+
+/* === PAYMENT DETAIL === */
+.payment-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+.payment-item label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: block;
+    margin-bottom: 4px;
+}
+.payment-item p { margin: 0; font-size: 0.9rem; color: #1e293b; font-weight: 500; }
+.payment-item .amount { font-size: 1.05rem; font-weight: 700; }
+.payment-item .paid { color: #16a34a; }
+.payment-item .remaining { color: #dc2626; }
+
+/* === SERVICE DETAIL === */
+.service-detail {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+.service-item label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: block;
+    margin-bottom: 4px;
+}
+.service-item p { margin: 0; font-size: 0.9rem; color: #1e293b; font-weight: 500; }
+
+/* === STATUS BADGE === */
+.status-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.status-lunas               { background: #d1fae5; color: #065f46; }
+.status-belum-lunas         { background: #fee2e2; color: #991b1b; }
+.status-belum-bayar         { background: #fef3c7; color: #92400e; }
+.status-menunggu-skrd       { background: #fef3c7; color: #92400e; }
+.status-sedang-diuji        { background: #dbeafe; color: #1e40af; }
+.status-selesai             { background: #d1fae5; color: #065f46; }
+.status-dibatalkan          { background: #f1f5f9; color: #475569; }
+.status-menunggu-verifikasi { background: #fef3c7; color: #92400e; }
+.status-pengecekan-sampel   { background: #dbeafe; color: #1e40af; }
+.status-default             { background: #f1f5f9; color: #475569; }
+
+/* === SKRD & PROOF === */
+.skrd-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e9edf2;
+}
+.proof-container { display: flex; flex-direction: column; gap: 12px; }
+
+/* === UPLOAD AREA === */
+.upload-area {
+    border: 2px dashed #e2e8f0;
+    border-radius: 10px;
+    padding: 32px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+.upload-area:hover { border-color: #4361ee; }
+
+/* === NOTES === */
+.notes-text {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.875rem;
+    color: #92400e;
+    margin: 0;
+}
+
+/* === TOAST === */
+.custom-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #0f172a;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 9999;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .detail-header {
+        flex-direction: column;
+        padding: 16px 18px;
+        gap: 10px;
+    }
+    .detail-header h2 { font-size: 1.05rem; }
+
+    .info-section { padding: 16px 18px; }
+    .info-section h4 { font-size: 0.85rem; margin-bottom: 10px; }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .payment-detail-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .service-detail {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .skrd-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .skrd-section .skrd-action {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .skrd-section .skrd-action .btn,
+    .skrd-section .skrd-action a {
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+    }
+
+    /* Upload form */
+    .d-flex.gap-2 {
+        flex-direction: column;
+    }
+    .d-flex.gap-2 .btn {
+        width: 100%;
+    }
+
+    .custom-toast {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-detail-grid { grid-template-columns: 1fr; }
+    .payment-item .amount { font-size: 0.95rem; }
+    .status-badge { font-size: 0.7rem; padding: 4px 10px; }
+}
+</style>
+
 <%- include('partials/header', { title }) %>
 <%- include('partials/sidebar', { currentPage, user }) %>
 
 <main class="main-content">
-    <%- include('partials/top-navbar', { pageTitle, user, notificationCount, backLink: { url: '/user/transaction', text: 'Kembali' } }) %>
+    <%- include('partials/top-navbar', { pageTitle, user, notificationCount }) %>
     
     <div class="content-body">
         <!-- Data dari backend disimpan di atribut data -->

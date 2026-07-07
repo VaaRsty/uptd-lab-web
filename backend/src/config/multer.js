@@ -2,51 +2,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Konfigurasi storage
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        // Gunakan path.resolve agar alamat folder absolut dari root project
-        // Asumsi folder 'uploads' ada di root project
-        const rootPath = path.resolve(__dirname, '../../uploads');
-        let subFolder = 'others';
-        
-        // Tentukan subfolder berdasarkan fieldname
-        if (file.fieldname === 'surat_permohonan') {
-            subFolder = 'surat';
-        } else if (file.fieldname === 'scan_ktp') {
-            subFolder = 'ktp';
-        } else if (file.fieldname === 'payment_proof') {
-            subFolder = 'payment';
-        } else if (file.fieldname === 'avatar') {
-            subFolder = 'avatar';
-        } else if (file.fieldname === 'skrd') {
-            subFolder = 'skrd';
-        } else if (file.fieldname === 'laporan') {
-            subFolder = 'laporan';
-        }
-
-        const finalPath = path.join(rootPath, subFolder);
-        
-        console.log(`📁 Target Upload: ${finalPath}`);
-        
-        // Buat folder jika belum ada (recursive: true sangat penting)
-        if (!fs.existsSync(finalPath)) {
-            fs.mkdirSync(finalPath, { recursive: true });
-        }
-        
-        cb(null, finalPath);
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        // Ambil ekstensi file asli
-        const ext = path.extname(file.originalname).toLowerCase();
-        // Nama file: fieldname-timestamp-random.ext
-        const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
-        
-        console.log('📝 Generated Filename:', filename);
-        cb(null, filename);
-    }
-});
+// Konfigurasi storage di memori untuk Vercel / Supabase
+const storage = multer.memoryStorage();
 
 // Filter file (Tambahkan pengecekan null/undefined)
 const fileFilter = (req, file, cb) => {
@@ -65,12 +22,48 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
+const { uploadToSupabase } = require('./supabase');
+
 const upload = multer({
     storage: storage,
     limits: { 
-        fileSize: 50 * 1024 * 1024 // Hard limit 50MB, validasi sesungguhnya ada di middleware/controller
+        fileSize: 50 * 1024 * 1024
     },
     fileFilter: fileFilter
 });
 
-module.exports = upload;
+const supabaseUploadWrapper = async (req, res, next) => {
+    try {
+        if (req.file) {
+            const url = await uploadToSupabase(req.file.buffer, req.file.originalname, req.file.mimetype, 'uploads', req.file.fieldname || 'others');
+            req.file.filename = url;
+        }
+        if (req.files) {
+            if (Array.isArray(req.files)) {
+                for (const file of req.files) {
+                    const url = await uploadToSupabase(file.buffer, file.originalname, file.mimetype, 'uploads', file.fieldname || 'others');
+                    file.filename = url;
+                }
+            } else {
+                for (const key in req.files) {
+                    for (const file of req.files[key]) {
+                        const url = await uploadToSupabase(file.buffer, file.originalname, file.mimetype, 'uploads', file.fieldname || 'others');
+                        file.filename = url;
+                    }
+                }
+            }
+        }
+        next();
+    } catch (err) {
+        console.error('Error in supabaseUploadWrapper:', err);
+        return res.status(500).json({ success: false, message: 'Gagal mengunggah file ke Supabase Storage' });
+    }
+};
+
+const customUpload = {
+    single: (fieldName) => [upload.single(fieldName), supabaseUploadWrapper],
+    array: (fieldName, maxCount) => [upload.array(fieldName, maxCount), supabaseUploadWrapper],
+    fields: (fields) => [upload.fields(fields), supabaseUploadWrapper]
+};
+
+module.exports = customUpload;

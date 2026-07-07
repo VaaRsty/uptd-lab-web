@@ -121,7 +121,7 @@ exports.updateProfile = async (req, res, next) => {
 exports.uploadAvatar = async (req, res, next) => {
     try {
         if (!req.file) return error(res, 400, 'File avatar belum diupload');
-        const avatarPath = `/uploads/avatar/${req.file.filename}`;
+        const avatarPath = req.file.filename; // Karena sekarang langsung berupa URL dari Supabase
         await userModel.updateAvatar(req.user.id, avatarPath);
         return success(res, 'Avatar diupdate', { avatar: avatarPath });
     } catch (err) { next(err); }

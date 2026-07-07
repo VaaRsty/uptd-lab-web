@@ -19,8 +19,21 @@ app.get('/config.js', (req, res) => {
     res.send(`window.APP_CONFIG = { backendUrl: "${process.env.BACKEND_URL || 'http://localhost:5000'}" };`);
 });
 
+const pg = require('pg');
+const pgSession = require('connect-pg-simple')(session);
+
+const pgPool = new pg.Pool({
+    connectionString: process.env.DATABASE_URL || 'postgres://postgres:password@localhost:5432/uptd_lab',
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    store: new pgSession({
+        pool: pgPool,
+        tableName: 'session',
+        createTableIfMissing: true // Otomatis buat tabel jika belum ada
+    }),
+    secret: process.env.SESSION_SECRET || 'rahasia',
     resave: false,
     saveUninitialized: false,
     unset: 'destroy',
@@ -53,7 +66,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.post('/log-src', express.json(), (req, res) => { require('fs').writeFileSync('d:/Magang/baru/uptd-baru/frontend/img-src.log', JSON.stringify(req.body)); res.send('ok'); }); app.use('/', mainRoutes);
+app.use('/', mainRoutes);
 
 app.use((req, res) => {
     res.redirect('/');

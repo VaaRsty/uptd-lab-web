@@ -135,7 +135,7 @@ exports.userDetail = (req, res) => {
 
 // ==================== SETTINGS ====================
 exports.settings = (req, res) => {
-    res.render('admin/settings', { user: { avatar: '/uploads/avatar/avatar-1782996402080-461994295.jpg' },
+    res.render('admin/settings', {
         title: 'Pengaturan Sistem',
         page: 'settings',
         user: req.session?.user
