@@ -366,7 +366,7 @@ exports.userDashboard = async (req, res, next) => {
             SELECT DATE(created_at) as date, COUNT(*) as count 
             FROM submissions 
             WHERE user_id = ? 
-              AND created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 6 DAY)
+              AND created_at >= CURRENT_DATE - INTERVAL '6 DAY'
             GROUP BY DATE(created_at)
         `, [req.user.id]);
 

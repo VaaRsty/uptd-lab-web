@@ -220,13 +220,13 @@ const pageController = {
             // Data untuk grafik pendapatan (6 bulan terakhir)
             const [chartData] = await db.query(`
                 SELECT 
-                    MONTHNAME(created_at) as month,
+                    TO_CHAR(created_at, 'Month') as month,
                     COALESCE(SUM(total_amount), 0) as total
                 FROM payments 
                 WHERE payment_status = 'paid'
-                AND created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)
-                GROUP BY MONTH(created_at)
-                ORDER BY created_at
+                AND created_at >= CURRENT_DATE - INTERVAL '6 MONTH'
+                GROUP BY TO_CHAR(created_at, 'YYYY-MM'), TO_CHAR(created_at, 'Month')
+                ORDER BY TO_CHAR(created_at, 'YYYY-MM') ASC
             `);
 
             const stats = {
@@ -444,18 +444,18 @@ const pageController = {
             // Ambil data laporan bulanan
             const [monthlyReports] = await db.query(`
                 SELECT 
-                    DATE_FORMAT(created_at, '%Y-%m') as month,
+                    TO_CHAR(submissions.created_at, 'YYYY-MM') as month,
                     COUNT(*) as total_submissions,
-                    SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-                    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+                    SUM(CASE WHEN status = 'Selesai' THEN 1 ELSE 0 END) as completed,
+                    SUM(CASE WHEN status = 'Menunggu' THEN 1 ELSE 0 END) as pending,
                     (SELECT COALESCE(SUM(total_amount), 0) 
                      FROM payments 
                      WHERE payment_status = 'paid' 
-                     AND DATE_FORMAT(created_at, '%Y-%m') = DATE_FORMAT(submissions.created_at, '%Y-%m')
+                     AND TO_CHAR(created_at, 'YYYY-MM') = TO_CHAR(submissions.created_at, 'YYYY-MM')
                     ) as total_revenue
                 FROM submissions
-                WHERE created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)
-                GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+                WHERE created_at >= CURRENT_DATE - INTERVAL '12 MONTH'
+                GROUP BY TO_CHAR(submissions.created_at, 'YYYY-MM')
                 ORDER BY month DESC
             `);
 
