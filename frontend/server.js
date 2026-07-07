@@ -5,6 +5,9 @@ const session = require('express-session');
 const path = require('path');
 const app = express();
 
+// Trust proxy Vercel (penting agar cookie secure bekerja)
+app.set('trust proxy', 1);
+
 const mainRoutes = require('./src/routes/mainRoutes');
 const globalSettings = require('./src/middleware/globalSettings');
 // const maintenanceCheck = require('./src/middleware/maintenanceCheck'); // <-- TIDAK DIPERLUKAN DI SINI
@@ -38,10 +41,10 @@ app.use(session({
     saveUninitialized: false,
     unset: 'destroy',
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // true di production (HTTPS)
+        secure: process.env.NODE_ENV === 'production',
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
-        sameSite: 'lax'
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
     },
     name: 'uptd.sid'
 }));
