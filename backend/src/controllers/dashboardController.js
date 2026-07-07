@@ -42,11 +42,11 @@ exports.adminStats = async (req, res, next) => {
         }
         
         const [monthlyIncome] = await require('../config/database').query(`
-            SELECT MONTH(created_at) as month, YEAR(created_at) as year, SUM(total_tagihan) as total 
+            SELECT EXTRACT(MONTH FROM created_at) as month, EXTRACT(YEAR FROM created_at) as year, SUM(total_tagihan) as total 
             FROM payments 
             WHERE status_pembayaran = 'Lunas' 
-              AND created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH)
-            GROUP BY YEAR(created_at), MONTH(created_at)
+              AND created_at >= CURRENT_DATE - INTERVAL '6 months'
+            GROUP BY EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)
         `);
         
         monthlyIncome.forEach(row => {
