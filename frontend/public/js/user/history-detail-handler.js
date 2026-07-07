@@ -318,8 +318,8 @@
             setText('status-doc-permohonan', '✅ Terupload');
             const fileUrl = buildProtectedFileUrl('surat', data.file_surat_permohonan, token);
             document.getElementById('action-doc-permohonan').innerHTML = `
-                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary me-1">Buka</a>
-                <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">Download</a>
+                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success me-1">Buka</a>
+                <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success">Download</a>
             `;
         } else {
             setText('status-doc-permohonan', '❌ Belum diupload');
@@ -331,8 +331,8 @@
             setText('status-doc-ktp', '✅ Terupload');
             const fileUrl = buildProtectedFileUrl('ktp', data.file_ktp, token);
             document.getElementById('action-doc-ktp').innerHTML = `
-                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary me-1">Buka</a>
-                <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">Download</a>
+                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success me-1">Buka</a>
+                <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success">Download</a>
             `;
         } else {
             setText('status-doc-ktp', '❌ Belum diupload');
@@ -363,8 +363,8 @@
             const fileUrl = buildProtectedFileUrl('others', data.dokumen_tambahan, token);
             lampiranStatus = `✅ Terupload: ${fileName}`;
             lampiranActions = `
-                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary me-1">Buka</a>
-                <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">Download</a>
+                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success me-1">Buka</a>
+                <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success">Download</a>
             `;
         } else {
             lampiranStatus = 'Belum ada lampiran pendukung';
@@ -453,7 +453,7 @@
                         <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
                         <h6>Terima Kasih!</h6>
                         <p class="text-muted small mb-3">Anda telah mengisi kuisioner kepuasan untuk layanan ini.</p>
-                        <button class="btn btn-outline-primary" onclick="window.downloadKuisionerPDF()">
+                        <button class="btn btn-outline-success" onclick="window.downloadKuisionerPDF()">
                             <i class="fas fa-file-pdf me-1"></i> Download Salinan Kuisioner
                         </button>
                     `;
@@ -463,7 +463,7 @@
                     kuisionerSection.appendChild(contentDiv);
                 }
                 actionLaporan.innerHTML = `
-                    <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary me-1">
+                    <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success me-1">
                         <i class="fas fa-external-link-alt"></i> Preview
                     </a>
                     <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success">
