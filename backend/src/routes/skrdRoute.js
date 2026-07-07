@@ -40,7 +40,7 @@ router.post(
 router.post(
     '/:id/upload-payment-proof',
     authMiddleware,
-    upload.single('payment_proof'),
+    upload.raw.single('payment_proof'),
     checkUploadSize,
     skrdController.uploadPaymentProof
 );

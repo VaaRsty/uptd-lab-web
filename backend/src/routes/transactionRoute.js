@@ -12,7 +12,7 @@ router.get('/user/:id', authMiddleware, transactionController.userDetail);
 router.post(
     '/user/:id/upload',
     authMiddleware,
-    upload.single('payment_proof'),
+    upload.raw.single('payment_proof'),
     checkUploadSize,
     transactionController.uploadPaymentProof
 );

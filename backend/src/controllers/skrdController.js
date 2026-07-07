@@ -7,6 +7,7 @@ const notificationModel = require('../models/notificationModel');
 const path = require('path');
 const fs = require('fs');
 const { success, error } = require('../utils/responseHelper');
+const { uploadToSupabase } = require('../config/multer');
 
 exports.list = async (req, res, next) => {
     try {
@@ -125,8 +126,13 @@ exports.downloadFile = async (req, res, next) => {
 exports.uploadPaymentProof = async (req, res, next) => {
     try {
         if (!req.file) return error(res, 400, 'File bukti bayar belum diupload');
+        const file = req.file;
+        const ext = require('path').extname(file.originalname);
+        const newName = `Bukti_SKRD_${req.params.id}${ext}`;
+        const fileUrl = await uploadToSupabase(file.buffer, newName, file.mimetype, 'uploads', 'payment_proof');
+
         const affected = await paymentModel.update(req.params.id, {
-            file_payment_proof: req.file.filename,
+            file_payment_proof: fileUrl,
             status: 'Menunggu Verifikasi Pembayaran'
         });
         if (!affected) return error(res, 404, 'SKRD tidak ditemukan');

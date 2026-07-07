@@ -126,47 +126,64 @@
         }
     }
 
-    window.downloadFileWithToken = async function(url, token, filename) {
-        if (url.startsWith('http')) {
-            window.open(url, '_blank');
+    window.downloadFileWithToken = function(url, token, filename) {
+        if (url.startsWith('http') && !url.includes('/api/files')) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.download = filename || 'download';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
             return;
         }
-        try {
-            const blob = await fetchProtectedFileBlob(url, token);
-            if (!blob) return;
-            const blobUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = filename || 'file';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
-            console.log('✅ Download selesai:', filename);
-        } catch (error) {
-            console.error('❌ Error download:', error);
-            alert('Gagal download file: ' + error.message);
-        }
+        (async () => {
+            try {
+                const blob = await fetchProtectedFileBlob(url, token);
+                if (!blob) return;
+                const blobUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = filename || 'file';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+                console.log('✅ Download selesai:', filename);
+            } catch (error) {
+                console.error('❌ Error download:', error);
+                alert('Gagal download file: ' + error.message);
+            }
+        })();
     };
 
-    window.openFileWithToken = async function(url, token) {
-        if (url.startsWith('http')) {
+    window.openFileWithToken = function(url, token) {
+        if (url.startsWith('http') && !url.includes('/api/files')) {
             window.open(url, '_blank');
             return;
         }
         const newTab = window.open('', '_blank');
-        if (!newTab) return alert('Izinkan popup browser!');
-        newTab.document.write('<html><body style="background:#333;color:white;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif;">Memproses dokumen...</body></html>');
-        try {
-            const blob = await fetchProtectedFileBlob(url, token);
-            if (!blob) { newTab.close(); return; }
-            const blobUrl = window.URL.createObjectURL(blob);
-            newTab.location.href = blobUrl;
-            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
-        } catch (e) {
-            newTab.close();
-            alert('Gagal memuat file.');
+        if (!newTab) {
+            alert('Mohon izinkan popup di browser Anda untuk melihat dokumen.');
+            return;
         }
+        newTab.document.write('Memuat dokumen...');
+        
+        (async () => {
+            try {
+                const blob = await fetchProtectedFileBlob(url, token);
+                if (!blob) {
+                    newTab.close();
+                    return;
+                }
+                const blobUrl = window.URL.createObjectURL(blob);
+                newTab.location.href = blobUrl;
+                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
+            } catch (e) {
+                newTab.close();
+                alert('Gagal memuat file.');
+            }
+        })();
     };
 
     // ==================== LOAD DATA ====================
@@ -241,7 +258,6 @@
             return;
         }
 
-        const printWindow = window.open('', '_blank');
         const data = invoiceData;
         const totalAmount = data.total_tagihan || 0;
         
@@ -405,8 +421,28 @@
         </html>
         `;
 
-        printWindow.document.write(printContent);
-        printWindow.document.close();
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+        } else {
+            // Fallback jika diblokir popup blocker
+            let iframe = document.getElementById('print-invoice-iframe');
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'print-invoice-iframe';
+                iframe.style.position = 'absolute';
+                iframe.style.width = '0';
+                iframe.style.height = '0';
+                iframe.style.border = 'none';
+                document.body.appendChild(iframe);
+            }
+            iframe.srcdoc = printContent;
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            }, 1000);
+        }
     }
 
     // Helper function untuk generate rows items (untuk print)
@@ -1202,10 +1238,18 @@
 
     function viewProof() {
         if (window.currentProofUrl) {
-            window.open(window.currentProofUrl, '_blank');
+            if (window.currentProofUrl.startsWith('http') && !window.currentProofUrl.includes('/api/files')) {
+                window.open(window.currentProofUrl, '_blank');
+            } else {
+                window.openFileWithToken(window.currentProofUrl, getToken());
+            }
         } else if (invoiceData?.bukti_pembayaran_1) {
-            const fileUrl = `${window.__APP_CONFIG__?.API_BASE_URL?.replace('/api', '') || ''}/uploads/payment/${invoiceData.bukti_pembayaran_1}`;
-            window.open(fileUrl, '_blank');
+            const fileUrl = buildProtectedFileUrl('payment', invoiceData.bukti_pembayaran_1);
+            if (fileUrl.startsWith('http') && !fileUrl.includes('/api/files')) {
+                window.open(fileUrl, '_blank');
+            } else {
+                window.openFileWithToken(fileUrl, getToken());
+            }
         } else {
             showAlert('File bukti pembayaran tidak ditemukan', 'warning');
         }

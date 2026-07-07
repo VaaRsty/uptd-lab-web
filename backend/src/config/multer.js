@@ -63,7 +63,11 @@ const supabaseUploadWrapper = async (req, res, next) => {
 const customUpload = {
     single: (fieldName) => [upload.single(fieldName), supabaseUploadWrapper],
     array: (fieldName, maxCount) => [upload.array(fieldName, maxCount), supabaseUploadWrapper],
-    fields: (fields) => [upload.fields(fields), supabaseUploadWrapper]
+    fields: (fields) => [upload.fields(fields), supabaseUploadWrapper],
+    // Ekspos raw multer untuk route yang butuh proses rename manual
+    raw: upload,
+    // Ekspos fungsi utilitas upload
+    uploadToSupabase: uploadToSupabase
 };
 
 module.exports = customUpload;

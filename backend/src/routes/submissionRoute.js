@@ -44,11 +44,11 @@ router.delete(
     submissionController.deleteReport
 );
 
-// Create submission (upload file)
+// Create submission (upload file manual di controller agar bisa direname dengan ID)
 router.post(
     '/',
     authMiddleware,
-    upload.fields([
+    upload.raw.fields([
         { name: 'surat_permohonan', maxCount: 1 },
         { name: 'scan_ktp', maxCount: 1 },
         { name: 'lampiran_pendukung', maxCount: 1 }

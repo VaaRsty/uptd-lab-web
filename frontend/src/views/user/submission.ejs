@@ -69,18 +69,20 @@ const formData = locals.formData || {};
                                                     onchange="onSelectChange(this)">
                                                 <option value="" data-price="0" data-duration="-" data-unit="">-- Pilih Jenis Uji --</option>
                                                 <% type.categories.forEach(category => { %>
-                                                    <% category.items.forEach(item => { %>
-                                                        <option value="<%= item.id %>" 
-                                                                data-price="<%= item.price %>" 
-                                                                data-duration="<%= item.duration %>"
-                                                                data-method="<%= item.method || '-' %>"
-                                                                data-min-sample="<%= item.sample_value %>"
-                                                                data-min-sample-text="<%= item.sample %>"
-                                                                data-unit="<%= item.unit %>"
-                                                                data-name="<%= item.name %>">
-                                                            <%= item.name %> - min. <%= item.sample %> - Rp <%= (item.price || 0).toLocaleString('id-ID') %>/<%= item.unit %>
-                                                        </option>
-                                                    <% }); %>
+                                                    <optgroup label="<%= category.categoryName %>">
+                                                        <% category.items.forEach(item => { %>
+                                                            <option value="<%= item.id %>" 
+                                                                    data-price="<%= item.price %>" 
+                                                                    data-duration="<%= item.duration %>"
+                                                                    data-method="<%= item.method || '-' %>"
+                                                                    data-min-sample="<%= item.sample_value %>"
+                                                                    data-min-sample-text="<%= item.sample %>"
+                                                                    data-unit="<%= item.unit %>"
+                                                                    data-name="<%= item.name %>">
+                                                                <%= item.name %> - min. <%= item.sample %> - Rp <%= (item.price || 0).toLocaleString('id-ID') %>/<%= item.unit %>
+                                                            </option>
+                                                        <% }); %>
+                                                    </optgroup>
                                                 <% }); %>
                                             </select>
                                         </div>

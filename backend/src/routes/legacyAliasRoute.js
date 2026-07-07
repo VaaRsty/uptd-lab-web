@@ -80,7 +80,7 @@ router.get('/user/history/:id', authMiddleware, submissionController.userHistory
 router.post(
     '/user/submission',
     authMiddleware,
-    upload.fields([
+    upload.raw.fields([
         { name: 'surat_permohonan', maxCount: 1 },
         { name: 'scan_ktp', maxCount: 1 },
         { name: 'lampiran_pendukung', maxCount: 1 }
@@ -96,7 +96,7 @@ router.get('/user/transactions/:id', authMiddleware, transactionController.userD
 router.post(
     '/user/transactions/:id/upload',
     authMiddleware,
-    upload.single('payment_proof'),
+    upload.raw.single('payment_proof'),
     checkUploadSize,
     skrdController.uploadPaymentProof
 );

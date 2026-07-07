@@ -732,8 +732,8 @@
     }
 
     // Fungsi Preview (Buka Tab Baru Tanpa Diblokir Browser)
-    window.openFileWithToken = async function(url, token) {
-        if (url.startsWith('http')) {
+    window.openFileWithToken = function(url, token) {
+        if (url.startsWith('http') && !url.includes('/api/files')) {
             window.open(url, '_blank');
             return;
         }
@@ -742,46 +742,56 @@
         
         newTab.document.write('<html><body style="background:#333;color:white;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif;">Memproses dokumen...</body></html>');
 
-        try {
-            // fetchProtectedFileBlob adalah fungsi yang Jey buat untuk fetch dengan Header Auth
-            const blob = await fetchProtectedFileBlob(url, token);
-            if (!blob) {
+        (async () => {
+            try {
+                // fetchProtectedFileBlob adalah fungsi yang Jey buat untuk fetch dengan Header Auth
+                const blob = await fetchProtectedFileBlob(url, token);
+                if (!blob) {
+                    newTab.close();
+                    return;
+                }
+                const blobUrl = window.URL.createObjectURL(blob);
+                newTab.location.href = blobUrl;
+                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
+            } catch (e) {
                 newTab.close();
-                return;
+                alert('Gagal memuat file.');
             }
-            const blobUrl = window.URL.createObjectURL(blob);
-            newTab.location.href = blobUrl;
-            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
-        } catch (e) {
-            newTab.close();
-            alert('Gagal memuat file.');
-        }
+        })();
     };
 
-    window.downloadFileWithToken = async function(url, token) {
-        if (url.startsWith('http')) {
-            window.open(url, '_blank');
+    window.downloadFileWithToken = function(url, token) {
+        if (url.startsWith('http') && !url.includes('/api/files')) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.download = 'download';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
             return;
         }
-        try {
-            console.log('📥 Downloading file:', url);
-            const blob = await fetchProtectedFileBlob(url, token);
-            if (!blob) return;
-            const blobUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            const urlParts = url.split('/');
-            const filename = decodeURIComponent(urlParts[urlParts.length - 1].split('?')[0]);
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
-            console.log('✅ Download selesai:', filename);
-        } catch (error) {
-            console.error('❌ Error download:', error);
-            alert('Gagal download file: ' + error.message);
-        }
+        (async () => {
+            try {
+                console.log('📥 Downloading file:', url);
+                const blob = await fetchProtectedFileBlob(url, token);
+                if (!blob) return;
+                const blobUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                const urlParts = url.split('/');
+                const filename = decodeURIComponent(urlParts[urlParts.length - 1].split('?')[0]);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+                console.log('✅ Download selesai:', filename);
+            } catch (error) {
+                console.error('❌ Error download:', error);
+                alert('Gagal download file: ' + error.message);
+            }
+        })();
     };
 
     function setText(id, text) {

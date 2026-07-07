@@ -6,6 +6,7 @@ const submissionSampleModel = require('../models/submissionSampleModel');
 const notificationModel = require('../models/notificationModel');
 const { success, error, paginated } = require('../utils/responseHelper');
 const db = require('../config/database');
+const { uploadToSupabase } = require('../config/multer');
 
 exports.list = async (req, res, next) => {
     try {
@@ -115,14 +116,50 @@ exports.create = async (req, res, next) => {
             no_permohonan: req.body.nomor_permohonan || req.body.no_permohonan || null,
             email_pemohon: req.body.email || null, // <-- TAMBAHKAN INI
             user_id: req.user.id,
-            file_surat_permohonan: req.files?.surat_permohonan?.[0]?.filename || null,
-            file_ktp: req.files?.scan_ktp?.[0]?.filename || null,
-            dokumen_tambahan: req.files?.lampiran_pendukung?.[0]?.filename || null
+            // URL file akan diupdate setelah insert
+            file_surat_permohonan: null,
+            file_ktp: null,
+            dokumen_tambahan: null
         };
 
         // 5. Simpan submission utama
         const id = await submissionModel.create(payload);
         console.log('✅ Submission ID:', id);
+
+        // --- Proses Upload File dengan Nama Baru ---
+        const updatedUrls = {};
+        if (req.files) {
+            try {
+                if (req.files.surat_permohonan && req.files.surat_permohonan[0]) {
+                    const file = req.files.surat_permohonan[0];
+                    const ext = require('path').extname(file.originalname);
+                    const newName = `SuratPermohonan_Pengujian_${id}${ext}`;
+                    updatedUrls.file_surat_permohonan = await uploadToSupabase(file.buffer, newName, file.mimetype, 'uploads', 'surat_permohonan');
+                }
+                if (req.files.scan_ktp && req.files.scan_ktp[0]) {
+                    const file = req.files.scan_ktp[0];
+                    const ext = require('path').extname(file.originalname);
+                    const newName = `KTP_Pengujian_${id}${ext}`;
+                    updatedUrls.file_ktp = await uploadToSupabase(file.buffer, newName, file.mimetype, 'uploads', 'scan_ktp');
+                }
+                if (req.files.lampiran_pendukung && req.files.lampiran_pendukung[0]) {
+                    const file = req.files.lampiran_pendukung[0];
+                    const ext = require('path').extname(file.originalname);
+                    const newName = `Lampiran_Pengujian_${id}${ext}`;
+                    updatedUrls.dokumen_tambahan = await uploadToSupabase(file.buffer, newName, file.mimetype, 'uploads', 'lampiran_pendukung');
+                }
+
+                // Update database jika ada file yang berhasil diupload
+                if (Object.keys(updatedUrls).length > 0) {
+                    await submissionModel.update(id, updatedUrls);
+                    console.log('✅ Berhasil update submission dengan URL file:', updatedUrls);
+                }
+            } catch (uploadErr) {
+                console.error('❌ Gagal mengupload file ke Supabase:', uploadErr);
+                // Kita biarkan jalan terus karena submission sudah terbuat, tapi bisa juga di-cancel
+            }
+        }
+        // ------------------------------------------
 
         // 6. Siapkan data sample dari form + serviceDetail
         let jenisSample = null;

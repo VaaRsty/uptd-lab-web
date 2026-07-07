@@ -74,47 +74,62 @@
         }
     }
 
-    window.downloadFileWithToken = async function(url, token, filename) {
-        if (url.startsWith('http')) {
-            window.open(url, '_blank');
+    window.downloadFileWithToken = function(url, token, filename) {
+        if (url.startsWith('http') && !url.includes('/api/files')) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.download = filename || 'download';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
             return;
         }
-        try {
-            const blob = await fetchProtectedFileBlob(url, token);
-            if (!blob) return;
-            const blobUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = filename || 'file';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
-            console.log('✅ Download selesai:', filename);
-        } catch (error) {
-            console.error('❌ Error download:', error);
-            alert('Gagal download file: ' + error.message);
-        }
-    };
-
-    window.openFileWithToken = async function(url, token) {
-        if (url.startsWith('http')) {
+        (async () => {
+            try {
+                const blob = await fetchProtectedFileBlob(url, token);
+                if (!blob) return;
+                const blobUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = filename || 'file';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+                console.log('✅ Download selesai:', filename);
+            } catch (error) {
+                console.error('❌ Error download:', error);
+                alert('Gagal download file: ' + error.message);
+            }
+        })();
+        window.openFileWithToken = function(url, token) {
+        if (url.startsWith('http') && !url.includes('/api/files')) {
             window.open(url, '_blank');
             return;
         }
         const newTab = window.open('', '_blank');
-        if (!newTab) return alert('Izinkan popup browser!');
-        newTab.document.write('<html><body style="background:#333;color:white;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif;">Memproses dokumen...</body></html>');
-        try {
-            const blob = await fetchProtectedFileBlob(url, token);
-            if (!blob) { newTab.close(); return; }
-            const blobUrl = window.URL.createObjectURL(blob);
-            newTab.location.href = blobUrl;
-            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
-        } catch (e) {
-            newTab.close();
-            alert('Gagal memuat file.');
+        if (!newTab) {
+            alert('Mohon izinkan popup di browser Anda untuk melihat dokumen.');
+            return;
         }
+        newTab.document.write('Memuat dokumen...');
+        
+        (async () => {
+            try {
+                const blob = await fetchProtectedFileBlob(url, token);
+                if (!blob) {
+                    newTab.close();
+                    return;
+                }
+                const blobUrl = window.URL.createObjectURL(blob);
+                newTab.location.href = blobUrl;
+                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
+            } catch (e) {
+                newTab.close();
+                alert('Gagal memuat file.');
+            }
+        })();
     };
 
     document.addEventListener('DOMContentLoaded', function() {

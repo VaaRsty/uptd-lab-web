@@ -3,6 +3,7 @@
  */
 const paymentModel = require('../models/paymentModel');
 const { success, error } = require('../utils/responseHelper');
+const { uploadToSupabase } = require('../config/multer');
 
 exports.userList = async (req, res, next) => {
     try {
@@ -64,9 +65,15 @@ exports.uploadPaymentProof = async (req, res, next) => {
             fieldTime = 'bukti_pembayaran_2_uploaded_at';
         }
 
+        // Upload ke Supabase
+        const ext = require('path').extname(file.originalname);
+        const prefix = fieldName === 'bukti_pembayaran_1' ? 'Bukti1' : 'Bukti2';
+        const newName = `${prefix}_Transaksi_${transactionId}${ext}`;
+        const fileUrl = await uploadToSupabase(file.buffer, newName, file.mimetype, 'uploads', fieldName);
+
         // Update database
         const updateData = {
-            [fieldName]: file.filename,
+            [fieldName]: fileUrl,
             [fieldTime]: new Date(),
             bukti_pembayaran_notes: notes
         };
