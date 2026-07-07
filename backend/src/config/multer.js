@@ -56,7 +56,7 @@ const supabaseUploadWrapper = async (req, res, next) => {
         next();
     } catch (err) {
         console.error('Error in supabaseUploadWrapper:', err);
-        return res.status(500).json({ success: false, message: 'Gagal mengunggah file ke Supabase Storage' });
+        return res.status(500).json({ success: false, message: 'Gagal mengunggah file ke Supabase Storage: ' + err.message });
     }
 };
 
