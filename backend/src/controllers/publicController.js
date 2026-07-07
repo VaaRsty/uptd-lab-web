@@ -9,7 +9,9 @@ exports.getServices = async (req, res, next) => {
     try {
         const data = await serviceModel.listServices();
         return success(res, 'Daftar layanan', data);
-    } catch (err) { next(err); }
+    } catch (err) { 
+        res.status(500).json({ success: false, message: err.message, stack: err.stack });
+    }
 };
 
 exports.getServiceById = async (req, res, next) => {

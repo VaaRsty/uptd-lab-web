@@ -14,7 +14,7 @@ const promisePool = {
     query: async (sql, params = []) => {
         // Konversi `?` menjadi `$1`, `$2`
         let counter = 1;
-        const pgSql = sql.replace(/\?/g, () => `$${counter++}`);
+        let pgSql = sql.replace(/\?/g, () => `$${counter++}`);
         
         const isInsert = sql.trim().toUpperCase().startsWith('INSERT');
         if (isInsert && !/RETURNING\s+id/i.test(pgSql)) {
