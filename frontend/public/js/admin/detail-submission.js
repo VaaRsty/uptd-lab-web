@@ -377,12 +377,12 @@ III. **KAJI ULANG PERMINTAAN**
                     <i class="fas fa-check-circle text-success me-1"></i> Terupload: ${fileName}
                 `;
                 document.getElementById('suratPermohonanActions').innerHTML = `
-                    <button onclick="window.openFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-outline-primary me-1">
+                    <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary me-1">
                         <i class="fas fa-external-link-alt"></i>
-                    </button>
-                    <button onclick="window.downloadFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-primary">
+                    </a>
+                    <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">
                         <i class="fas fa-download"></i>
-                    </button>
+                    </a>
                 `;
             } else {
                 document.getElementById('suratPermohonanInfo').innerHTML = `
@@ -399,12 +399,12 @@ III. **KAJI ULANG PERMINTAAN**
                     <i class="fas fa-check-circle text-success me-1"></i> Terupload: ${fileName}
                 `;
                 document.getElementById('scanKTPActions').innerHTML = `
-                    <button onclick="window.openFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-outline-primary me-1">
+                    <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary me-1">
                         <i class="fas fa-external-link-alt"></i>
-                    </button>
-                    <button onclick="window.downloadFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-primary">
+                    </a>
+                    <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">
                         <i class="fas fa-download"></i>
-                    </button>
+                    </a>
                 `;
             } else {
                 document.getElementById('scanKTPInfo').innerHTML = `
@@ -422,12 +422,12 @@ III. **KAJI ULANG PERMINTAAN**
                     <i class="fas fa-check-circle text-success me-1"></i> Terupload: ${fileName}
                 `;
                 document.getElementById('dokumenTambahanActions').innerHTML = `
-                    <button onclick="window.openFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-outline-primary me-1">
+                    <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary me-1">
                         <i class="fas fa-external-link-alt"></i>
-                    </button>
-                    <button onclick="window.downloadFileWithToken('${fileUrl}', '${token}')" class="btn btn-sm btn-primary">
+                    </a>
+                    <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">
                         <i class="fas fa-download"></i>
-                    </button>
+                    </a>
                 `;
             } else {
                 document.getElementById('dokumenTambahanInfo').innerHTML = `
@@ -662,12 +662,12 @@ III. **KAJI ULANG PERMINTAAN**
                         </div>
                         <div class="d-flex gap-2">
                             <button onclick="window.deleteReport(${data.id})" class="btn btn-outline-danger px-3 shadow-sm">Hapus</button>
-                            <button onclick="window.openFileWithToken('${reportUrl}', '${token}')" class="btn btn-outline-secondary px-3 shadow-sm">
+                            <a href="${reportUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary px-3 shadow-sm">
                                 <i class="fas fa-external-link-alt"></i> Lihat
-                            </button>
-                            <button onclick="window.downloadFileWithToken('${reportUrl}', '${token}', '${reportName}')" class="btn btn-success px-3 shadow-sm">
+                            </a>
+                            <a href="${reportUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-success px-3 shadow-sm">
                                 <i class="fas fa-download"></i> Download
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>

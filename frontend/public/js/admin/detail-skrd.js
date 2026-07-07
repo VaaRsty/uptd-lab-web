@@ -684,12 +684,12 @@
                 const uploadDate = proof.date ? formatDateTime(proof.date) : '-';
                 
                 let actionButtonsHtml = `
-                    <button onclick="window.openFileWithToken('${fileUrl}', '${token}')" class="btn btn-outline-primary action-btn" title="Lihat Bukti">
+                    <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary action-btn" title="Lihat Bukti">
                         <i class="fas fa-external-link-alt"></i>
-                    </button>
-                    <button onclick="window.downloadFileWithToken('${fileUrl}', '${token}', '${fileName}')" class="btn btn-outline-success action-btn ms-1" title="Download">
+                    </a>
+                    <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-outline-success action-btn ms-1" title="Download">
                         <i class="fas fa-download"></i>
-                    </button>
+                    </a>
                 `;
                 
                 if (proof.isLatest && !finalStatuses.includes(data.status_pembayaran)) {
@@ -772,14 +772,12 @@
             }
             
             if (downloadSkrdBtn) {
-                // Ganti href dengan onclick
                 downloadSkrdBtn.style.display = 'inline-block';
-                downloadSkrdBtn.onclick = function(e) {
-                    e.preventDefault();
-                    window.downloadFileWithToken(fileUrl, token, fileName);
-                };
+                downloadSkrdBtn.href = fileUrl;
+                downloadSkrdBtn.target = '_blank';
+                downloadSkrdBtn.rel = 'noopener noreferrer';
+                downloadSkrdBtn.removeAttribute('download');
                 downloadSkrdBtn.classList.remove('disabled');
-                downloadSkrdBtn.href = '#';
             }
             
 

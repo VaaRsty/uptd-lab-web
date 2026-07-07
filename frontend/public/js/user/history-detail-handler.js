@@ -275,8 +275,8 @@
                             </div>
                         </div>
                         <div class="d-flex gap-2 flex-shrink-0 ms-xl-auto">
-                            <a href="#" onclick="window.openFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-outline-success">Buka</a>
-                            <a href="#" onclick="window.downloadFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-success">Download</a>
+                            <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success">Buka</a>
+                            <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success">Download</a>
                         </div>
                     </div>
                 </div>
@@ -298,8 +298,8 @@
                             </div>
                         </div>
                         <div class="d-flex gap-2 flex-shrink-0 ms-xl-auto">
-                            <a href="#" onclick="window.openFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-outline-success">Buka</a>
-                            <a href="#" onclick="window.downloadFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-success">Download</a>
+                            <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success">Buka</a>
+                            <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success">Download</a>
                         </div>
                     </div>
                 </div>
@@ -318,8 +318,8 @@
             setText('status-doc-permohonan', '✅ Terupload');
             const fileUrl = buildProtectedFileUrl('surat', data.file_surat_permohonan, token);
             document.getElementById('action-doc-permohonan').innerHTML = `
-                <a href="#" onclick="window.openFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-outline-primary me-1">Buka</a>
-                <a href="#" onclick="window.downloadFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-primary">Download</a>
+                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary me-1">Buka</a>
+                <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">Download</a>
             `;
         } else {
             setText('status-doc-permohonan', '❌ Belum diupload');
@@ -331,8 +331,8 @@
             setText('status-doc-ktp', '✅ Terupload');
             const fileUrl = buildProtectedFileUrl('ktp', data.file_ktp, token);
             document.getElementById('action-doc-ktp').innerHTML = `
-                <a href="#" onclick="window.openFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-outline-primary me-1">Buka</a>
-                <a href="#" onclick="window.downloadFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-primary">Download</a>
+                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary me-1">Buka</a>
+                <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">Download</a>
             `;
         } else {
             setText('status-doc-ktp', '❌ Belum diupload');
@@ -363,8 +363,8 @@
             const fileUrl = buildProtectedFileUrl('others', data.dokumen_tambahan, token);
             lampiranStatus = `✅ Terupload: ${fileName}`;
             lampiranActions = `
-                <a href="#" onclick="window.openFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-outline-primary me-1">Buka</a>
-                <a href="#" onclick="window.downloadFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-primary">Download</a>
+                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary me-1">Buka</a>
+                <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">Download</a>
             `;
         } else {
             lampiranStatus = 'Belum ada lampiran pendukung';
@@ -463,10 +463,10 @@
                     kuisionerSection.appendChild(contentDiv);
                 }
                 actionLaporan.innerHTML = `
-                    <a href="#" onclick="window.openFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-outline-primary me-1">
+                    <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary me-1">
                         <i class="fas fa-external-link-alt"></i> Preview
                     </a>
-                    <a href="#" onclick="window.downloadFileWithToken('${fileUrl}', '${token}'); return false;" class="btn btn-sm btn-success">
+                    <a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success">
                         <i class="fas fa-download"></i> Download
                     </a>
                 `;
