@@ -417,7 +417,9 @@ function validateFiles() {
     let errorMessage = '';
     
     // 🔥 Ambil batas upload dari setting admin
-    const maxUploadMB = window.settings?.max_upload_size || 5;
+    // VERCEL HARD LIMIT: 4.5MB payload limit. Kita batasi di 4MB agar tidak melebihi payload saat multipart/form-data.
+    let maxUploadMB = window.settings?.max_upload_size || 5;
+    if (maxUploadMB > 4) maxUploadMB = 4;
     const maxUploadBytes = maxUploadMB * 1024 * 1024;
     
     // Validasi Surat Permohonan
@@ -584,7 +586,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     // 🔥 Preview file dengan validasi - PAKAI SETTING ADMIN
-    const maxUploadMB = window.settings?.max_upload_size || 5;
+    // VERCEL HARD LIMIT
+    let maxUploadMB = window.settings?.max_upload_size || 5;
+    if (maxUploadMB > 4) maxUploadMB = 4;
     const maxUploadBytes = maxUploadMB * 1024 * 1024;
     
     const fileInputs = document.querySelectorAll('input[type="file"]');

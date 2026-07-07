@@ -14,6 +14,10 @@ const checkUploadSize = async (req, res, next) => {
         if (!maxSizeMB) {
             maxSizeMB = '5'; // default 5MB
         }
+        
+        // VERCEL HARD LIMIT
+        if (parseInt(maxSizeMB) > 4) maxSizeMB = '4';
+        
         const maxSizeBytes = parseInt(maxSizeMB) * 1024 * 1024;
 
         let exceeded = false;
