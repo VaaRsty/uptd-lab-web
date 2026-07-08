@@ -79,14 +79,39 @@ Jika ada developer atau anggota tim lain yang baru saja melakukan *clone* (mengu
 5. _File_ tersebut akan secara otomatis membuatkan semua kerangka tabel (*schema*), *relations*, dan data *master* bawaan (Layanan, Tarif, dan Admin bawaan).
 6. Jangan lupa _copy_ URL Database (*Connection String*) Supabase ke dalam _file_ `.env` Anda.
 
-## 4. Manajemen Database (Supabase)
-Karena sistem ini sudah tidak memakai MySQL (XAMPP), jika Anda ingin melakukan "Clean Database" atau mengatur ulang tabel:
-1. Buka dashboard Supabase Anda.
-2. Masuk ke menu **SQL Editor**.
-3. Jalankan _query_ `TRUNCATE TABLE nama_tabel CASCADE;` untuk menghapus isi tabel tanpa menghapus struktur tabelnya.
-4. **Perhatian**: Jangan sembarangan mengubah struktur tipe data (`ALTER TABLE`) yang sudah dipakai di kodingan, karena PostgreSQL sangat ketat (strict) terhadap tipe data dibandingkan MySQL.
+## 4. Reset Data (Clean Database)
+Jika sewaktu-waktu Anda ingin menghapus seluruh data transaksi (_dummy/testing_) namun tetap ingin mempertahankan akun *Admin* dan *Pelanggan* khusus, jalankan *script* SQL berikut di menu **SQL Editor** Supabase:
 
-## 4. Proses Deployment (Vercel)
+```sql
+-- 1. Hapus isi tabel transaksi (CASCADE menghapus relasi otomatis)
+TRUNCATE TABLE activities CASCADE;
+TRUNCATE TABLE notifications CASCADE;
+TRUNCATE TABLE payments CASCADE;
+TRUNCATE TABLE test_reports CASCADE;
+TRUNCATE TABLE submission_samples CASCADE;
+TRUNCATE TABLE submissions CASCADE;
+
+-- 2. Reset Auto Increment / ID Sequence
+ALTER SEQUENCE activities_id_seq RESTART WITH 1;
+ALTER SEQUENCE notifications_id_seq RESTART WITH 1;
+ALTER SEQUENCE payments_id_seq RESTART WITH 1;
+ALTER SEQUENCE test_reports_id_seq RESTART WITH 1;
+ALTER SEQUENCE submission_samples_id_seq RESTART WITH 1;
+ALTER SEQUENCE submissions_id_seq RESTART WITH 1;
+
+-- 3. Hapus dan Reset Akun Users (Sisakan Admin & 1 Pelanggan)
+TRUNCATE TABLE users CASCADE;
+ALTER SEQUENCE users_id_seq RESTART WITH 1;
+
+INSERT INTO users (email, password, role, full_name, created_at, updated_at) VALUES 
+('admin@uptd.go.id', '$2b$10$zdaaA.ZamnjPKFjeUdE6n.JzRSdsSTxLuTjZberXqO4vb0ojqnkQW', 'admin', 'Admin UPTD', NOW(), NOW()),
+('ristyevaa68@gmail.com', '$2b$10$zdaaA.ZamnjPKFjeUdE6n.JzRSdsSTxLuTjZberXqO4vb0ojqnkQW', 'pelanggan', 'Risty Evaa', NOW(), NOW());
+```
+*(Password untuk kedua akun di atas adalah: `password123`)*
+
+**Perhatian**: Jangan sembarangan mengubah struktur tipe data (`ALTER TABLE`) yang sudah dipakai di kodingan, karena PostgreSQL sangat ketat (strict) terhadap tipe data dibandingkan MySQL.
+
+## 5. Proses Deployment (Vercel)
 Untuk melakukan pembaruan ke *server live*:
 1. Pastikan Anda berada di _root_ proyek (`uptd-baru`).
 2. Jalankan perintah `npx vercel --prod`.
