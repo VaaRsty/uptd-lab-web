@@ -159,22 +159,31 @@ exports.verifyPayment = async (req, res, next) => {
         const payment = await paymentModel.findById(paymentId);
         if (!payment) return error(res, 404, 'Payment tidak ditemukan');
 
-        const totalTagihan = parseFloat(payment.total_tagihan) || 0;
+        let totalTagihan = parseFloat(payment.total_tagihan) || 0;
         const sudahDibayar = parseFloat(payment.jumlah_dibayar) || 0;
         const newPaidAmount = sudahDibayar + parseFloat(paid_amount);
-        const sisaTagihan = totalTagihan - newPaidAmount;
-
+        
+        let sisaTagihan = totalTagihan - newPaidAmount;
+        
         // Tentukan status baru
         let newStatus = 'Belum Lunas';
         if (sisaTagihan <= 0) {
             newStatus = 'Lunas';
+            // Jika sisaTagihan negatif (artinya dia membayar lebih dari total_tagihan karena denda)
+            // kita update total_tagihan menjadi newPaidAmount agar balance-nya 0.
+            if (sisaTagihan < 0) {
+                totalTagihan = newPaidAmount;
+                sisaTagihan = 0;
+            }
         } else {
             newStatus = 'Belum Lunas';
         }
 
         // Update payment
         await paymentModel.update(paymentId, {
+            total_tagihan: totalTagihan,
             jumlah_dibayar: newPaidAmount,
+            sisa_tagihan: sisaTagihan,
             status_pembayaran: newStatus,
             bukti_pembayaran_notes: notes ? `${payment.bukti_pembayaran_notes || ''}\n[${new Date().toLocaleDateString()}] Verifikasi: Rp ${paid_amount} - ${notes}` : payment.bukti_pembayaran_notes,
             updated_at: new Date()

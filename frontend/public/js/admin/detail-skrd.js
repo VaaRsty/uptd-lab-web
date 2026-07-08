@@ -521,13 +521,31 @@
             if (elements.dueDate) elements.dueDate.textContent = dueDateText;
             
             // Total dan pembayaran
-            const totalAmount = data.total_tagihan || 0;
+            let totalAmount = data.total_tagihan || 0;
             const paidAmount = data.jumlah_dibayar || 0;
-            const remaining = data.sisa_tagihan || (totalAmount - paidAmount);
             
-            if (elements.totalTagihanDisplay) elements.totalTagihanDisplay.textContent = formatRupiah(totalAmount);
+            // Hitung denda 2% per bulan jika jatuh tempo
+            let dendaText = '';
+            if (isOverdue(data.due_date, data.status_pembayaran)) {
+                try {
+                    const due = new Date(data.due_date);
+                    const now = new Date();
+                    const diffTime = Math.abs(now - due);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    const monthsOverdue = Math.max(1, Math.ceil(diffDays / 30));
+                    const penalty = totalAmount * 0.02 * monthsOverdue;
+                    totalAmount += penalty;
+                    dendaText = ` (Termasuk Denda: ${formatRupiah(penalty)})`;
+                } catch (e) {}
+            }
+            
+            const remaining = (data.sisa_tagihan !== null ? data.sisa_tagihan : (totalAmount - paidAmount));
+            // Jika ada denda, update remaining
+            const displayRemaining = (isOverdue(data.due_date, data.status_pembayaran)) ? (totalAmount - paidAmount) : remaining;
+
+            if (elements.totalTagihanDisplay) elements.totalTagihanDisplay.textContent = formatRupiah(totalAmount) + dendaText;
             if (elements.paidAmountDisplay) elements.paidAmountDisplay.textContent = formatRupiah(paidAmount);
-            if (elements.remainingDisplay) elements.remainingDisplay.textContent = formatRupiah(remaining);
+            if (elements.remainingDisplay) elements.remainingDisplay.textContent = formatRupiah(displayRemaining);
             
             // 4. ITEMS TABLE
             updateItemsTable(data);
@@ -794,9 +812,21 @@
         const historyDiv = document.getElementById('paymentHistory');
         if (!historyDiv) return;
         
-        const totalAmount = data.total_tagihan || 0;
+        let totalAmount = data.total_tagihan || 0;
         const paidAmount = data.jumlah_dibayar || 0;
-        const remaining = data.sisa_tagihan || (totalAmount - paidAmount);
+        
+        if (isOverdue(data.due_date, data.status_pembayaran)) {
+            try {
+                const due = new Date(data.due_date);
+                const now = new Date();
+                const diffTime = Math.abs(now - due);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const monthsOverdue = Math.max(1, Math.ceil(diffDays / 30));
+                totalAmount += totalAmount * 0.02 * monthsOverdue;
+            } catch (e) {}
+        }
+        
+        const remaining = totalAmount - paidAmount;
         
         // Ambil riwayat pembayaran dari notes
         const paymentNotes = data.bukti_pembayaran_notes || '';
