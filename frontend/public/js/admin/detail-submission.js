@@ -1577,7 +1577,7 @@ III. **KAJI ULANG PERMINTAAN**
             };
 
             // ========== BORDER LUAR ==========
-            doc.rect(12, 12, 192, 305);
+            doc.rect(12, 12, 192, 315);
 
             // ========== HEADER ==========
             const headerH = 24;
@@ -1639,9 +1639,9 @@ III. **KAJI ULANG PERMINTAAN**
             drawRow("Nomor Urut :", noUrut, "Kode Pengujian :", "");
             drawRow("Tgl Permohonan :", tglMohon, "No Permohonan :", noPermohonan);
             drawRow("Nama Pemohon :", namaPemohon, "Nama Instansi :", instansi);
-            drawRow("Alamat :", alamat, "Nomor Telepon :", telepon, 16);
-            drawRow("Email :", email, "Nama Proyek :", proyek, 16);
-            drawRow("Lokasi Proyek :", lokasiProyek, "Catatan Lainnya :", catatan, 20);
+            drawRow("Alamat :", alamat, "Nomor Telepon :", telepon, 12);
+            drawRow("Email :", email, "Nama Proyek :", proyek, 12);
+            drawRow("Lokasi Proyek :", lokasiProyek, "Catatan Lainnya :", catatan, 12);
             
             y += 5;
 
@@ -1730,7 +1730,8 @@ III. **KAJI ULANG PERMINTAAN**
             // 🔥 Catatan Sample
             const catatanSample = firstSample?.catatan_sample || '';
             doc.text(`Catatan Lainnya : ${catatanSample || ''}`, colMid + 2, y);
-            y += 8;
+            y += 15;
+            y += 5;
 
             // ========== III. KAJI ULANG PERMINTAAN ==========
             doc.setFont("helvetica", "bold").text("III. KAJI ULANG PERMINTAAN", 17, y);
@@ -1848,3 +1849,4 @@ III. **KAJI ULANG PERMINTAAN**
         });
     });
 })();
+
