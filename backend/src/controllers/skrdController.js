@@ -183,7 +183,6 @@ exports.verifyPayment = async (req, res, next) => {
         await paymentModel.update(paymentId, {
             total_tagihan: totalTagihan,
             jumlah_dibayar: newPaidAmount,
-            sisa_tagihan: sisaTagihan,
             status_pembayaran: newStatus,
             bukti_pembayaran_notes: notes ? `${payment.bukti_pembayaran_notes || ''}\n[${new Date().toLocaleDateString()}] Verifikasi: Rp ${paid_amount} - ${notes}` : payment.bukti_pembayaran_notes,
             updated_at: new Date()
