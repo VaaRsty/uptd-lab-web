@@ -355,7 +355,15 @@
             formData.append('payment_proof', selectedFile);
             formData.append('notes', notes || '');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Sedang mengunggah bukti pembayaran',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
             
             try {
                 const API_URL = window.__APP_CONFIG__?.API_BASE_URL || '/api';
@@ -366,14 +374,21 @@
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert('✅ Bukti pembayaran berhasil diupload');
-                    location.reload();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Bukti pembayaran berhasil diupload',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
                 } else {
-                    alert('❌ ' + (result.message || 'Gagal upload bukti pembayaran'));
+                    Swal.fire('Error', result.message || 'Gagal upload bukti pembayaran', 'error');
                 }
             } catch (error) {
                 console.error('❌ Upload error:', error);
-                alert('❌ Gagal upload bukti pembayaran: ' + error.message);
+                Swal.fire('Error', 'Gagal upload bukti pembayaran: ' + error.message, 'error');
             } finally {
                 isSubmitting = false;
                 submitBtn.disabled = false;

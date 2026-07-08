@@ -649,6 +649,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             submitButton.disabled = true;
             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
             
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Sedang mengirim pengajuan',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
             try {
                 const formData = new FormData(this);
                 
@@ -700,13 +710,21 @@ document.addEventListener('DOMContentLoaded', async function() {
                 console.log('📦 Result:', result);
                 
                 if (result.success) {
-                    window.location.href = '/user/history?success=true&message=Pengajuan+berhasil+dikirim';
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Pengajuan berhasil dikirim',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = '/user/history?success=true&message=Pengajuan+berhasil+dikirim';
+                    });
                 } else {
-                    alert('Error: ' + (result.message || 'Gagal mengirim pengajuan'));
+                    Swal.fire('Error', result.message || 'Gagal mengirim pengajuan', 'error');
                 }
             } catch (error) {
                 console.error('❌ Error:', error);
-                alert('Terjadi kesalahan saat mengirim data: ' + error.message);
+                Swal.fire('Error', 'Terjadi kesalahan saat mengirim data: ' + error.message, 'error');
             } finally {
                 this.dataset.submitting = 'false';
                 submitButton.disabled = false;
