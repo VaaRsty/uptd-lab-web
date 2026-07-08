@@ -1320,7 +1320,15 @@
             return;
         }
         
-        showLoading(true);
+        Swal.fire({
+            title: 'Memproses...',
+            text: 'Sedang mengunggah dokumen SKRD',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
         
         const formData = new FormData();
         formData.append('skrd', file);
@@ -1339,6 +1347,7 @@
             const result = await response.json();
             console.log('📦 Response upload:', result);
             
+            Swal.close();
             if (result.success) {
                 showAlert('SKRD berhasil diupload', 'success');
                 await loadInvoiceDetail();
@@ -1348,9 +1357,9 @@
             }
         } catch (error) {
             console.error('❌ Error upload:', error);
+            Swal.close();
             showAlert('Gagal upload file: ' + error.message, 'danger');
         } finally {
-            showLoading(false);
             fileInput.value = '';
         }
     }
