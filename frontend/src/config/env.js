@@ -27,7 +27,7 @@ module.exports = {
     SESSION_SECRET: process.env.SESSION_SECRET,
     COOKIE: {
         secure: process.env.COOKIE_SECURE === 'true',
-        maxAge: (parseInt(process.env.COOKIE_MAX_AGE_DAYS, 10) || 7) * 24 * 60 * 60 * 1000
+        maxAge: (parseInt(process.env.COOKIE_MAX_AGE_HOURS, 10) || 3) * 60 * 60 * 1000
     },
     DB: {
         host: process.env.DB_HOST,

@@ -29,7 +29,7 @@ module.exports = {
         accessSecret: process.env.JWT_ACCESS_SECRET,
         refreshSecret: process.env.JWT_REFRESH_SECRET,
         accessExpires: process.env.JWT_ACCESS_EXPIRES || '3h',
-        refreshExpires: process.env.JWT_REFRESH_EXPIRES || '7d'
+        refreshExpires: process.env.JWT_REFRESH_EXPIRES || '3h'
     },
     BCRYPT_SALT_ROUNDS: parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 12,
     MAX_UPLOAD_SIZE_MB: parseInt(process.env.MAX_UPLOAD_SIZE_MB, 10) || 5,
