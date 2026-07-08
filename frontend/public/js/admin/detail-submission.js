@@ -273,21 +273,19 @@ III. **KAJI ULANG PERMINTAAN**
 
     // ==================== FUNGSI TOAST ====================
     function showToast(message, type = 'info', duration = 3000) {
-        const toastContainer = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = `alert alert-${type} alert-dismissible fade show`;
-        toast.role = 'alert';
-        toast.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
-        `;
-        toastContainer.appendChild(toast);
-        
-        setTimeout(() => {
-            if (toast.parentElement) {
-                toast.remove();
+        let swalType = type === 'danger' ? 'error' : (type === 'primary' ? 'info' : type);
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: swalType,
+            title: message,
+            showConfirmButton: false,
+            timer: duration,
+            timerProgressBar: true,
+            customClass: {
+                popup: 'swal2-toast'
             }
-        }, duration);
+        });
     }
 
     // ==================== LOAD DATA ====================
@@ -985,17 +983,7 @@ III. **KAJI ULANG PERMINTAAN**
     }
 
     function showAlert(message, type) {
-        const alertDiv = document.getElementById('alertMessage');
-        alertDiv.style.display = 'block';
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'"></button>
-        `;
-        
-        setTimeout(() => {
-            alertDiv.style.display = 'none';
-        }, 5000);
+        showToast(message, type === 'danger' ? 'danger' : type);
     }
 
     function showError(message) {
@@ -1651,8 +1639,8 @@ III. **KAJI ULANG PERMINTAAN**
             drawRow("Nomor Urut :", noUrut, "Kode Pengujian :", "");
             drawRow("Tgl Permohonan :", tglMohon, "No Permohonan :", noPermohonan);
             drawRow("Nama Pemohon :", namaPemohon, "Nama Instansi :", instansi);
-            drawRow("Alamat :", alamat, "Nomor Telepon :", telepon);
-            drawRow("Email :", email, "Nama Proyek :", proyek);
+            drawRow("Alamat :", alamat, "Nomor Telepon :", telepon, 16);
+            drawRow("Email :", email, "Nama Proyek :", proyek, 16);
             drawRow("Lokasi Proyek :", lokasiProyek, "Catatan Lainnya :", catatan, 20);
             
             y += 5;
@@ -1742,8 +1730,7 @@ III. **KAJI ULANG PERMINTAAN**
             // 🔥 Catatan Sample
             const catatanSample = firstSample?.catatan_sample || '';
             doc.text(`Catatan Lainnya : ${catatanSample || ''}`, colMid + 2, y);
-            y += 15;
-            y += 5;
+            y += 8;
 
             // ========== III. KAJI ULANG PERMINTAAN ==========
             doc.setFont("helvetica", "bold").text("III. KAJI ULANG PERMINTAAN", 17, y);
@@ -1785,14 +1772,14 @@ III. **KAJI ULANG PERMINTAAN**
             doc.setFont("helvetica", "bold");
             doc.text("Petugas Pendaftaran,", 33, y);
             doc.text("Pelanggan / Pemohon,", 135, y);
-            y += 15;
+            y += 12;
             doc.text("(............................)", 35, y);
             doc.text("(............................)", 138, y);
             y += 8;
             doc.text("Mengetahui,", 105, y, { align: 'center' });
             y += 5;
             doc.text("Kepala Seksi Pengujian,", 105, y, { align: 'center' });
-            y += 15;
+            y += 12;
             doc.text("(....................................................)", 105, y, { align: 'center' });
 
             // ========== SAVE ==========

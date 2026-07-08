@@ -11,7 +11,7 @@ const SELECT_BASE = `
         p.jumlah_dibayar,
         p.sisa_tagihan,
         p.no_invoice,
-        NULL AS due_date,
+        (p.created_at + INTERVAL '30 days') AS due_date,
         p.status_pembayaran, 
         p.bukti_pembayaran_notes, 
         p.skrd_file,
@@ -87,6 +87,7 @@ exports.count = async ({ status, search, start_date, end_date } = {}) => {
 exports.findById = async (id) => {
     const [rows] = await db.query(
         `SELECT p.*, 
+                (p.created_at + INTERVAL '30 days') AS due_date,
                 s.nama_proyek, s.no_permohonan, s.user_id,
                 u.full_name AS nama_pemohon, 
                 u.email AS email_pemohon,

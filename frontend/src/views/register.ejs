@@ -211,7 +211,13 @@
             if (password !== confirm) {
                 e.preventDefault();
                 showInlineAlert('error', 'Password dan konfirmasi password tidak cocok!');
+                return;
             }
+
+            const btn = this.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.7';
         });
 
         function showInlineAlert(type, message) {
@@ -231,3 +237,4 @@
 
 </body>
 </html>
+
