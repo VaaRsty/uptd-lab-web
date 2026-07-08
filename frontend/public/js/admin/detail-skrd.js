@@ -1166,7 +1166,15 @@
             return;
         }
         
-        showLoading(true);
+        Swal.fire({
+            title: 'Memproses...',
+            text: 'Sedang memverifikasi pembayaran',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
         
         try {
             console.log('📡 Mengirim verifikasi pembayaran:', {
@@ -1192,6 +1200,7 @@
             const result = await response.json();
             console.log('📦 Response verifikasi:', result);
             
+            Swal.close();
             if (result.success) {
                 showAlert('Pembayaran berhasil diverifikasi', 'success');
                 
@@ -1211,9 +1220,8 @@
             }
         } catch (error) {
             console.error('❌ Error verifikasi:', error);
+            Swal.close();
             showAlert('Gagal verifikasi pembayaran: ' + error.message, 'danger');
-        } finally {
-            showLoading(false);
         }
     }
 
