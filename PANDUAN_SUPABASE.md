@@ -69,7 +69,17 @@ try {
 }
 ```
 
-## 3. Manajemen Database (Supabase)
+## 3. Instalasi Baru (Kloning Proyek)
+Jika ada developer atau anggota tim lain yang baru saja melakukan *clone* (mengunduh) _repository_ ini dan ingin menjalankan sistem dari nol:
+
+1. Buat proyek baru di [Supabase](https://supabase.com/).
+2. Buka menu **SQL Editor**.
+3. Buka _file_ **`supabase_schema.sql`** yang ada di _folder root_ proyek ini.
+4. _Copy_ semua teks yang ada di dalamnya, lalu _Paste_ ke SQL Editor Supabase, dan tekan **Run**.
+5. _File_ tersebut akan secara otomatis membuatkan semua kerangka tabel (*schema*), *relations*, dan data *master* bawaan (Layanan, Tarif, dan Admin bawaan).
+6. Jangan lupa _copy_ URL Database (*Connection String*) Supabase ke dalam _file_ `.env` Anda.
+
+## 4. Manajemen Database (Supabase)
 Karena sistem ini sudah tidak memakai MySQL (XAMPP), jika Anda ingin melakukan "Clean Database" atau mengatur ulang tabel:
 1. Buka dashboard Supabase Anda.
 2. Masuk ke menu **SQL Editor**.
