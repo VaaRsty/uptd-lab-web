@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('../config/database');
 const tokenService = require('../services/tokenService');
-const nodemailer = require('nodemailer');
+const emailService = require('../services/emailService');
 
 const authController = {
     // ── LOGIN (user/pelanggan) ────────────────────────────────────────────
@@ -239,53 +239,50 @@ const authController = {
     forgotPassword: async (req, res) => {
         try {
             const { email } = req.body;
-            if (!email) {
+
+            // Validasi input
+            if (!email || typeof email !== 'string') {
                 return res.status(400).json({ success: false, message: 'Email wajib diisi' });
             }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.trim())) {
+                return res.status(400).json({ success: false, message: 'Format email tidak valid' });
+            }
 
-            const [users] = await db.query('SELECT id, email, full_name FROM users WHERE email = ? AND role = ?', [email, 'pelanggan']);
+            const [users] = await db.query(
+                'SELECT id, email, full_name FROM users WHERE email = ? AND role = ?',
+                [email.trim().toLowerCase(), 'pelanggan']
+            );
+
+            // Selalu return success untuk mencegah email enumeration
             if (users.length === 0) {
-                // Return success anyway to prevent email enumeration
                 return res.json({ success: true, message: 'Jika email terdaftar, instruksi reset akan dikirim.' });
             }
 
             const user = users[0];
+
+            // Generate signed JWT reset token (berlaku 1 jam)
+            const secret = process.env.JWT_ACCESS_SECRET || 'fallback_secret';
             const resetToken = jwt.sign(
-                { id: user.id, email: user.email }, 
-                process.env.JWT_ACCESS_SECRET || 'fallback_secret', 
+                { id: user.id, email: user.email, purpose: 'reset_password' },
+                secret,
                 { expiresIn: '1h' }
             );
+
             const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-            const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
+            const resetLink   = `${frontendUrl}/reset-password?token=${resetToken}`;
 
-            if (process.env.MAIL_HOST) {
-                const transporter = nodemailer.createTransport({
-                    host: process.env.MAIL_HOST,
-                    port: process.env.MAIL_PORT,
-                    auth: {
-                        user: process.env.MAIL_USER,
-                        pass: process.env.MAIL_PASS
-                    }
-                });
-
-                await transporter.sendMail({
-                    from: `"UPTD Lab Pengujian" <${process.env.MAIL_USER}>`,
-                    to: user.email,
-                    subject: 'Reset Password UPTD Lab Pengujian',
-                    text: `Halo ${user.full_name},\n\nKlik link berikut untuk reset password Anda:\n${resetLink}\n\nLink berlaku selama 1 jam.\n\nTerima kasih.`
-                });
-            } else {
-                // Fallback untuk development
-                console.log('=============================================');
-                console.log(`🔑 [DEV MODE] Reset Password Link for ${user.email}:`);
-                console.log(resetLink);
-                console.log('=============================================');
-            }
+            // Kirim email menggunakan emailService
+            await emailService.sendResetPasswordEmail({
+                toEmail:   user.email,
+                fullName:  user.full_name,
+                resetLink: resetLink
+            });
 
             res.json({ success: true, message: 'Jika email terdaftar, instruksi reset akan dikirim.' });
         } catch (error) {
             console.error('Forgot Password Error:', error);
-            res.status(500).json({ success: false, message: 'Terjadi kesalahan server' });
+            res.status(500).json({ success: false, message: 'Terjadi kesalahan server. Silakan coba lagi.' });
         }
     },
 
@@ -293,29 +290,67 @@ const authController = {
     resetPassword: async (req, res) => {
         try {
             const { token, new_password } = req.body;
+
+            // Validasi input
             if (!token || !new_password) {
                 return res.status(400).json({ success: false, message: 'Token dan password baru wajib diisi' });
             }
 
+            // Validasi kekuatan password
+            if (new_password.length < 8) {
+                return res.status(400).json({ success: false, message: 'Password baru minimal 8 karakter' });
+            }
+            if (!/\d/.test(new_password)) {
+                return res.status(400).json({ success: false, message: 'Password baru harus mengandung minimal 1 angka' });
+            }
+
+            // Verifikasi token
             const secret = process.env.JWT_ACCESS_SECRET || 'fallback_secret';
             let decoded;
             try {
                 decoded = jwt.verify(token, secret);
             } catch (err) {
-                return res.status(400).json({ success: false, message: 'Token tidak valid atau sudah kedaluwarsa' });
+                const message = err.name === 'TokenExpiredError'
+                    ? 'Link reset password sudah kedaluwarsa. Silakan minta link baru.'
+                    : 'Token tidak valid atau sudah kedaluwarsa.';
+                return res.status(400).json({ success: false, message });
             }
 
-            const hashed = await bcrypt.hash(new_password, 10);
-            const [result] = await db.query('UPDATE users SET password = ? WHERE id = ?', [hashed, decoded.id]);
-            
+            // Pastikan token memiliki purpose yang benar
+            if (decoded.purpose && decoded.purpose !== 'reset_password') {
+                return res.status(400).json({ success: false, message: 'Token tidak valid.' });
+            }
+
+            // Cek user masih ada
+            const [users] = await db.query(
+                'SELECT id FROM users WHERE id = ? AND role = ?',
+                [decoded.id, 'pelanggan']
+            );
+            if (users.length === 0) {
+                return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+            }
+
+            // Hash dan simpan password baru
+            const hashed = await bcrypt.hash(new_password, 12);
+            const [result] = await db.query(
+                'UPDATE users SET password = ? WHERE id = ?',
+                [hashed, decoded.id]
+            );
+
             if (result.affectedRows === 0) {
-                return res.status(404).json({ success: false, message: 'User tidak ditemukan' });
+                return res.status(404).json({ success: false, message: 'Gagal memperbarui password.' });
             }
 
-            res.json({ success: true, message: 'Password berhasil direset. Silakan login dengan password baru.' });
+            // Log aktivitas reset password
+            db.query(
+                'INSERT INTO activities (user_id, activity_name, ip_address, user_agent) VALUES (?, ?, ?, ?)',
+                [decoded.id, 'Reset password berhasil', req.ip, req.headers['user-agent']]
+            ).catch(() => {});
+
+            res.json({ success: true, message: 'Password berhasil direset. Silakan login dengan password baru Anda.' });
         } catch (error) {
             console.error('Reset Password Error:', error);
-            res.status(500).json({ success: false, message: 'Terjadi kesalahan server' });
+            res.status(500).json({ success: false, message: 'Terjadi kesalahan server.' });
         }
     }
 };

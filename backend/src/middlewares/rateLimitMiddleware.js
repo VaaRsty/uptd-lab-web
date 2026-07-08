@@ -31,3 +31,19 @@ exports.loginLimiter = rateLimit({
     legacyHeaders: false,
     skipSuccessfulRequests: true
 });
+
+/**
+ * Rate limit khusus endpoint forgot-password.
+ * Membatasi 5 request per IP per 15 menit untuk mencegah spam email.
+ */
+exports.forgotPasswordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 menit
+    max: process.env.NODE_ENV === 'production' ? 5 : 50,
+    message: {
+        success: false,
+        message: 'Terlalu banyak permintaan reset password. Silakan coba lagi 15 menit kemudian.'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: false
+});
