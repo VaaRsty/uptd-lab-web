@@ -52,7 +52,12 @@ exports.createSchema = Joi.object({
     metode_uji: Joi.string().allow('', null),
     catatan_pemohon: Joi.string().allow('', null),
     qty_estimasi: Joi.string().allow('', null),
-    tanggal_permohonan: Joi.string().allow('', null)
+    tanggal_permohonan: Joi.string().allow('', null),
+
+    // URL file dari direct browser-to-Supabase upload
+    file_surat_permohonan_url: Joi.string().uri().allow('', null),
+    file_ktp_url: Joi.string().uri().allow('', null),
+    dokumen_tambahan_url: Joi.string().uri().allow('', null)
 });
 
 exports.updateSchema = Joi.object({
