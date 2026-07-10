@@ -1,4 +1,4 @@
-/**
+﻿/**
  * UPTD Lab Submission Handler
  * VERSI FIX - HIDDEN INPUTS PASTI TERKIRIM
  */
@@ -8,16 +8,16 @@
 // Data services dari backend (disimpan di global)
 let servicesData = [];
 
-// ≡ƒö┤ TAMBAHKAN VARIABEL UNTUK MODE SIBUK
+// â‰¡Æ’Ã¶â”¤ TAMBAHKAN VARIABEL UNTUK MODE SIBUK
 let busyModeActive = false;
 let busyModePeriods = [];
 
-// ≡ƒö┤ VARIABEL UNTUK UNIT SATUAN
+// â‰¡Æ’Ã¶â”¤ VARIABEL UNTUK UNIT SATUAN
 let currentUnit = 'sample';
 
 // Di fungsi loadServicesData, perbaiki pembacaan data
 function loadServicesData() {
-    console.log('≡ƒôª Loading services data from DOM...');
+    console.log('â‰¡Æ’Ã´Âª Loading services data from DOM...');
     
     const allSelects = document.querySelectorAll('.test-select');
     servicesData = [];
@@ -45,7 +45,7 @@ function loadServicesData() {
             const unit = option.getAttribute('data-unit');
             const name = option.getAttribute('data-name');
             
-            console.log(`≡ƒôè Option: ${option.value}, minSample: ${minSample}, unit: ${unit}`);
+            console.log(`â‰¡Æ’Ã´Ã¨ Option: ${option.value}, minSample: ${minSample}, unit: ${unit}`);
             
             // Tentukan kategori dari teks option
             const optionText = option.textContent;
@@ -80,10 +80,10 @@ function loadServicesData() {
         servicesData.push(typeObj);
     });
     
-    console.log('Γ£à Services data loaded:', servicesData.length, 'types');
+    console.log('Î“Â£Ã  Services data loaded:', servicesData.length, 'types');
 }
 
-// ≡ƒö┤ FUNGSI UNTUK UPDATE UNIT SATUAN (di card dan form)
+// â‰¡Æ’Ã¶â”¤ FUNGSI UNTUK UPDATE UNIT SATUAN (di card dan form)
 function updateUnitDisplay(unit) {
     currentUnit = unit || 'sample';
     const unitText = document.getElementById('unitText');
@@ -99,7 +99,7 @@ function updateUnitDisplay(unit) {
     }
 }
 
-// ≡ƒö┤ FUNGSI UNTUK SYNC QUANTITY KE INPUT JUMLAH SAMPLE UJI
+// â‰¡Æ’Ã¶â”¤ FUNGSI UNTUK SYNC QUANTITY KE INPUT JUMLAH SAMPLE UJI
 function syncQuantityToForm() {
     const qtyInput = document.getElementById('qtyInput');
     const jumlahSampleAngka = document.getElementById('jumlahSampleAngka');
@@ -107,11 +107,11 @@ function syncQuantityToForm() {
     if (qtyInput && jumlahSampleAngka) {
         const qty = parseInt(qtyInput.value) || 1;
         jumlahSampleAngka.value = qty;
-        console.log('≡ƒôè Sync quantity to form:', qty);
+        console.log('â‰¡Æ’Ã´Ã¨ Sync quantity to form:', qty);
     }
 }
 
-// ≡ƒö┤ FUNGSI UNTUK MENGAMBIL DATA MODE SIBUK
+// â‰¡Æ’Ã¶â”¤ FUNGSI UNTUK MENGAMBIL DATA MODE SIBUK
 function loadBusyModeData() {
     const dataElement = document.getElementById('busy-mode-data');
     if (dataElement) {
@@ -123,11 +123,11 @@ function loadBusyModeData() {
         } catch (e) {
             console.error('Error parsing busy mode periods:', e);
         }
-        console.log('≡ƒôà Busy mode active:', busyModeActive, 'Periods:', busyModePeriods);
+        console.log('â‰¡Æ’Ã´Ã  Busy mode active:', busyModeActive, 'Periods:', busyModePeriods);
     }
 }
 
-// ≡ƒö┤ FUNGSI UNTUK MENDAPATKAN TAMBAHAN HARI DARI MODE SIBUK
+// â‰¡Æ’Ã¶â”¤ FUNGSI UNTUK MENDAPATKAN TAMBAHAN HARI DARI MODE SIBUK
 function getBusyModeExtraDays() {
     if (!busyModeActive || busyModePeriods.length === 0) {
         return 0;
@@ -147,19 +147,19 @@ function getBusyModeExtraDays() {
         }
     }
     
-    console.log('≡ƒôà Busy mode extra days:', extraDays);
+    console.log('â‰¡Æ’Ã´Ã  Busy mode extra days:', extraDays);
     return extraDays;
 }
 
 // Fungsi untuk mencari detail service berdasarkan ID
 function getServiceDetails(serviceId) {
-    console.log('≡ƒöì Mencari service dengan ID:', serviceId);
+    console.log('â‰¡Æ’Ã¶Ã¬ Mencari service dengan ID:', serviceId);
     
     for (const type of servicesData) {
         for (const category of type.categories) {
             for (const item of category.items) {
                 if (item.id == serviceId) {
-                    console.log('Γ£à Service ditemukan:', item);
+                    console.log('Î“Â£Ã  Service ditemukan:', item);
                     return {
                         serviceId: item.id,
                         serviceName: item.name,
@@ -174,7 +174,7 @@ function getServiceDetails(serviceId) {
             }
         }
     }
-    console.log('Γ¥î Service tidak ditemukan untuk ID:', serviceId);
+    console.log('Î“Â¥Ã® Service tidak ditemukan untuk ID:', serviceId);
     return null;
 }
 
@@ -198,7 +198,7 @@ function getTestCategoryId(categoryName) {
 
 // Increment quantity (tombol +)
 window.incrementQty = function() {
-    console.log('Γ₧ò Increment button clicked');
+    console.log('Î“â‚§Ã² Increment button clicked');
     const qtyInput = document.getElementById('qtyInput');
     if (!qtyInput) return;
     
@@ -212,7 +212,7 @@ window.incrementQty = function() {
 
 // Decrement quantity (tombol -)
 window.decrementQty = function() {
-    console.log('Γ₧û Decrement button clicked');
+    console.log('Î“â‚§Ã» Decrement button clicked');
     const qtyInput = document.getElementById('qtyInput');
     if (!qtyInput) return;
     
@@ -262,9 +262,9 @@ function getActiveSelect() {
     return null;
 }
 
-// ≡ƒö┤ DI FUNGSI updateAll, tambahkan pemanggilan updateUnitDisplay dan syncQuantityToForm
+// â‰¡Æ’Ã¶â”¤ DI FUNGSI updateAll, tambahkan pemanggilan updateUnitDisplay dan syncQuantityToForm
 function updateAll() {
-    console.log('≡ƒöä Update semua');
+    console.log('â‰¡Æ’Ã¶Ã¤ Update semua');
     
     const activeSelect = getActiveSelect();
     
@@ -291,7 +291,7 @@ function updateAll() {
     let minSampleNumber = parseInt(selectedOption.getAttribute('data-min-sample')) || 1;
     let unit = selectedOption.getAttribute('data-unit') || 'sample';
     
-    console.log('≡ƒôè Data dari option:', { price, duration, method, minSampleNumber, unit });
+    console.log('â‰¡Æ’Ã´Ã¨ Data dari option:', { price, duration, method, minSampleNumber, unit });
     
     // Update unit
     updateUnitDisplay(unit);
@@ -299,21 +299,21 @@ function updateAll() {
     // Cari detail service
     const serviceDetails = getServiceDetails(selectedServiceId);
     
-    // ≡ƒöÑ UPDATE HIDDEN INPUTS - PASTIKAN TERISI!
+    // â‰¡Æ’Ã¶Ã‘ UPDATE HIDDEN INPUTS - PASTIKAN TERISI!
     if (serviceDetails) {
         document.getElementById('testTypeId').value = serviceDetails.testTypeId || '';
         document.getElementById('testCategoryId').value = serviceDetails.testCategoryId || '';
         document.getElementById('serviceId').value = serviceDetails.serviceId || selectedServiceId;
         document.getElementById('methodAtTime').value = serviceDetails.method || method;
         document.getElementById('priceAtTime').value = serviceDetails.price || price;
-        console.log('Γ£à Hidden serviceId diisi:', document.getElementById('serviceId').value);
-        console.log('Γ£à Hidden testTypeId diisi:', document.getElementById('testTypeId').value);
+        console.log('Î“Â£Ã  Hidden serviceId diisi:', document.getElementById('serviceId').value);
+        console.log('Î“Â£Ã  Hidden testTypeId diisi:', document.getElementById('testTypeId').value);
     } else {
         // Fallback: pakai data dari option langsung
         document.getElementById('serviceId').value = selectedServiceId;
         document.getElementById('methodAtTime').value = method;
         document.getElementById('priceAtTime').value = price;
-        console.log('ΓÜá∩╕Å Service details tidak ditemukan, pakai fallback:', selectedServiceId);
+        console.log('Î“ÃœÃ¡âˆ©â••Ã… Service details tidak ditemukan, pakai fallback:', selectedServiceId);
     }
     
     // Update quantity
@@ -348,13 +348,13 @@ function updateAll() {
     // Update estimasi selesai
     updateCompletionDate(duration);
     
-    // ≡ƒöÑ LOG FINAL UNTUK DEBUG
-    console.log('≡ƒöì [DEBUG] Setelah updateAll - serviceId:', document.getElementById('serviceId').value);
-    console.log('≡ƒöì [DEBUG] testTypeId:', document.getElementById('testTypeId').value);
-    console.log('≡ƒöì [DEBUG] priceAtTime:', document.getElementById('priceAtTime').value);
+    // â‰¡Æ’Ã¶Ã‘ LOG FINAL UNTUK DEBUG
+    console.log('â‰¡Æ’Ã¶Ã¬ [DEBUG] Setelah updateAll - serviceId:', document.getElementById('serviceId').value);
+    console.log('â‰¡Æ’Ã¶Ã¬ [DEBUG] testTypeId:', document.getElementById('testTypeId').value);
+    console.log('â‰¡Æ’Ã¶Ã¬ [DEBUG] priceAtTime:', document.getElementById('priceAtTime').value);
 }
 
-// ≡ƒö┤ FUNGSI UPDATE ESTIMASI SELESAI
+// â‰¡Æ’Ã¶â”¤ FUNGSI UPDATE ESTIMASI SELESAI
 function updateCompletionDate(duration) {
     const tanggalSampel = document.getElementById('tanggalSampel');
     const completionDateEl = document.getElementById('completionDate');
@@ -397,7 +397,7 @@ function updateCompletionDate(duration) {
 
 // Fungsi ketika select berubah
 window.onSelectChange = function(selectElement) {
-    console.log('≡ƒÄ» Select berubah:', selectElement.name);
+    console.log('â‰¡Æ’Ã„Â» Select berubah:', selectElement.name);
     
     const allSelects = document.querySelectorAll('.test-select');
     for (let i = 0; i < allSelects.length; i++) {
@@ -416,7 +416,7 @@ function validateFiles() {
     let isValid = true;
     let errorMessage = '';
     
-    // ≡ƒöÑ Ambil batas upload dari setting admin
+    // â‰¡Æ’Ã¶Ã‘ Ambil batas upload dari setting admin
     // VERCEL HARD LIMIT: 4.5MB payload limit. Kita batasi di 4MB agar tidak melebihi payload saat multipart/form-data.
     let maxUploadMB = window.settings?.max_upload_size || 5;
     if (maxUploadMB > 4) maxUploadMB = 4;
@@ -427,7 +427,7 @@ function validateFiles() {
         const file = suratFileInput.files[0];
         const fileSizeKB = file.size / 1024;
         
-        console.log('≡ƒôü Surat file:', {
+        console.log('â‰¡Æ’Ã´Ã¼ Surat file:', {
             name: file.name,
             size: file.size + ' bytes',
             sizeKB: fileSizeKB.toFixed(2) + ' KB',
@@ -454,7 +454,7 @@ function validateFiles() {
         const file = ktpFileInput.files[0];
         const fileSizeKB = file.size / 1024;
         
-        console.log('≡ƒôü KTP file:', {
+        console.log('â‰¡Æ’Ã´Ã¼ KTP file:', {
             name: file.name,
             size: file.size + ' bytes',
             sizeKB: fileSizeKB.toFixed(2) + ' KB',
@@ -487,7 +487,7 @@ function validateFiles() {
 function forceSetHiddenBeforeSubmit() {
     const activeSelect = getActiveSelect();
     if (!activeSelect || !activeSelect.value) {
-        console.warn('ΓÜá∩╕Å Tidak ada select aktif sebelum submit');
+        console.warn('Î“ÃœÃ¡âˆ©â••Ã… Tidak ada select aktif sebelum submit');
         return;
     }
     
@@ -518,7 +518,7 @@ function forceSetHiddenBeforeSubmit() {
         }
     }
     
-    console.log('≡ƒöä [SUBMIT] Force set hidden:', {
+    console.log('â‰¡Æ’Ã¶Ã¤ [SUBMIT] Force set hidden:', {
         serviceId: document.getElementById('serviceId').value,
         testTypeId: document.getElementById('testTypeId').value,
         testCategoryId: document.getElementById('testCategoryId').value,
@@ -529,7 +529,7 @@ function forceSetHiddenBeforeSubmit() {
 
 // ==================== INISIALISASI ====================
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Γ£à Handler siap - Versi database + Mode Sibuk');
+    console.log('Î“Â£Ã  Handler siap - Versi database + Mode Sibuk');
     
     // LOAD DATA SERVICES DARI DOM
     loadServicesData();
@@ -585,7 +585,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
-    // ≡ƒöÑ Preview file dengan validasi - PAKAI SETTING ADMIN
+    // â‰¡Æ’Ã¶Ã‘ Preview file dengan validasi - PAKAI SETTING ADMIN
     // VERCEL HARD LIMIT
     let maxUploadMB = window.settings?.max_upload_size || 5;
     if (maxUploadMB > 4) maxUploadMB = 4;
@@ -597,14 +597,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             const file = this.files[0];
             if (file) {
                 const fileSizeKB = file.size / 1024;
-                console.log(`≡ƒôü ${this.name} file:`, {
+                console.log(`â‰¡Æ’Ã´Ã¼ ${this.name} file:`, {
                     name: file.name,
                     size: file.size + ' bytes',
                     sizeKB: fileSizeKB.toFixed(2) + ' KB',
                     type: file.type
                 });
                 
-                // ≡ƒöÑ VALIDASI UKURAN FILE PAKAI SETTING ADMIN
+                // â‰¡Æ’Ã¶Ã‘ VALIDASI UKURAN FILE PAKAI SETTING ADMIN
                 if (file.size === 0) {
                     alert(`File ${this.name} kosong! Silakan pilih file yang valid.`);
                     this.value = '';
@@ -631,181 +631,116 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     });
     
-    // ≡ƒöÑ HANDLE FORM SUBMIT (PERBAIKAN UTAMA)
+    // HANDLE FORM SUBMIT
     const form = document.getElementById('applicationForm');
     if (form) {
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // ≡ƒöÑ FORCE SET HIDDEN INPUTS SEBELUM VALIDASI
-            forceSetHiddenBeforeSubmit();
-            
-            if (!validateFiles()) return;
-            if (this.dataset.submitting === 'true') return;
-            
-            this.dataset.submitting = 'true';
-            const submitButton = this.querySelector('button[type="submit"]');
-            const originalText = submitButton.innerHTML;
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
-            
-            Swal.fire({
-                title: 'Memproses...',
-                text: 'Sedang mengirim pengajuan',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            try {
-                const formData = new FormData(this);
-                
-                // ≡ƒöÑ KOMPRESI GAMBAR CLIENT-SIDE (DIOPTIMASI)
-                async function compressImage(file) {
-                    if (!file || !file.type.startsWith('image/')) return file;
-                    return new Promise((resolve) => {
-                        const img = new Image();
-                        const objectUrl = URL.createObjectURL(file);
-                        img.src = objectUrl;
-                        
-                        img.onload = () => {
-                            URL.revokeObjectURL(objectUrl);
-                            const canvas = document.createElement('canvas');
-                            let width = img.width;
-                            let height = img.height;
-                            const MAX_DIM = 1200;
-                            
-                            if (width > height && width > MAX_DIM) {
-                                height *= MAX_DIM / width;
-                                width = MAX_DIM;
-                            } else if (height > MAX_DIM) {
-                                width *= MAX_DIM / height;
-                                height = MAX_DIM;
-                            }
-                            
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-                            
-                            canvas.toBlob(blob => {
-                                if (blob && blob.size < file.size) {
-                                    resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
-                                } else {
-                                    resolve(file);
-                                }
-                            }, 'image/jpeg', 0.75);
-                        };
-                        img.onerror = () => {
-                            URL.revokeObjectURL(objectUrl);
-                            resolve(file);
-                        };
-                    });
-                }
-                
-                const fileInputs = ['surat_permohonan', 'scan_ktp', 'lampiran_pendukung'];
-                for (let inputName of fileInputs) {
-                    const fileInput = document.querySelector(`input[name="${inputName}"]`);
-                    if (fileInput && fileInput.files.length > 0) {
-                        const file = fileInput.files[0];
-                        if (file.type.startsWith('image/')) {
-                            Swal.update({ text: `Mengompresi ${inputName.replace('_', ' ')}...` });
-                            const compressed = await compressImage(file);
-                            formData.set(inputName, compressed);
-                        }
-                    }
-                }
-                Swal.update({ text: 'Sedang mengirim pengajuan...' });
 
-                
-                // ≡ƒöÑ LOG SEMUA FORM DATA (TERMASUK HIDDEN)
-                console.log('≡ƒôñ [SUBMIT] FormData yang dikirim:');
-                for (let pair of formData.entries()) {
-                    console.log(`  ${pair[0]}:`, pair[1] instanceof File ? pair[1].name : pair[1]);
+            try {
+                // 1. Cegah double-submit
+                if (this.dataset.submitting === 'true') {
+                    alert('Pengajuan sedang diproses, harap tunggu...');
+                    return;
                 }
-                
-                // Pastikan hidden inputs tetap ada di FormData (jika kosong, set default)
-                if (!formData.has('service_id') || !formData.get('service_id')) {
+
+                // 2. Force set hidden inputs
+                try { forceSetHiddenBeforeSubmit(); } catch(ex) { console.warn('forceSet warn:', ex); }
+
+                // 3. Validasi file
+                if (!validateFiles()) return;
+
+                // 4. Cek token
+                const authToken = localStorage.getItem('token')
+                    || document.getElementById('api-auth-token')?.getAttribute('data-token')
+                    || '';
+
+                if (!authToken) {
+                    alert('Sesi habis. Silakan login ulang.');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                // 5. Lock & tampilkan loading
+                this.dataset.submitting = 'true';
+                const submitButton = this.querySelector('button[type="submit"]') || this.querySelector('button');
+                const originalText = submitButton ? submitButton.innerHTML : '';
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+                }
+
+                Swal.fire({
+                    title: 'Memproses...',
+                    text: 'Sedang mengirim pengajuan',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                // 6. Kumpulkan FormData (dengan file binary)
+                const formData = new FormData(this);
+
+                // Pastikan service_id ada
+                if (!formData.get('service_id')) {
                     const activeSelect = getActiveSelect();
                     if (activeSelect && activeSelect.value) {
                         formData.set('service_id', activeSelect.value);
-                        console.log('≡ƒöä [SUBMIT] Set service_id via FormData:', activeSelect.value);
                     }
-                }
-                if (!formData.has('test_type_id') || !formData.get('test_type_id')) {
-                    const activeSelect = getActiveSelect();
-                    if (activeSelect) {
-                        const selectName = activeSelect.name;
-                        const testTypeId = selectName === 'uji_bahan' ? '1' : '2';
-                        formData.set('test_type_id', testTypeId);
-                        console.log('≡ƒöä [SUBMIT] Set test_type_id via FormData:', testTypeId);
-                    }
-                }
-                if (!formData.has('price_at_time') || formData.get('price_at_time') === '0') {
-                    const activeSelect = getActiveSelect();
-                    if (activeSelect && activeSelect.value) {
-                        const selectedOption = activeSelect.options[activeSelect.selectedIndex];
-                        const price = selectedOption.getAttribute('data-price') || '0';
-                        formData.set('price_at_time', price);
-                        console.log('≡ƒöä [SUBMIT] Set price_at_time via FormData:', price);
-                    }
-                }
-                
-                // Token dari localStorage (selalu ada setelah login), fallback ke meta tag
-                const authToken = localStorage.getItem('token') 
-                    || document.getElementById('api-auth-token')?.getAttribute('data-token') 
-                    || '';
-                
-                const fetchOptions = {
-                    method: 'POST',
-                    body: formData
-                };
-                
-                // Jika token tersedia, kirim langsung ke backend API untuk menghindari double-upload
-                let submitUrl = '/user/submission';
-                if (authToken) {
-                    fetchOptions.headers = { 'Authorization': `Bearer ${authToken}` };
-                    submitUrl = '/api/submissions';
                 }
 
-                
-                const response = await fetch(submitUrl, fetchOptions);
-                
-                if (!response.ok) {
-                    const text = await response.text();
-                    console.error('Γ¥î Response not OK:', text);
-                    throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
+                console.log('ðŸ“¤ [SUBMIT] Mengirim ke /api/submissions...');
+                for (let [k, v] of formData.entries()) {
+                    console.log(`  ${k}:`, v instanceof File ? `File(${v.name}, ${v.size}b)` : v);
                 }
-                
-                const result = await response.json();
-                console.log('≡ƒôª Result:', result);
-                
+
+                // 7. Kirim langsung ke backend (bypass frontend proxy)
+                const response = await fetch('/api/submissions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData
+                });
+
+                let result;
+                try {
+                    result = await response.json();
+                } catch (parseErr) {
+                    throw new Error(`Server error ${response.status} â€” respons tidak valid`);
+                }
+
+                console.log('ðŸ“¥ [SUBMIT] Response:', response.status, result);
+
                 if (result.success) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Pengajuan berhasil dikirim',
-                        timer: 1500,
+                        title: 'Berhasil!',
+                        text: 'Pengajuan berhasil dikirim.',
+                        timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
                         window.location.href = '/user/history?success=true&message=Pengajuan+berhasil+dikirim';
                     });
                 } else {
-                    Swal.fire('Error', result.message || 'Gagal mengirim pengajuan', 'error');
+                    Swal.fire('Gagal', result.message || 'Terjadi kesalahan.', 'error');
                 }
-            } catch (error) {
-                console.error('Γ¥î Error:', error);
-                Swal.fire('Error', 'Terjadi kesalahan saat mengirim data: ' + error.message, 'error');
+
+            } catch (err) {
+                console.error('âŒ [SUBMIT] Error:', err);
+                Swal.fire('Error', 'Terjadi kesalahan: ' + (err.message || 'Tidak diketahui'), 'error');
             } finally {
                 this.dataset.submitting = 'false';
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
+                const btn = this.querySelector('button[type="submit"]') || this.querySelector('button');
+                if (btn) {
+                    btn.disabled = false;
+                    // Restore teks tombol
+                    if (!btn.innerHTML.includes('Kirim') && !btn.innerHTML.includes('submit')) {
+                        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Pengajuan';
+                    }
+                }
             }
         });
     }
-    
+
     // Initial update
     setTimeout(updateAll, 500);
 });
