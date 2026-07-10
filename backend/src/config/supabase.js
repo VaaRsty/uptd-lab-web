@@ -2,7 +2,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 // Inisialisasi Supabase Client untuk Storage
 const supabaseUrl = process.env.SUPABASE_URL || 'https://hahspxchyligbgjeqqcm.supabase.co';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 'public-anon-key';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'sb_publishable_JIsw9bmvjFelr6jp0jeNkA_P8mRbE9k';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
