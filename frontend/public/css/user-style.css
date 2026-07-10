@@ -865,6 +865,9 @@ main.main-content,
     font-weight: 500;
     font-size: 0.95rem;
     transition: all 0.2s ease;
+    width: 100%;
+    white-space: nowrap;
+    justify-content: flex-start;
 }
 
 .action-item:hover {
@@ -3996,8 +3999,11 @@ main.main-content,
     }
 
     .action-item {
-        font-size: 0.9rem;
+        font-size: 0.95rem; /* Samakan dengan profil di desktop / keep consistent */
         padding: 10px 12px;
+        width: 100%;
+        white-space: nowrap;
+        justify-content: flex-start;
     }
 
     .minimal-table {
