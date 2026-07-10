@@ -163,72 +163,6 @@ exports.create = async (req, res, next) => {
         const id = await submissionModel.create(payload);
         console.log('✅ Submission ID:', id);
 
-        // --- Proses Upload File ---
-        // Mode 1: Browser sudah upload langsung ke Supabase (ada url di body)
-        // Mode 2: File dikirim ke server (fallback lama)
-        const updatedUrls = {};
-        
-        // Cek apakah URL sudah dikirim dari browser (direct upload)
-        if (req.body.file_surat_permohonan_url) {
-            updatedUrls.file_surat_permohonan = req.body.file_surat_permohonan_url;
-        }
-        if (req.body.file_ktp_url) {
-            updatedUrls.file_ktp = req.body.file_ktp_url;
-        }
-        if (req.body.dokumen_tambahan_url) {
-            updatedUrls.dokumen_tambahan = req.body.dokumen_tambahan_url;
-        }
-        
-        // Fallback: upload file melalui server (paralel, max 6 detik total)
-        if (req.files && Object.keys(updatedUrls).length === 0) {
-            const path = require('path');
-            const uploadTasks = [];
-
-            if (req.files.surat_permohonan?.[0]) {
-                const f = req.files.surat_permohonan[0];
-                const name = `SuratPermohonan_${id}${path.extname(f.originalname)}`;
-                uploadTasks.push(
-                    uploadToSupabase(f.buffer, name, f.mimetype, 'uploads', 'surat_permohonan')
-                        .then(url => { updatedUrls.file_surat_permohonan = url; })
-                        .catch(e => console.error('⚠️ surat_permohonan gagal:', e.message))
-                );
-            }
-            if (req.files.scan_ktp?.[0]) {
-                const f = req.files.scan_ktp[0];
-                const name = `KTP_${id}${path.extname(f.originalname)}`;
-                uploadTasks.push(
-                    uploadToSupabase(f.buffer, name, f.mimetype, 'uploads', 'scan_ktp')
-                        .then(url => { updatedUrls.file_ktp = url; })
-                        .catch(e => console.error('⚠️ scan_ktp gagal:', e.message))
-                );
-            }
-            if (req.files.lampiran_pendukung?.[0]) {
-                const f = req.files.lampiran_pendukung[0];
-                const name = `Lampiran_${id}${path.extname(f.originalname)}`;
-                uploadTasks.push(
-                    uploadToSupabase(f.buffer, name, f.mimetype, 'uploads', 'lampiran_pendukung')
-                        .then(url => { updatedUrls.dokumen_tambahan = url; })
-                        .catch(e => console.error('⚠️ lampiran gagal:', e.message))
-                );
-            }
-
-            if (uploadTasks.length > 0) {
-                // Semua upload paralel, max 6 detik total (aman untuk Vercel Hobby 10s)
-                await Promise.race([
-                    Promise.all(uploadTasks),
-                    new Promise(resolve => setTimeout(resolve, 6000))
-                ]);
-                console.log('✅ Upload selesai (atau timeout). URLs:', updatedUrls);
-            }
-        }
-
-        // Update database jika ada file URL
-        if (Object.keys(updatedUrls).length > 0) {
-            await submissionModel.update(id, updatedUrls);
-            console.log('✅ Berhasil update submission dengan URL file:', updatedUrls);
-        }
-        // ------------------------------------------
-
 
         // 6. Siapkan data sample dari form + serviceDetail
         let jenisSample = null;
@@ -311,7 +245,48 @@ exports.create = async (req, res, next) => {
             console.error('⚠️ Gagal mengirim notifikasi admin:', notifErr.message);
         }
 
-        return success(res, 'Submission berhasil dibuat', { id }, 201);
+        // ✅ RESPOND SUKSES DULU — jangan tunggu upload file
+        success(res, 'Submission berhasil dibuat', { id }, 201);
+
+        // ====== UPLOAD FILE DI BACKGROUND (setelah response dikirim) ======
+        // Vercel masih jalankan kode ini beberapa detik setelah res dikirim
+        const updatedUrls = {};
+
+        // Cek URL dari direct upload (browser ke Supabase)
+        if (req.body.file_surat_permohonan_url) updatedUrls.file_surat_permohonan = req.body.file_surat_permohonan_url;
+        if (req.body.file_ktp_url) updatedUrls.file_ktp = req.body.file_ktp_url;
+        if (req.body.dokumen_tambahan_url) updatedUrls.dokumen_tambahan = req.body.dokumen_tambahan_url;
+
+        // Upload server-side jika tidak ada URL dari browser
+        if (req.files && Object.keys(updatedUrls).length === 0) {
+            const pathMod = require('path');
+            const uploads = [];
+            if (req.files.surat_permohonan?.[0]) {
+                const f = req.files.surat_permohonan[0];
+                uploads.push(uploadToSupabase(f.buffer, `SuratPermohonan_${id}${pathMod.extname(f.originalname)}`, f.mimetype, 'uploads', 'surat_permohonan')
+                    .then(url => { updatedUrls.file_surat_permohonan = url; }).catch(e => console.error('bg upload surat:', e.message)));
+            }
+            if (req.files.scan_ktp?.[0]) {
+                const f = req.files.scan_ktp[0];
+                uploads.push(uploadToSupabase(f.buffer, `KTP_${id}${pathMod.extname(f.originalname)}`, f.mimetype, 'uploads', 'scan_ktp')
+                    .then(url => { updatedUrls.file_ktp = url; }).catch(e => console.error('bg upload ktp:', e.message)));
+            }
+            if (req.files.lampiran_pendukung?.[0]) {
+                const f = req.files.lampiran_pendukung[0];
+                uploads.push(uploadToSupabase(f.buffer, `Lampiran_${id}${pathMod.extname(f.originalname)}`, f.mimetype, 'uploads', 'lampiran_pendukung')
+                    .then(url => { updatedUrls.dokumen_tambahan = url; }).catch(e => console.error('bg upload lampiran:', e.message)));
+            }
+            // Tunggu semua upload (best-effort, max sisa waktu Vercel)
+            if (uploads.length > 0) await Promise.allSettled(uploads);
+        }
+
+        // Update DB dengan file URL jika ada
+        if (Object.keys(updatedUrls).length > 0) {
+            await submissionModel.update(id, updatedUrls).catch(e => console.error('bg update urls:', e.message));
+            console.log('✅ Background upload selesai, URLs tersimpan:', updatedUrls);
+        }
+        // ====== SELESAI BACKGROUND ======
+
     } catch (err) {
         console.error('❌ ERROR:', err);
         return res.status(500).json({
