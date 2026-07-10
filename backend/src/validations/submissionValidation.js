@@ -57,6 +57,7 @@ exports.createSchema = Joi.object({
     // URL file dari direct browser-to-Supabase upload
     file_surat_permohonan_url: Joi.string().uri().allow('', null),
     file_ktp_url: Joi.string().uri().allow('', null),
+    file_scan_ktp_url: Joi.string().uri().allow('', null),
     dokumen_tambahan_url: Joi.string().uri().allow('', null)
 });
 
