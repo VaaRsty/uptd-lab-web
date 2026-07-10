@@ -753,48 +753,118 @@ document.addEventListener('DOMContentLoaded', async function() {
                     }
                 }
                 
-                // 🚀 DIRECT SUBMIT ke backend API (skip frontend proxy agar file hanya upload 1x)
                 const authToken = document.getElementById('api-auth-token')?.getAttribute('data-token') || '';
                 
-                const fetchOptions = {
-                    method: 'POST',
-                    body: formData
-                };
-                
-                // Jika token tersedia, kirim langsung ke backend API untuk menghindari double-upload
-                let submitUrl = '/user/submission';
+                // === DIRECT UPLOAD KE SUPABASE (Bypass Vercel Sepenuhnya) ===
                 if (authToken) {
-                    fetchOptions.headers = { 'Authorization': `Bearer ${authToken}` };
-                    submitUrl = '/api/submissions';
-                }
-                
-                const response = await fetch(submitUrl, fetchOptions);
-                
-                if (!response.ok) {
-                    const text = await response.text();
-                    console.error('❌ Response not OK:', text);
-                    throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
-                }
-                
-                const result = await response.json();
-                console.log('📦 Result:', result);
-                
-                if (result.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Pengajuan berhasil dikirim',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = '/user/history?success=true&message=Pengajuan+berhasil+dikirim';
+                    // Kumpulkan daftar file yang akan diupload
+                    const fileFields = ['surat_permohonan', 'scan_ktp', 'lampiran_pendukung'];
+                    const filesToUpload = [];
+                    const fileObjects = {};
+                    
+                    for (const fieldName of fileFields) {
+                        const input = document.querySelector(`input[name="${fieldName}"]`);
+                        if (input && input.files.length > 0) {
+                            let file = input.files[0];
+                            // Kompresi jika gambar
+                            if (file.type.startsWith('image/')) {
+                                Swal.update({ text: `Mengompresi ${fieldName.replace(/_/g, ' ')}...` });
+                                file = await compressImage(file);
+                            }
+                            filesToUpload.push({ field: fieldName, filename: file.name });
+                            fileObjects[fieldName] = file;
+                        }
+                    }
+                    
+                    // Step 1: Minta signed URL dari backend
+                    if (filesToUpload.length > 0) {
+                        Swal.update({ text: 'Menyiapkan upload...' });
+                        const urlRes = await fetch('/api/submissions/upload-urls', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ files: filesToUpload })
+                        });
+                        
+                        if (!urlRes.ok) throw new Error('Gagal mendapatkan URL upload');
+                        const urlData = await urlRes.json();
+                        
+                        // Step 2: Upload setiap file LANGSUNG ke Supabase (bypass Vercel!)
+                        for (const fieldName of Object.keys(fileObjects)) {
+                            const fileInfo = urlData.data[fieldName];
+                            if (!fileInfo) continue;
+                            
+                            Swal.update({ text: `Mengupload ${fieldName.replace(/_/g, ' ')}...` });
+                            const uploadRes = await fetch(fileInfo.signedUrl, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': fileObjects[fieldName].type },
+                                body: fileObjects[fieldName]
+                            });
+                            
+                            if (!uploadRes.ok) {
+                                console.warn(`Upload ${fieldName} gagal, akan dicoba via server`);
+                            } else {
+                                // Simpan URL publik di formData untuk dikirim ke backend
+                                const urlMap = {
+                                    surat_permohonan: 'file_surat_permohonan_url',
+                                    scan_ktp: 'file_ktp_url',
+                                    lampiran_pendukung: 'dokumen_tambahan_url'
+                                };
+                                formData.set(urlMap[fieldName], fileInfo.publicUrl);
+                                formData.delete(fieldName); // hapus file binary dari formData
+                            }
+                        }
+                    }
+                    
+                    // Step 3: Kirim data form (tanpa file binary) ke backend
+                    Swal.update({ text: 'Menyimpan data pengajuan...' });
+                    const response = await fetch('/api/submissions', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}` },
+                        body: formData
                     });
+                    
+                    if (!response.ok) {
+                        const text = await response.text();
+                        throw new Error(`HTTP ${response.status}: ${text.substring(0, 200)}`);
+                    }
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Pengajuan berhasil dikirim',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = '/user/history?success=true&message=Pengajuan+berhasil+dikirim';
+                        });
+                    } else {
+                        Swal.fire('Error', result.message || 'Gagal mengirim pengajuan', 'error');
+                    }
+                    
                 } else {
-                    Swal.fire('Error', result.message || 'Gagal mengirim pengajuan', 'error');
+                    // Fallback: kirim lewat frontend proxy (jika tidak ada token)
+                    Swal.update({ text: 'Mengirim pengajuan...' });
+                    const response = await fetch('/user/submission', { method: 'POST', body: formData });
+                    if (!response.ok) {
+                        const text = await response.text();
+                        throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
+                    }
+                    const result = await response.json();
+                    if (result.success) {
+                        Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Pengajuan berhasil dikirim', timer: 1500, showConfirmButton: false })
+                            .then(() => { window.location.href = '/user/history?success=true&message=Pengajuan+berhasil+dikirim'; });
+                    } else {
+                        Swal.fire('Error', result.message || 'Gagal mengirim pengajuan', 'error');
+                    }
                 }
             } catch (error) {
                 console.error('❌ Error:', error);
-                Swal.fire('Error', 'Terjadi kesalahan saat mengirim data: ' + error.message, 'error');
+                Swal.fire('Error', 'Terjadi kesalahan: ' + error.message, 'error');
             } finally {
                 this.dataset.submitting = 'false';
                 submitButton.disabled = false;

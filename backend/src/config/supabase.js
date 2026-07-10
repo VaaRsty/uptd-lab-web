@@ -7,6 +7,23 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY || 'public-anon-key';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 /**
+ * Membuat signed upload URL agar browser bisa langsung upload ke Supabase
+ * tanpa melewati server (bypass Vercel timeout)
+ */
+const createSignedUploadUrl = async (filePath, bucketName = 'uploads') => {
+    const { data, error } = await supabase.storage
+        .from(bucketName)
+        .createSignedUploadUrl(filePath);
+    if (error) throw error;
+    return {
+        signedUrl: data.signedUrl,
+        token: data.token,
+        path: filePath,
+        publicUrl: `${supabaseUrl}/storage/v1/object/public/${bucketName}/${filePath}`
+    };
+};
+
+/**
  * Mengunggah file (dari memory buffer) ke Supabase Storage
  * @param {Buffer} fileBuffer Buffer file
  * @param {String} originalName Nama asli file
@@ -49,5 +66,7 @@ const uploadToSupabase = async (fileBuffer, originalName, mimeType, bucketName =
 
 module.exports = {
     supabase,
-    uploadToSupabase
+    supabaseUrl,
+    uploadToSupabase,
+    createSignedUploadUrl
 };

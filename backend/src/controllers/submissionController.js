@@ -6,7 +6,44 @@ const submissionSampleModel = require('../models/submissionSampleModel');
 const notificationModel = require('../models/notificationModel');
 const { success, error, paginated } = require('../utils/responseHelper');
 const db = require('../config/database');
-const { uploadToSupabase } = require('../config/multer');
+const { uploadToSupabase, createSignedUploadUrl, supabaseUrl } = require('../config/supabase');
+
+/**
+ * Generate signed upload URLs untuk browser upload langsung ke Supabase
+ * POST /submissions/upload-urls
+ */
+exports.generateUploadUrls = async (req, res, next) => {
+    try {
+        const { files } = req.body; // array of { field, filename }
+        if (!files || !Array.isArray(files) || files.length === 0) {
+            return res.status(400).json({ success: false, message: 'Daftar file diperlukan' });
+        }
+
+        const folderMap = {
+            surat_permohonan: 'surat_permohonan',
+            scan_ktp: 'scan_ktp',
+            lampiran_pendukung: 'lampiran_pendukung'
+        };
+
+        const urls = {};
+        for (const { field, filename } of files) {
+            const folder = folderMap[field] || 'others';
+            const ext = require('path').extname(filename || 'file');
+            const uniqueName = `${folder}/${Date.now()}_${Math.random().toString(36).substr(2, 9)}${ext}`;
+            const result = await createSignedUploadUrl(uniqueName, 'uploads');
+            urls[field] = {
+                signedUrl: result.signedUrl,
+                publicUrl: result.publicUrl,
+                path: result.path
+            };
+        }
+
+        return res.json({ success: true, data: urls });
+    } catch (err) {
+        console.error('Error generating upload URLs:', err);
+        return res.status(500).json({ success: false, message: 'Gagal membuat upload URL: ' + err.message });
+    }
+};
 
 exports.list = async (req, res, next) => {
     try {
@@ -126,9 +163,24 @@ exports.create = async (req, res, next) => {
         const id = await submissionModel.create(payload);
         console.log('✅ Submission ID:', id);
 
-        // --- Proses Upload File dengan Nama Baru ---
+        // --- Proses Upload File ---
+        // Mode 1: Browser sudah upload langsung ke Supabase (ada url di body)
+        // Mode 2: File dikirim ke server (fallback lama)
         const updatedUrls = {};
-        if (req.files) {
+        
+        // Cek apakah URL sudah dikirim dari browser (direct upload)
+        if (req.body.file_surat_permohonan_url) {
+            updatedUrls.file_surat_permohonan = req.body.file_surat_permohonan_url;
+        }
+        if (req.body.file_ktp_url) {
+            updatedUrls.file_ktp = req.body.file_ktp_url;
+        }
+        if (req.body.dokumen_tambahan_url) {
+            updatedUrls.dokumen_tambahan = req.body.dokumen_tambahan_url;
+        }
+        
+        // Fallback: upload file melalui server (jika tidak ada direct URL)
+        if (req.files && Object.keys(updatedUrls).length === 0) {
             try {
                 if (req.files.surat_permohonan && req.files.surat_permohonan[0]) {
                     const file = req.files.surat_permohonan[0];
@@ -148,17 +200,18 @@ exports.create = async (req, res, next) => {
                     const newName = `Lampiran_Pengujian_${id}${ext}`;
                     updatedUrls.dokumen_tambahan = await uploadToSupabase(file.buffer, newName, file.mimetype, 'uploads', 'lampiran_pendukung');
                 }
-
-                // Update database jika ada file yang berhasil diupload
-                if (Object.keys(updatedUrls).length > 0) {
-                    await submissionModel.update(id, updatedUrls);
-                    console.log('✅ Berhasil update submission dengan URL file:', updatedUrls);
-                }
             } catch (uploadErr) {
                 console.error('❌ Gagal mengupload file ke Supabase:', uploadErr);
             }
         }
+
+        // Update database jika ada file URL
+        if (Object.keys(updatedUrls).length > 0) {
+            await submissionModel.update(id, updatedUrls);
+            console.log('✅ Berhasil update submission dengan URL file:', updatedUrls);
+        }
         // ------------------------------------------
+
 
         // 6. Siapkan data sample dari form + serviceDetail
         let jenisSample = null;

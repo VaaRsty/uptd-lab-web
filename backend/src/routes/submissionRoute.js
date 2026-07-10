@@ -44,6 +44,9 @@ router.delete(
     submissionController.deleteReport
 );
 
+// Generate signed upload URLs untuk direct browser-to-Supabase upload
+router.post('/upload-urls', authMiddleware, submissionController.generateUploadUrls);
+
 // Create submission (upload file manual di controller agar bisa direname dengan ID)
 router.post(
     '/',
