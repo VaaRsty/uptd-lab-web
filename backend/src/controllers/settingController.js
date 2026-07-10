@@ -36,7 +36,8 @@ exports.getProfileSettings = async (req, res, next) => {
             name: user.full_name,
             email: user.email,
             phone: user.nomor_telepon,
-            position: user.role === 'admin' ? 'Super Administrator' : user.role,
+            position: user.jabatan || (user.role === 'admin' ? 'Super Administrator' : 'Administrator'),
+            alamat: user.alamat,
             avatar: user.avatar,
             updated_at: user.updated_at || user.created_at
         });
@@ -45,11 +46,12 @@ exports.getProfileSettings = async (req, res, next) => {
 
 exports.updateProfileSettings = async (req, res, next) => {
     try {
-        const { name, email, phone } = req.body;
+        const { name, email, phone, alamat } = req.body;
         const affected = await userModel.updateProfile(req.user.id, {
             full_name: name,
             email: email,
-            nomor_telepon: phone
+            nomor_telepon: phone,
+            alamat: alamat
         });
         if (!affected) return error(res, 400, 'Tidak ada perubahan');
         return success(res, 'Profil berhasil diupdate');
