@@ -753,10 +753,22 @@ document.addEventListener('DOMContentLoaded', async function() {
                     }
                 }
                 
-                const response = await fetch('/user/submission', {
+                // 🚀 DIRECT SUBMIT ke backend API (skip frontend proxy agar file hanya upload 1x)
+                const authToken = document.getElementById('api-auth-token')?.getAttribute('data-token') || '';
+                
+                const fetchOptions = {
                     method: 'POST',
                     body: formData
-                });
+                };
+                
+                // Jika token tersedia, kirim langsung ke backend API untuk menghindari double-upload
+                let submitUrl = '/user/submission';
+                if (authToken) {
+                    fetchOptions.headers = { 'Authorization': `Bearer ${authToken}` };
+                    submitUrl = '/api/submissions';
+                }
+                
+                const response = await fetch(submitUrl, fetchOptions);
                 
                 if (!response.ok) {
                     const text = await response.text();

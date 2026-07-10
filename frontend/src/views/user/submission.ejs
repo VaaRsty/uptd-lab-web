@@ -49,6 +49,9 @@ const formData = locals.formData || {};
                      data-periods='<%- JSON.stringify(locals.busyMode && locals.busyMode.activePeriods ? locals.busyMode.activePeriods : []) %>'
                      style="display: none;"></div>
 
+                <!-- Token untuk direct API call (skip frontend proxy) -->
+                <meta id="api-auth-token" data-token="<%= locals.token || '' %>" style="display:none">
+
                 <form action="/user/submission" method="POST" id="applicationForm" enctype="multipart/form-data">
     
                     <section class="parameter-section">

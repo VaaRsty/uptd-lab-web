@@ -278,7 +278,7 @@ exports.submissionPage = async (req, res) => {
             busyMode,
             formData: {},
             error: null,
-            token: ''
+            token: req.session?.token || ''
         });
     } catch (err) {
         logger.error('Error rendering submission page: ' + err.message);
