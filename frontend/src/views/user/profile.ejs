@@ -42,6 +42,7 @@ const profileAvatarSrc = user.avatar
                             <button class="btn-change-photo" id="changePhotoBtn" type="button" aria-label="Ubah foto profil">
                                 <i class="fas fa-camera"></i>
                             </button>
+                            <input type="file" id="directPhotoUpload" accept="image/jpeg, image/png, image/jpg" style="display: none;">
                         </div>
                     </div>
 
@@ -240,51 +241,7 @@ const profileAvatarSrc = user.avatar
         </div>
     </div>
     
-    <!-- Change Photo Modal -->
-    <div class="edit-modal" id="changePhotoModal">
-        <div class="edit-modal-content">
-            <div class="profile-modal-header">
-                <h3><i class="fas fa-camera"></i> Ubah Foto Profil</h3>
-                <button class="btn-close-modal" id="closePhotoModal" type="button" aria-label="Tutup modal ubah foto profil">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="profile-modal-body text-center">
-                <div class="current-photo-preview" id="photoPreview">
-                    <% if (profileAvatarSrc) { %>
-                        <img src="<%= profileAvatarSrc %>" alt="Profile" class="profile-current-photo-image"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                        <div class="avatar-initials" style="display:none; width:100px; height:100px; font-size:2rem; border-radius:50%;">
-                            <%= (user.full_name || user.name || 'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) %>
-                        </div>
-                    <% } else { %>
-                        <div class="avatar-initials" style="width:100px; height:100px; font-size:2rem; border-radius:50%;">
-                            <%= (user.full_name || user.name || 'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) %>
-                        </div>
-                    <% } %>
-                </div>
-                
-                <div class="profile-upload-area" id="uploadArea">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>Klik atau seret file ke sini untuk upload</p>
-                    <small>Format: JPG, PNG (Maks. 2MB)</small>
-                    <input type="file" id="photoUpload" class="profile-file-input" accept="image/*">
-                </div>
-                
-                <div class="photo-preview" id="imagePreview" hidden>
-                    <img id="previewImage" src="" alt="Preview">
-                </div>
-            </div>
-            
-            <div class="profile-modal-footer">
-                <button class="btn-cancel" id="cancelPhotoBtn" type="button">Batal</button>
-                <button class="btn-save" id="savePhotoBtn" type="button" disabled>
-                    Simpan
-                </button>
-            </div>
-        </div>
-    </div>
+    <!-- Change Photo Modal Removed (Now using direct upload) -->
     
     <!-- Toast Notification -->
     <div class="custom-toast" id="toast" hidden></div>

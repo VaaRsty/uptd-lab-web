@@ -441,112 +441,6 @@
         }
     }
 
-    function openChangePhotoModal() {
-        // Reset
-        document.getElementById('photoUpload').value = '';
-        document.getElementById('imagePreview').hidden = true;
-        document.getElementById('uploadArea').hidden = false;
-        document.getElementById('savePhotoBtn').disabled = true;
-        renderCurrentPhotoPreview();
-        
-        // Show modal
-        document.getElementById('changePhotoModal').classList.add('active');
-    }
-
-    function handlePhotoSelect(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        
-        // Validate file type
-        if (!file.type.match('image.*')) {
-            showToast('File harus berupa gambar', 'warning');
-            return;
-        }
-        
-        // Validate file size (max 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-            showToast('Ukuran file maksimal 2MB', 'warning');
-            return;
-        }
-        
-        // Preview image
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('previewImage').src = e.target.result;
-            document.getElementById('imagePreview').hidden = false;
-            document.getElementById('uploadArea').hidden = true;
-            document.getElementById('savePhotoBtn').disabled = false;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    async function savePhoto() {
-        const fileInput = document.getElementById('photoUpload');
-        if (!fileInput || !fileInput.files.length) return;
-        
-        const file = fileInput.files[0];
-        
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                showToast('Sesi habis. Silakan login ulang.', 'error');
-                setTimeout(() => window.location.href = '/login', 1500);
-                return;
-            }
-            
-            const API_URL = window.__APP_CONFIG__?.API_BASE_URL || '/api';
-            
-            const formData = new FormData();
-            formData.append('avatar', file);
-            
-            showToast('Mengupload foto...', 'info');
-            
-            const response = await fetch(`${API_URL}/user/profile/avatar`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                // Update user object with new avatar
-                user.avatar = result.data.avatar;
-
-                // Keep cached user in sync so avatar appears across navbar/sidebar on all pages
-                try {
-                    const currentUserRaw = localStorage.getItem('user');
-                    const currentUser = currentUserRaw ? JSON.parse(currentUserRaw) : {};
-                    localStorage.setItem('user', JSON.stringify({
-                        ...currentUser,
-                        avatar: result.data.avatar
-                    }));
-                } catch (error) {
-                    console.warn('Failed to update localStorage avatar:', error);
-                }
-
-                renderProfile();
-
-                if (typeof window.syncUserAvatarUI === 'function') {
-                    window.syncUserAvatarUI(result.data.avatar);
-                }
-                
-                // Close modal
-                closeModal(document.getElementById('changePhotoModal'));
-                
-                showToast('Foto profil berhasil diperbarui', 'success');
-            } else {
-                showToast(result.message || 'Gagal upload foto', 'error');
-            }
-            
-        } catch (error) {
-            console.error('Error uploading photo:', error);
-            showToast('Gagal menghubungi server', 'error');
-        }
-    }
-
     function isValidEmail(email) {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(email);
@@ -592,10 +486,12 @@
         document.getElementById('editPersonalBtn')?.addEventListener('click', openEditPersonalModal);
         document.getElementById('editCompanyBtn')?.addEventListener('click', openEditCompanyModal);
         document.getElementById('changePasswordBtn')?.addEventListener('click', openChangePasswordModal);
-        document.getElementById('changePhotoBtn')?.addEventListener('click', openChangePhotoModal);
+        document.getElementById('changePhotoBtn')?.addEventListener('click', () => {
+            document.getElementById('directPhotoUpload')?.click();
+        });
         
-        // Settings buttons
-        document.getElementById('notificationSettingsBtn')?.addEventListener('click', showNotificationSettings);
+        // Direct photo upload
+        document.getElementById('directPhotoUpload')?.addEventListener('change', handleDirectPhotoUpload);
         
         // Personal modal
         const personalModal = document.getElementById('editPersonalModal');
@@ -622,57 +518,17 @@
         }
         
         // Password modal
-        const passwordModal = document.getElementById('changePasswordModal');
-        document.getElementById('closePasswordModal')?.addEventListener('click', () => closeModal(passwordModal));
-        document.getElementById('cancelPasswordBtn')?.addEventListener('click', () => closeModal(passwordModal));
+        document.getElementById('closePasswordModal')?.addEventListener('click', () => closeModal(document.getElementById('changePasswordModal')));
+        document.getElementById('cancelPasswordBtn')?.addEventListener('click', () => closeModal(document.getElementById('changePasswordModal')));
         document.getElementById('savePasswordBtn')?.addEventListener('click', changePassword);
         
+        const passwordModal = document.getElementById('changePasswordModal');
         if (passwordModal) {
             passwordModal.addEventListener('click', function(e) {
                 if (e.target === this) closeModal(passwordModal);
             });
         }
-        
-        // Photo modal
-        const photoModal = document.getElementById('changePhotoModal');
-        document.getElementById('closePhotoModal')?.addEventListener('click', () => closeModal(photoModal));
-        document.getElementById('cancelPhotoBtn')?.addEventListener('click', () => closeModal(photoModal));
-        document.getElementById('savePhotoBtn')?.addEventListener('click', savePhoto);
-        
-        // Photo upload
-        const uploadArea = document.getElementById('uploadArea');
-        const photoUpload = document.getElementById('photoUpload');
-        
-        if (uploadArea && photoUpload) {
-            uploadArea.addEventListener('click', () => photoUpload.click());
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('is-dragover');
-            });
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('is-dragover');
-            });
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('is-dragover');
-                
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    photoUpload.files = files;
-                    handlePhotoSelect({ target: { files: [files[0]] } });
-                }
-            });
-        }
-        
-        if (photoUpload) {
-            photoUpload.addEventListener('change', handlePhotoSelect);
-        }
-        
-        if (photoModal) {
-            photoModal.addEventListener('click', function(e) {
-                if (e.target === this) closeModal(photoModal);
-            });
-        }
+
         
         // Logout dan notification bell ditangani terpusat di public/js/sidebar.js.
     }
