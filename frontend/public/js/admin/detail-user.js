@@ -200,9 +200,12 @@
                         <div class="col-sm-6 col-md-4">
                             <div class="d-flex align-items-center text-muted">
                                 <div class="bg-light rounded p-2 me-3 text-secondary"><i class="fas fa-map-marker-alt fa-fw"></i></div>
-                                <div>
+                                <div class="w-100 pe-3">
                                     <small class="d-block text-muted" style="font-size: 0.7rem;">Alamat</small>
-                                    <span class="text-dark fw-medium" style="font-size: 0.9rem;">${user.alamat || '-'}</span>
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <span class="text-dark fw-medium text-break" id="displayAlamat" style="font-size: 0.9rem;">${user.alamat || '-'}</span>
+                                        <button class="btn btn-sm text-primary p-0 ms-2" onclick="window.openEditAddressModal()" title="Edit Alamat"><i class="fas fa-edit"></i></button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -404,6 +407,45 @@
 
     // ==================== EXPOSE FUNCTIONS TO WINDOW ====================
     window.changePage = changePage;
+
+    window.openEditAddressModal = function() {
+        if (!userData) return;
+        document.getElementById('editAlamatInput').value = userData.alamat || '';
+        const modal = new bootstrap.Modal(document.getElementById('editAddressModal'));
+        modal.show();
+    };
+
+    window.saveAddress = async function() {
+        const newAddress = document.getElementById('editAlamatInput').value.trim();
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                method: 'PUT',
+                headers: { 
+                    'Authorization': `Bearer ${getToken()}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ alamat: newAddress })
+            });
+            const result = await response.json();
+            if (result.success) {
+                showAlert('Alamat berhasil diupdate', 'success');
+                userData.alamat = newAddress;
+                const display = document.getElementById('displayAlamat');
+                if (display) display.textContent = newAddress || '-';
+                
+                const modalEl = document.getElementById('editAddressModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+                
+                loadUserDetail();
+            } else {
+                showAlert(result.message || 'Gagal update alamat', 'danger');
+            }
+        } catch (error) {
+            console.error('Error updating address:', error);
+            showAlert('Gagal menghubungi server', 'danger');
+        }
+    };
 
     // ==================== INITIALIZE ====================
     document.addEventListener('DOMContentLoaded', () => {
