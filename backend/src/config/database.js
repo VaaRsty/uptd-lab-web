@@ -46,7 +46,46 @@ const promisePool = {
     },
     getConnection: async () => {
         const client = await pool.connect();
-        return client;
+        
+        // Wrapper client agar meniru connection mysql2
+        const wrappedClient = {
+            beginTransaction: async () => await client.query('BEGIN'),
+            commit: async () => await client.query('COMMIT'),
+            rollback: async () => await client.query('ROLLBACK'),
+            release: () => client.release(),
+            query: async (sql, params = []) => {
+                let counter = 1;
+                let pgSql = sql.replace(/\?/g, () => `$${counter++}`);
+                
+                const isInsert = sql.trim().toUpperCase().startsWith('INSERT');
+                if (isInsert && !/RETURNING\s+id/i.test(pgSql)) {
+                    pgSql += ' RETURNING id';
+                }
+                
+                try {
+                    const result = await client.query(pgSql, params);
+                    
+                    const mysqlResult = {
+                        affectedRows: result.rowCount,
+                        insertId: result.rows.length > 0 && result.rows[0].id ? result.rows[0].id : null,
+                        rows: result.rows
+                    };
+                    
+                    const isSelect = sql.trim().toUpperCase().startsWith('SELECT') || sql.trim().toUpperCase().startsWith('SHOW');
+                    
+                    if (isSelect) {
+                        return [result.rows, result.fields];
+                    } else {
+                        return [mysqlResult, undefined];
+                    }
+                } catch (error) {
+                    console.error('❌ SQL Error on wrapped connection:', pgSql, params);
+                    throw error;
+                }
+            }
+        };
+        
+        return wrappedClient;
     }
 };
 

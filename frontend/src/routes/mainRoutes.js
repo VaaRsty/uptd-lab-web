@@ -8,7 +8,6 @@ const multer = require('multer');
 const path = require('path');
 const globalSettings = require('../middleware/globalSettings');
 const checkUploadSize = require('../middleware/checkUploadSize');
-const maintenanceCheck = require('../middleware/maintenanceCheck');
 
 // Konfigurasi storage untuk upload file
 const storage = multer.memoryStorage();
@@ -78,11 +77,10 @@ router.get('/admin/users/:id', authMiddleware.verifyPageAccess, adminController.
 router.get('/admin/settings', authMiddleware.verifyPageAccess, adminController.settings);
 
 // ==================== HALAMAN USER (PEMOHON) ====================
-router.get('/user/dashboard', authMiddleware.verifyUserAccess, maintenanceCheck, userController.dashboard);
-router.get('/user/submission', authMiddleware.verifyUserAccess, maintenanceCheck, userController.submissionPage);
+router.get('/user/dashboard', authMiddleware.verifyUserAccess, userController.dashboard);
+router.get('/user/submission', authMiddleware.verifyUserAccess, userController.submissionPage);
 router.post('/user/submission', 
     authMiddleware.verifyUserAccess,
-    maintenanceCheck, // <- tambahkan di sini
     upload.fields([
         { name: 'surat_permohonan', maxCount: 1 },
         { name: 'scan_ktp', maxCount: 1 },
@@ -91,19 +89,18 @@ router.post('/user/submission',
     checkUploadSize, 
     userController.createSubmission
 );
-router.get('/user/history', authMiddleware.verifyUserAccess, maintenanceCheck, userController.history);
-router.get('/user/history/:id', authMiddleware.verifyUserAccess, maintenanceCheck, userController.historyDetail);
-router.get('/user/transaction', authMiddleware.verifyUserAccess, maintenanceCheck, userController.transactions);
-router.get('/user/transaction/:id', authMiddleware.verifyUserAccess, maintenanceCheck, userController.transactionDetail);
+router.get('/user/history', authMiddleware.verifyUserAccess, userController.history);
+router.get('/user/history/:id', authMiddleware.verifyUserAccess, userController.historyDetail);
+router.get('/user/transaction', authMiddleware.verifyUserAccess, userController.transactions);
+router.get('/user/transaction/:id', authMiddleware.verifyUserAccess, userController.transactionDetail);
 router.post('/user/transaction/:id/upload', 
     authMiddleware.verifyUserAccess,
-    maintenanceCheck, // <- tambahkan di sini
     upload.single('payment_proof'),
     checkUploadSize,
     userController.uploadPaymentProof
 );
-router.get('/user/profile', authMiddleware.verifyUserAccess, maintenanceCheck, userController.profile);
-router.post('/user/profile', authMiddleware.verifyUserAccess, maintenanceCheck, userController.updateProfile);
+router.get('/user/profile', authMiddleware.verifyUserAccess, userController.profile);
+router.post('/user/profile', authMiddleware.verifyUserAccess, userController.updateProfile);
 
 router.get('/maintenance', (req, res) => {
     res.render('maintenance', {

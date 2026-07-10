@@ -10,8 +10,7 @@ app.set('trust proxy', 1);
 
 const mainRoutes = require('./src/routes/mainRoutes');
 const globalSettings = require('./src/middleware/globalSettings');
-// const maintenanceCheck = require('./src/middleware/maintenanceCheck'); // <-- TIDAK DIPERLUKAN DI SINI
-
+const maintenanceCheck = require('./src/middleware/maintenanceCheck');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -52,7 +51,7 @@ app.use(session({
 // Global settings (tetap dipasang)
 app.use(globalSettings);
 
-// ❌ HAPUS INI → app.use(maintenanceCheck);
+app.use(maintenanceCheck);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
