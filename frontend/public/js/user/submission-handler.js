@@ -682,7 +682,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
 
             try {
-                // Kumpulkan FormData (dengan file binary)
+                // Kumpulkan FormData
                 const formData = new FormData(this);
 
                 // Pastikan service_id ada
@@ -693,9 +693,82 @@ document.addEventListener('DOMContentLoaded', async function() {
                     }
                 }
 
-                console.log('📤 [SUBMIT] Kirim ke /api/submissions...');
+                // --- PROSES UPLOAD FILE LANGSUNG DARI BROWSER (BYPASS TIMEOUT VERCEL) ---
+                const fileInputs = [
+                    { field: 'surat_permohonan', input: this.querySelector('input[name="surat_permohonan"]') },
+                    { field: 'scan_ktp', input: this.querySelector('input[name="scan_ktp"]') },
+                    { field: 'lampiran_pendukung', input: this.querySelector('input[name="lampiran_pendukung"]') }
+                ].filter(item => item.input && item.input.files.length > 0);
 
-                // Kirim langsung ke backend (bypass frontend proxy)
+                if (fileInputs.length > 0) {
+                    Swal.fire({
+                        title: 'Mengupload Dokumen...',
+                        text: 'Mohon tunggu, jangan tutup halaman ini',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    // 1. Minta Signed URLs ke backend
+                    const fileReq = fileInputs.map(item => ({
+                        field: item.field,
+                        filename: item.input.files[0].name
+                    }));
+
+                    const urlResponse = await fetch('/api/submissions/upload-urls', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({ files: fileReq })
+                    });
+
+                    const urlResult = await urlResponse.json();
+                    
+                    if (!urlResult.success) {
+                        throw new Error('Gagal mendapatkan akses upload: ' + urlResult.message);
+                    }
+
+                    // 2. Upload file langsung ke Supabase Storage via Signed URLs
+                    const uploadPromises = fileInputs.map(async (item) => {
+                        const file = item.input.files[0];
+                        const urlData = urlResult.data[item.field];
+                        
+                        const uploadRes = await fetch(urlData.signedUrl, {
+                            method: 'PUT',
+                            body: file,
+                            headers: { 'Content-Type': file.type }
+                        });
+                        
+                        if (!uploadRes.ok) {
+                            throw new Error(`Gagal upload ${item.field}`);
+                        }
+                        
+                        // Tambahkan URL public ke form data (sesuai field Joi backend)
+                        formData.set(`file_${item.field}_url`, urlData.publicUrl);
+                        if (item.field === 'lampiran_pendukung') {
+                            formData.set('dokumen_tambahan_url', urlData.publicUrl);
+                        }
+                        
+                        // Hapus file asli dari FormData agar backend tidak usah upload lagi!
+                        formData.delete(item.field);
+                    });
+
+                    await Promise.all(uploadPromises);
+                    
+                    Swal.fire({
+                        title: 'Menyimpan Pengajuan...',
+                        text: 'Memproses data',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+                }
+
+                console.log('📤 [SUBMIT] Kirim data final ke /api/submissions...');
+
+                // 3. Kirim data teks & public URL ke backend
                 const response = await fetch('/api/submissions', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${authToken}` },
@@ -722,7 +795,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                         window.location.href = '/user/history?success=true&message=Pengajuan+berhasil+dikirim';
                     });
                 } else {
-                    Swal.fire('Gagal', result.message || 'Terjadi kesalahan.', 'error');
+                    Swal.fire('Gagal', result.message || 'Terjadi kesalahan saat menyimpan data.', 'error');
                 }
 
             } catch (err) {
