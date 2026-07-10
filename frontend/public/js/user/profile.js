@@ -481,6 +481,61 @@
         }, 3000);
     }
 
+    async function handleDirectPhotoUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Reset input agar event 'change' bisa terpicu lagi untuk file yang sama
+        e.target.value = '';
+
+        if (!file.type.startsWith('image/')) {
+            showToast('Silakan pilih file gambar', 'warning');
+            return;
+        }
+
+        const maxMB = 2;
+        if (file.size > maxMB * 1024 * 1024) {
+            showToast(`Ukuran file maksimal ${maxMB}MB`, 'warning');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showToast('Sesi habis. Silakan login ulang.', 'error');
+            setTimeout(() => window.location.href = '/login', 1500);
+            return;
+        }
+
+        try {
+            showToast('Mengupload foto...', 'info');
+            
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            const API_URL = window.__APP_CONFIG__?.API_BASE_URL || '/api';
+            const response = await fetch(`${API_URL}/user/profile/avatar`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showToast('Foto profil berhasil diperbarui', 'success');
+                // Reload profile data untuk memperbarui UI
+                loadUserProfile();
+            } else {
+                showToast(result.message || 'Gagal mengupload foto', 'error');
+            }
+        } catch (error) {
+            console.error('Error uploading photo:', error);
+            showToast('Gagal menghubungi server', 'error');
+        }
+    }
+
     function setupEventListeners() {
         // Edit buttons
         document.getElementById('editPersonalBtn')?.addEventListener('click', openEditPersonalModal);
