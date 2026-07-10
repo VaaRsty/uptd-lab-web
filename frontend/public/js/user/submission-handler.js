@@ -1,4 +1,4 @@
-﻿/**
+/**
  * UPTD Lab Submission Handler
  * VERSI FIX - HIDDEN INPUTS PASTI TERKIRIM
  */
@@ -637,48 +637,52 @@ document.addEventListener('DOMContentLoaded', async function() {
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            // === VALIDASI AWAL (di luar try-catch agar finally tidak ikut jalan) ===
+
+            // 1. Cegah double-submit
+            if (this.dataset.submitting === 'true') {
+                alert('Pengajuan sedang diproses, harap tunggu...');
+                return;
+            }
+
+            // 2. Force set hidden inputs (safe)
+            try { forceSetHiddenBeforeSubmit(); } catch(ex) { console.warn('forceSet:', ex); }
+
+            // 3. Validasi file — jika gagal, alert muncul dari dalam validateFiles()
+            if (!validateFiles()) return;
+
+            // 4. Cek token
+            const authToken = localStorage.getItem('token')
+                || document.getElementById('api-auth-token')?.getAttribute('data-token')
+                || '';
+
+            if (!authToken) {
+                alert('Sesi habis. Silakan login ulang.');
+                window.location.href = '/login';
+                return;
+            }
+
+            // === SEMUA VALID — MULAI PROSES SUBMIT ===
+
+            const submitBtn = this.querySelector('button[type="submit"]') || this.querySelector('button');
+            const originalBtnHTML = submitBtn ? submitBtn.innerHTML : '';
+
+            this.dataset.submitting = 'true';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+            }
+
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Sedang mengirim pengajuan',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
             try {
-                // 1. Cegah double-submit
-                if (this.dataset.submitting === 'true') {
-                    alert('Pengajuan sedang diproses, harap tunggu...');
-                    return;
-                }
-
-                // 2. Force set hidden inputs
-                try { forceSetHiddenBeforeSubmit(); } catch(ex) { console.warn('forceSet warn:', ex); }
-
-                // 3. Validasi file
-                if (!validateFiles()) return;
-
-                // 4. Cek token
-                const authToken = localStorage.getItem('token')
-                    || document.getElementById('api-auth-token')?.getAttribute('data-token')
-                    || '';
-
-                if (!authToken) {
-                    alert('Sesi habis. Silakan login ulang.');
-                    window.location.href = '/login';
-                    return;
-                }
-
-                // 5. Lock & tampilkan loading
-                this.dataset.submitting = 'true';
-                const submitButton = this.querySelector('button[type="submit"]') || this.querySelector('button');
-                const originalText = submitButton ? submitButton.innerHTML : '';
-                if (submitButton) {
-                    submitButton.disabled = true;
-                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
-                }
-
-                Swal.fire({
-                    title: 'Memproses...',
-                    text: 'Sedang mengirim pengajuan',
-                    allowOutsideClick: false,
-                    showConfirmButton: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });
-
-                // 6. Kumpulkan FormData (dengan file binary)
+                // Kumpulkan FormData (dengan file binary)
                 const formData = new FormData(this);
 
                 // Pastikan service_id ada
@@ -689,12 +693,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                     }
                 }
 
-                console.log('ðŸ“¤ [SUBMIT] Mengirim ke /api/submissions...');
-                for (let [k, v] of formData.entries()) {
-                    console.log(`  ${k}:`, v instanceof File ? `File(${v.name}, ${v.size}b)` : v);
-                }
+                console.log('📤 [SUBMIT] Kirim ke /api/submissions...');
 
-                // 7. Kirim langsung ke backend (bypass frontend proxy)
+                // Kirim langsung ke backend (bypass frontend proxy)
                 const response = await fetch('/api/submissions', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${authToken}` },
@@ -705,10 +706,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 try {
                     result = await response.json();
                 } catch (parseErr) {
-                    throw new Error(`Server error ${response.status} â€” respons tidak valid`);
+                    throw new Error(`Server error ${response.status} — respons tidak valid`);
                 }
 
-                console.log('ðŸ“¥ [SUBMIT] Response:', response.status, result);
+                console.log('📥 [SUBMIT] Response:', response.status, result);
 
                 if (result.success) {
                     Swal.fire({
@@ -725,17 +726,13 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
 
             } catch (err) {
-                console.error('âŒ [SUBMIT] Error:', err);
-                Swal.fire('Error', 'Terjadi kesalahan: ' + (err.message || 'Tidak diketahui'), 'error');
+                console.error('❌ [SUBMIT] Error:', err);
+                Swal.fire('Error', 'Gagal mengirim: ' + (err.message || 'Tidak diketahui'), 'error');
             } finally {
                 this.dataset.submitting = 'false';
-                const btn = this.querySelector('button[type="submit"]') || this.querySelector('button');
-                if (btn) {
-                    btn.disabled = false;
-                    // Restore teks tombol
-                    if (!btn.innerHTML.includes('Kirim') && !btn.innerHTML.includes('submit')) {
-                        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Pengajuan';
-                    }
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHTML; // restore teks asli tombol
                 }
             }
         });
