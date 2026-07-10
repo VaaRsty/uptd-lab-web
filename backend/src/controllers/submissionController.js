@@ -173,6 +173,9 @@ exports.create = async (req, res, next) => {
                         console.error('❌ Gagal mengupload file ke Supabase (Background):', uploadErr);
                     });
 
+            } catch (err) {
+                console.error('Error preparing upload tasks:', err);
+            }
         }
         // ------------------------------------------
 
