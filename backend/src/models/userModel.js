@@ -101,7 +101,7 @@ exports.updateAvatar = async (userId, avatarPath) => {
 exports.list = async ({ role, search, limit = 50, offset = 0 } = {}) => {
     const params = [];
     let sql = `SELECT id, email, role, full_name, employee_id, nama_instansi,
-                      nomor_telepon, avatar, created_at,
+                      alamat, nomor_telepon, avatar, created_at,
                       (SELECT COUNT(*) FROM submissions WHERE user_id = users.id) AS total_transactions
                FROM users WHERE 1=1`;
     if (role) {
