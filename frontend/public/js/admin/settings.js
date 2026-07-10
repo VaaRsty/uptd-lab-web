@@ -96,6 +96,7 @@ const API_BASE_URL = window.__APP_CONFIG__?.API_BASE_URL || 'http://localhost:50
         document.getElementById('officialEmail').value = data.email || '';
         document.getElementById('phoneNumber').value = data.phone || '';
         document.getElementById('position').value = data.position || 'Super Administrator (Kepala Teknis)';
+        document.getElementById('company').value = data.company || '';
         document.getElementById('address').value = data.alamat || '';
         
         let newAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name || 'Admin+Lab')}&background=047857&color=fff&size=150`;
@@ -126,6 +127,7 @@ const API_BASE_URL = window.__APP_CONFIG__?.API_BASE_URL || 'http://localhost:50
             name: document.getElementById('fullName').value,
             email: document.getElementById('officialEmail').value,
             phone: document.getElementById('phoneNumber').value,
+            company: document.getElementById('company').value,
             alamat: document.getElementById('address').value
         };
 
