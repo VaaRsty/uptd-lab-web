@@ -191,8 +191,8 @@ exports.create = async (data) => {
     const [result] = await db.query(
         `INSERT INTO payments 
         (submission_id, total_tagihan, no_invoice, status_pembayaran, created_at)
-        VALUES (?, ?, ?, 'Belum Bayar', NOW())`,
-        [data.submission_id, data.nominal, data.keterangan || null]
+        VALUES (?, ?, NULL, 'Belum Bayar', NOW())`,
+        [data.submission_id, data.nominal]
     );
     return result.insertId;
 };
