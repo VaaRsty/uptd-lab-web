@@ -173,10 +173,10 @@
         setText('displayName', user.full_name || '-');
         setText('displayEmail', user.email || '-');
         setText('displayPhone', user.nomor_telepon || '-');
-        setText('displayAddressPersonal', user.alamat || '-');
         
         // Company info
         setText('displayCompany', user.nama_instansi || '-');
+        setText('displayAddress', user.alamat || '-');
         
         renderProfileAvatar();
         renderCurrentPhotoPreview();
@@ -212,7 +212,6 @@
         document.getElementById('editName').value = user.full_name || '';
         document.getElementById('editEmail').value = user.email || '';
         document.getElementById('editPhone').value = user.nomor_telepon || '';
-        document.getElementById('editAddressPersonal').value = user.alamat || '';
         
         // Show modal
         document.getElementById('editPersonalModal').classList.add('active');
@@ -224,7 +223,6 @@
         const name = document.getElementById('editName').value.trim();
         const email = document.getElementById('editEmail').value.trim();
         const phone = document.getElementById('editPhone').value.trim();
-        const address = document.getElementById('editAddressPersonal').value.trim();
         
         // Validation
         if (!name) {
@@ -265,8 +263,7 @@
                 body: JSON.stringify({
                     full_name: name,
                     email: email,
-                    nomor_telepon: phone,
-                    alamat: address
+                    nomor_telepon: phone
                 })
             });
             
@@ -298,6 +295,7 @@
     function openEditCompanyModal() {
         // Populate form with current data
         document.getElementById('editCompany').value = user.nama_instansi || '';
+        document.getElementById('editAddress').value = user.alamat || '';
         
         // Show modal
         document.getElementById('editCompanyModal').classList.add('active');
@@ -307,6 +305,7 @@
         if (isSubmitting) return;
         
         const company = document.getElementById('editCompany').value.trim();
+        const address = document.getElementById('editAddress').value.trim();
         
         isSubmitting = true;
         
@@ -329,7 +328,8 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    nama_instansi: company
+                    nama_instansi: company,
+                    alamat: address
                 })
             });
             
