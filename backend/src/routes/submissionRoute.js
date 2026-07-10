@@ -47,16 +47,10 @@ router.delete(
 // Generate signed upload URLs untuk direct browser-to-Supabase upload
 router.post('/upload-urls', authMiddleware, submissionController.generateUploadUrls);
 
-// Create submission (upload file manual di controller agar bisa direname dengan ID)
+// Create submission — menerima JSON (file URL sudah diupload langsung ke Supabase dari browser)
 router.post(
     '/',
     authMiddleware,
-    upload.raw.fields([
-        { name: 'surat_permohonan', maxCount: 1 },
-        { name: 'scan_ktp', maxCount: 1 },
-        { name: 'lampiran_pendukung', maxCount: 1 }
-    ]),
-    checkUploadSize,
     validate(createSchema),
     submissionController.create
 );
