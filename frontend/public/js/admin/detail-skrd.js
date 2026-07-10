@@ -499,7 +499,11 @@
 
             // 1. HEADER
             if (elements.invoiceId) elements.invoiceId.textContent = data.id || '';
-            if (elements.invoiceNumber) elements.invoiceNumber.textContent = `#${data.no_invoice || ''}`;
+            
+            const fallbackInvoice = `INV-${String(data.submission_id || data.id || '0').padStart(5, '0')}`;
+            const actualInvoice = (data.no_invoice && !data.no_invoice.includes('Estimasi')) ? data.no_invoice : fallbackInvoice;
+            
+            if (elements.invoiceNumber) elements.invoiceNumber.textContent = `#${actualInvoice}`;
             
             // Update status badge
             if (elements.statusBadge) {

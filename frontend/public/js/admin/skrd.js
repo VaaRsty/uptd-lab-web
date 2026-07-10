@@ -244,8 +244,11 @@
 
         let html = '';
         invoices.forEach(inv => {
-            const invoiceNumber = inv.no_invoice || '-';
-            const skrdNumber = inv.no_invoice || '-';
+            const fallbackInvoice = `INV-${String(inv.submission_id || inv.id || '0').padStart(5, '0')}`;
+            const actualInvoice = (inv.no_invoice && !inv.no_invoice.includes('Estimasi')) ? inv.no_invoice : fallbackInvoice;
+            
+            const invoiceNumber = actualInvoice;
+            const skrdNumber = actualInvoice;
             const companyName = inv.nama_instansi || inv.nama_pemohon || '-';
             const serviceDesc = inv.nama_proyek || 'Pengujian';
             const issueDate = inv.created_at;
