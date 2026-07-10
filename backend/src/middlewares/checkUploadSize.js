@@ -8,17 +8,24 @@ const settingModel = require('../models/settingModel');
  * Jika tidak ada, default 5MB.
  */
 const checkUploadSize = async (req, res, next) => {
+    // Nilai default hardcoded — tidak bergantung database
+    let maxSizeMB = 4;
+    
     try {
-        // 🔥 Ambil batas upload dari database secara langsung
-        let maxSizeMB = await settingModel.getByKey('max_upload_size');
-        if (!maxSizeMB) {
-            maxSizeMB = '5'; // default 5MB
+        // Coba ambil dari database, jika gagal/kosong pakai default
+        const dbValue = await Promise.race([
+            settingModel.getByKey('max_upload_size'),
+            new Promise(resolve => setTimeout(() => resolve(null), 2000)) // timeout 2 detik
+        ]);
+        if (dbValue && !isNaN(parseInt(dbValue))) {
+            maxSizeMB = Math.min(parseInt(dbValue), 4); // max 4MB
         }
-        
-        // VERCEL HARD LIMIT
-        if (parseInt(maxSizeMB) > 4) maxSizeMB = '4';
-        
-        const maxSizeBytes = parseInt(maxSizeMB) * 1024 * 1024;
+    } catch (_) {
+        // Ignore error — gunakan default 4MB
+    }
+    
+    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+
 
         let exceeded = false;
         let filesToDelete = [];
@@ -63,11 +70,6 @@ const checkUploadSize = async (req, res, next) => {
         }
 
         next();
-    } catch (err) {
-        console.error('❌ Error in checkUploadSize:', err);
-        // Jika gagal ambil setting, tetap lanjut (biarkan multer menangani)
-        next();
-    }
 };
 
 module.exports = checkUploadSize;
