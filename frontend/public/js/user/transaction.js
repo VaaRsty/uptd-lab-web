@@ -157,7 +157,8 @@
                 day: '2-digit', month: 'long', year: 'numeric'
             }) : '-';
             
-            const noInvoice = item.no_invoice || `INV-${String(item.submission_id || item.id).padStart(5, '0')}`;
+            const fallbackInvoice = `INV-${String(item.submission_id || item.id).padStart(5, '0')}`;
+            const noInvoice = (item.no_invoice && !item.no_invoice.includes('Estimasi')) ? item.no_invoice : fallbackInvoice;
             const namaProyek = item.nama_proyek || 'Pengujian';
             
             html += `

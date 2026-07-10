@@ -189,7 +189,9 @@
 
         // 🔥 INFORMASI PEMBAYARAN (dengan status yang jelas)
         if (data.payment) {
-            setText('det-invoice', data.payment.no_invoice || '-');
+            const fallbackInvoice = `INV-${String(data.id || '0').padStart(5, '0')}`;
+            const actualInvoice = (data.payment.no_invoice && !data.payment.no_invoice.includes('Estimasi')) ? data.payment.no_invoice : fallbackInvoice;
+            setText('det-invoice', actualInvoice);
             setText('det-bill', formatRupiah(data.payment.total_tagihan || 0));
             setText('det-paid', formatRupiah(data.payment.jumlah_dibayar || 0));
             

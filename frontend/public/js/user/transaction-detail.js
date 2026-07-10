@@ -130,7 +130,9 @@
         document.getElementById('contentState').style.display = 'block';
         document.getElementById('errorState').style.display = 'none';
         
-        setText('invoice-number', `#${data.no_invoice || data.id || '-'}`);
+        const fallbackInvoice = `INV-${String(data.submission_id || data.id || '0').padStart(5, '0')}`;
+        const actualInvoice = (data.no_invoice && !data.no_invoice.includes('Estimasi')) ? data.no_invoice : fallbackInvoice;
+        setText('invoice-number', `#${actualInvoice}`);
         const statusEl = document.getElementById('invoice-status');
         if (statusEl) {
             const status = data.status_pembayaran || 'Belum Bayar';
