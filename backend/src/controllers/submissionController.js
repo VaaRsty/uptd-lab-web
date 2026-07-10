@@ -153,10 +153,10 @@ exports.create = async (req, res, next) => {
             no_permohonan: req.body.nomor_permohonan || req.body.no_permohonan || null,
             email_pemohon: req.body.email || null, // <-- TAMBAHKAN INI
             user_id: req.user.id,
-            // URL file akan diupdate setelah insert
-            file_surat_permohonan: null,
-            file_ktp: null,
-            dokumen_tambahan: null
+            // Ambil URL file langsung dari req.body (dikirim dari direct upload frontend)
+            file_surat_permohonan: req.body.file_surat_permohonan_url || null,
+            file_ktp: req.body.file_ktp_url || req.body.file_scan_ktp_url || null,
+            dokumen_tambahan: req.body.dokumen_tambahan_url || null
         };
 
         // 5. Simpan submission utama
