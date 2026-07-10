@@ -662,6 +662,63 @@ document.addEventListener('DOMContentLoaded', async function() {
             try {
                 const formData = new FormData(this);
                 
+                // 🔥 KOMPRESI GAMBAR CLIENT-SIDE (KHUSUS UNTUK HP)
+                async function compressImage(file) {
+                    if (!file || !file.type.startsWith('image/')) return file;
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = event => {
+                            const img = new Image();
+                            img.src = event.target.result;
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                let width = img.width;
+                                let height = img.height;
+                                const MAX_DIM = 1200;
+                                
+                                if (width > height && width > MAX_DIM) {
+                                    height *= MAX_DIM / width;
+                                    width = MAX_DIM;
+                                } else if (height > MAX_DIM) {
+                                    width *= MAX_DIM / height;
+                                    height = MAX_DIM;
+                                }
+                                
+                                canvas.width = width;
+                                canvas.height = height;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, width, height);
+                                
+                                canvas.toBlob(blob => {
+                                    if (blob && blob.size < file.size) {
+                                        resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
+                                    } else {
+                                        resolve(file);
+                                    }
+                                }, 'image/jpeg', 0.75);
+                            };
+                            img.onerror = () => resolve(file);
+                        };
+                        reader.onerror = () => resolve(file);
+                    });
+                }
+                
+                const fileInputs = ['surat_permohonan', 'scan_ktp', 'lampiran_pendukung'];
+                for (let inputName of fileInputs) {
+                    const fileInput = document.querySelector(`input[name="${inputName}"]`);
+                    if (fileInput && fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        if (file.type.startsWith('image/')) {
+                            Swal.update({ text: `Mengompresi ${inputName.replace('_', ' ')}...` });
+                            const compressed = await compressImage(file);
+                            formData.set(inputName, compressed);
+                        }
+                    }
+                }
+                Swal.update({ text: 'Sedang mengirim pengajuan...' });
+
+                
                 // 🔥 LOG SEMUA FORM DATA (TERMASUK HIDDEN)
                 console.log('📤 [SUBMIT] FormData yang dikirim:');
                 for (let pair of formData.entries()) {
