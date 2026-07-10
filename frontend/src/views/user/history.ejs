@@ -17,9 +17,12 @@ const historyData = locals.submissions || [];
     <div class="content-body">
         <!-- Notifikasi -->
         <% if (locals.success) { %>
-        <div class="alert alert-success" style="background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+        <div class="custom-alert custom-alert-success">
             <i class="fas fa-check-circle"></i>
-            <span><%= locals.message || 'Pengajuan berhasil dikirim' %></span>
+            <div class="alert-content">
+                <strong>Berhasil</strong>
+                <p><%= locals.message || 'Pengajuan berhasil dikirim' %></p>
+            </div>
         </div>
         <% } %>
         
