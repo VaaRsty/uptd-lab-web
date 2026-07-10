@@ -1,4 +1,4 @@
-﻿/**
+/**
  * UPTD Lab Submission Handler
  * VERSI FIX - HIDDEN INPUTS PASTI TERKIRIM
  */
@@ -8,16 +8,16 @@
 // Data services dari backend (disimpan di global)
 let servicesData = [];
 
-// ðŸ”´ TAMBAHKAN VARIABEL UNTUK MODE SIBUK
+// ≡ƒö┤ TAMBAHKAN VARIABEL UNTUK MODE SIBUK
 let busyModeActive = false;
 let busyModePeriods = [];
 
-// ðŸ”´ VARIABEL UNTUK UNIT SATUAN
+// ≡ƒö┤ VARIABEL UNTUK UNIT SATUAN
 let currentUnit = 'sample';
 
 // Di fungsi loadServicesData, perbaiki pembacaan data
 function loadServicesData() {
-    console.log('ðŸ“¦ Loading services data from DOM...');
+    console.log('≡ƒôª Loading services data from DOM...');
     
     const allSelects = document.querySelectorAll('.test-select');
     servicesData = [];
@@ -45,7 +45,7 @@ function loadServicesData() {
             const unit = option.getAttribute('data-unit');
             const name = option.getAttribute('data-name');
             
-            console.log(`ðŸ“Š Option: ${option.value}, minSample: ${minSample}, unit: ${unit}`);
+            console.log(`≡ƒôè Option: ${option.value}, minSample: ${minSample}, unit: ${unit}`);
             
             // Tentukan kategori dari teks option
             const optionText = option.textContent;
@@ -80,10 +80,10 @@ function loadServicesData() {
         servicesData.push(typeObj);
     });
     
-    console.log('âœ… Services data loaded:', servicesData.length, 'types');
+    console.log('Γ£à Services data loaded:', servicesData.length, 'types');
 }
 
-// ðŸ”´ FUNGSI UNTUK UPDATE UNIT SATUAN (di card dan form)
+// ≡ƒö┤ FUNGSI UNTUK UPDATE UNIT SATUAN (di card dan form)
 function updateUnitDisplay(unit) {
     currentUnit = unit || 'sample';
     const unitText = document.getElementById('unitText');
@@ -99,7 +99,7 @@ function updateUnitDisplay(unit) {
     }
 }
 
-// ðŸ”´ FUNGSI UNTUK SYNC QUANTITY KE INPUT JUMLAH SAMPLE UJI
+// ≡ƒö┤ FUNGSI UNTUK SYNC QUANTITY KE INPUT JUMLAH SAMPLE UJI
 function syncQuantityToForm() {
     const qtyInput = document.getElementById('qtyInput');
     const jumlahSampleAngka = document.getElementById('jumlahSampleAngka');
@@ -107,11 +107,11 @@ function syncQuantityToForm() {
     if (qtyInput && jumlahSampleAngka) {
         const qty = parseInt(qtyInput.value) || 1;
         jumlahSampleAngka.value = qty;
-        console.log('ðŸ“Š Sync quantity to form:', qty);
+        console.log('≡ƒôè Sync quantity to form:', qty);
     }
 }
 
-// ðŸ”´ FUNGSI UNTUK MENGAMBIL DATA MODE SIBUK
+// ≡ƒö┤ FUNGSI UNTUK MENGAMBIL DATA MODE SIBUK
 function loadBusyModeData() {
     const dataElement = document.getElementById('busy-mode-data');
     if (dataElement) {
@@ -123,11 +123,11 @@ function loadBusyModeData() {
         } catch (e) {
             console.error('Error parsing busy mode periods:', e);
         }
-        console.log('ðŸ“… Busy mode active:', busyModeActive, 'Periods:', busyModePeriods);
+        console.log('≡ƒôà Busy mode active:', busyModeActive, 'Periods:', busyModePeriods);
     }
 }
 
-// ðŸ”´ FUNGSI UNTUK MENDAPATKAN TAMBAHAN HARI DARI MODE SIBUK
+// ≡ƒö┤ FUNGSI UNTUK MENDAPATKAN TAMBAHAN HARI DARI MODE SIBUK
 function getBusyModeExtraDays() {
     if (!busyModeActive || busyModePeriods.length === 0) {
         return 0;
@@ -147,19 +147,19 @@ function getBusyModeExtraDays() {
         }
     }
     
-    console.log('ðŸ“… Busy mode extra days:', extraDays);
+    console.log('≡ƒôà Busy mode extra days:', extraDays);
     return extraDays;
 }
 
 // Fungsi untuk mencari detail service berdasarkan ID
 function getServiceDetails(serviceId) {
-    console.log('ðŸ” Mencari service dengan ID:', serviceId);
+    console.log('≡ƒöì Mencari service dengan ID:', serviceId);
     
     for (const type of servicesData) {
         for (const category of type.categories) {
             for (const item of category.items) {
                 if (item.id == serviceId) {
-                    console.log('âœ… Service ditemukan:', item);
+                    console.log('Γ£à Service ditemukan:', item);
                     return {
                         serviceId: item.id,
                         serviceName: item.name,
@@ -174,7 +174,7 @@ function getServiceDetails(serviceId) {
             }
         }
     }
-    console.log('âŒ Service tidak ditemukan untuk ID:', serviceId);
+    console.log('Γ¥î Service tidak ditemukan untuk ID:', serviceId);
     return null;
 }
 
@@ -198,7 +198,7 @@ function getTestCategoryId(categoryName) {
 
 // Increment quantity (tombol +)
 window.incrementQty = function() {
-    console.log('âž• Increment button clicked');
+    console.log('Γ₧ò Increment button clicked');
     const qtyInput = document.getElementById('qtyInput');
     if (!qtyInput) return;
     
@@ -212,7 +212,7 @@ window.incrementQty = function() {
 
 // Decrement quantity (tombol -)
 window.decrementQty = function() {
-    console.log('âž– Decrement button clicked');
+    console.log('Γ₧û Decrement button clicked');
     const qtyInput = document.getElementById('qtyInput');
     if (!qtyInput) return;
     
@@ -262,9 +262,9 @@ function getActiveSelect() {
     return null;
 }
 
-// ðŸ”´ DI FUNGSI updateAll, tambahkan pemanggilan updateUnitDisplay dan syncQuantityToForm
+// ≡ƒö┤ DI FUNGSI updateAll, tambahkan pemanggilan updateUnitDisplay dan syncQuantityToForm
 function updateAll() {
-    console.log('ðŸ”„ Update semua');
+    console.log('≡ƒöä Update semua');
     
     const activeSelect = getActiveSelect();
     
@@ -291,7 +291,7 @@ function updateAll() {
     let minSampleNumber = parseInt(selectedOption.getAttribute('data-min-sample')) || 1;
     let unit = selectedOption.getAttribute('data-unit') || 'sample';
     
-    console.log('ðŸ“Š Data dari option:', { price, duration, method, minSampleNumber, unit });
+    console.log('≡ƒôè Data dari option:', { price, duration, method, minSampleNumber, unit });
     
     // Update unit
     updateUnitDisplay(unit);
@@ -299,21 +299,21 @@ function updateAll() {
     // Cari detail service
     const serviceDetails = getServiceDetails(selectedServiceId);
     
-    // ðŸ”¥ UPDATE HIDDEN INPUTS - PASTIKAN TERISI!
+    // ≡ƒöÑ UPDATE HIDDEN INPUTS - PASTIKAN TERISI!
     if (serviceDetails) {
         document.getElementById('testTypeId').value = serviceDetails.testTypeId || '';
         document.getElementById('testCategoryId').value = serviceDetails.testCategoryId || '';
         document.getElementById('serviceId').value = serviceDetails.serviceId || selectedServiceId;
         document.getElementById('methodAtTime').value = serviceDetails.method || method;
         document.getElementById('priceAtTime').value = serviceDetails.price || price;
-        console.log('âœ… Hidden serviceId diisi:', document.getElementById('serviceId').value);
-        console.log('âœ… Hidden testTypeId diisi:', document.getElementById('testTypeId').value);
+        console.log('Γ£à Hidden serviceId diisi:', document.getElementById('serviceId').value);
+        console.log('Γ£à Hidden testTypeId diisi:', document.getElementById('testTypeId').value);
     } else {
         // Fallback: pakai data dari option langsung
         document.getElementById('serviceId').value = selectedServiceId;
         document.getElementById('methodAtTime').value = method;
         document.getElementById('priceAtTime').value = price;
-        console.log('âš ï¸ Service details tidak ditemukan, pakai fallback:', selectedServiceId);
+        console.log('ΓÜá∩╕Å Service details tidak ditemukan, pakai fallback:', selectedServiceId);
     }
     
     // Update quantity
@@ -348,13 +348,13 @@ function updateAll() {
     // Update estimasi selesai
     updateCompletionDate(duration);
     
-    // ðŸ”¥ LOG FINAL UNTUK DEBUG
-    console.log('ðŸ” [DEBUG] Setelah updateAll - serviceId:', document.getElementById('serviceId').value);
-    console.log('ðŸ” [DEBUG] testTypeId:', document.getElementById('testTypeId').value);
-    console.log('ðŸ” [DEBUG] priceAtTime:', document.getElementById('priceAtTime').value);
+    // ≡ƒöÑ LOG FINAL UNTUK DEBUG
+    console.log('≡ƒöì [DEBUG] Setelah updateAll - serviceId:', document.getElementById('serviceId').value);
+    console.log('≡ƒöì [DEBUG] testTypeId:', document.getElementById('testTypeId').value);
+    console.log('≡ƒöì [DEBUG] priceAtTime:', document.getElementById('priceAtTime').value);
 }
 
-// ðŸ”´ FUNGSI UPDATE ESTIMASI SELESAI
+// ≡ƒö┤ FUNGSI UPDATE ESTIMASI SELESAI
 function updateCompletionDate(duration) {
     const tanggalSampel = document.getElementById('tanggalSampel');
     const completionDateEl = document.getElementById('completionDate');
@@ -397,7 +397,7 @@ function updateCompletionDate(duration) {
 
 // Fungsi ketika select berubah
 window.onSelectChange = function(selectElement) {
-    console.log('ðŸŽ¯ Select berubah:', selectElement.name);
+    console.log('≡ƒÄ» Select berubah:', selectElement.name);
     
     const allSelects = document.querySelectorAll('.test-select');
     for (let i = 0; i < allSelects.length; i++) {
@@ -416,7 +416,7 @@ function validateFiles() {
     let isValid = true;
     let errorMessage = '';
     
-    // ðŸ”¥ Ambil batas upload dari setting admin
+    // ≡ƒöÑ Ambil batas upload dari setting admin
     // VERCEL HARD LIMIT: 4.5MB payload limit. Kita batasi di 4MB agar tidak melebihi payload saat multipart/form-data.
     let maxUploadMB = window.settings?.max_upload_size || 5;
     if (maxUploadMB > 4) maxUploadMB = 4;
@@ -427,7 +427,7 @@ function validateFiles() {
         const file = suratFileInput.files[0];
         const fileSizeKB = file.size / 1024;
         
-        console.log('ðŸ“ Surat file:', {
+        console.log('≡ƒôü Surat file:', {
             name: file.name,
             size: file.size + ' bytes',
             sizeKB: fileSizeKB.toFixed(2) + ' KB',
@@ -454,7 +454,7 @@ function validateFiles() {
         const file = ktpFileInput.files[0];
         const fileSizeKB = file.size / 1024;
         
-        console.log('ðŸ“ KTP file:', {
+        console.log('≡ƒôü KTP file:', {
             name: file.name,
             size: file.size + ' bytes',
             sizeKB: fileSizeKB.toFixed(2) + ' KB',
@@ -487,7 +487,7 @@ function validateFiles() {
 function forceSetHiddenBeforeSubmit() {
     const activeSelect = getActiveSelect();
     if (!activeSelect || !activeSelect.value) {
-        console.warn('âš ï¸ Tidak ada select aktif sebelum submit');
+        console.warn('ΓÜá∩╕Å Tidak ada select aktif sebelum submit');
         return;
     }
     
@@ -518,7 +518,7 @@ function forceSetHiddenBeforeSubmit() {
         }
     }
     
-    console.log('ðŸ”„ [SUBMIT] Force set hidden:', {
+    console.log('≡ƒöä [SUBMIT] Force set hidden:', {
         serviceId: document.getElementById('serviceId').value,
         testTypeId: document.getElementById('testTypeId').value,
         testCategoryId: document.getElementById('testCategoryId').value,
@@ -529,7 +529,7 @@ function forceSetHiddenBeforeSubmit() {
 
 // ==================== INISIALISASI ====================
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('âœ… Handler siap - Versi database + Mode Sibuk');
+    console.log('Γ£à Handler siap - Versi database + Mode Sibuk');
     
     // LOAD DATA SERVICES DARI DOM
     loadServicesData();
@@ -585,7 +585,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
-    // ðŸ”¥ Preview file dengan validasi - PAKAI SETTING ADMIN
+    // ≡ƒöÑ Preview file dengan validasi - PAKAI SETTING ADMIN
     // VERCEL HARD LIMIT
     let maxUploadMB = window.settings?.max_upload_size || 5;
     if (maxUploadMB > 4) maxUploadMB = 4;
@@ -597,14 +597,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             const file = this.files[0];
             if (file) {
                 const fileSizeKB = file.size / 1024;
-                console.log(`ðŸ“ ${this.name} file:`, {
+                console.log(`≡ƒôü ${this.name} file:`, {
                     name: file.name,
                     size: file.size + ' bytes',
                     sizeKB: fileSizeKB.toFixed(2) + ' KB',
                     type: file.type
                 });
                 
-                // ðŸ”¥ VALIDASI UKURAN FILE PAKAI SETTING ADMIN
+                // ≡ƒöÑ VALIDASI UKURAN FILE PAKAI SETTING ADMIN
                 if (file.size === 0) {
                     alert(`File ${this.name} kosong! Silakan pilih file yang valid.`);
                     this.value = '';
@@ -631,150 +631,161 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     });
     
-    // ============================================================
-    // SUBMIT HANDLER â€” ditulis ulang bersih
-    // Alur: JSON payload ke /api/submissions, file ke Supabase langsung
-    // ============================================================
+    // ≡ƒöÑ HANDLE FORM SUBMIT (PERBAIKAN UTAMA)
     const form = document.getElementById('applicationForm');
     if (form) {
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
-
-            // Pastikan hidden input sudah terisi
+            
+            // ≡ƒöÑ FORCE SET HIDDEN INPUTS SEBELUM VALIDASI
             forceSetHiddenBeforeSubmit();
-
-            // Cegah double-submit
-            if (this.dataset.submitting === 'true') return;
-
-            // Validasi file
+            
             if (!validateFiles()) return;
-
-            // Ambil token â€” WAJIB ada
-            const token = localStorage.getItem('token');
-            if (!token) {
-                Swal.fire('Sesi Habis', 'Silakan login ulang', 'warning')
-                    .then(() => window.location.href = '/login');
-                return;
-            }
-
-            // Lock tombol submit
+            if (this.dataset.submitting === 'true') return;
+            
             this.dataset.submitting = 'true';
-            const btn = this.querySelector('button[type="submit"]');
-            const originalBtnHtml = btn ? btn.innerHTML : '';
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
-            }
-
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+            
             Swal.fire({
                 title: 'Memproses...',
-                text: 'Mengumpulkan data formulir',
+                text: 'Sedang mengirim pengajuan',
                 allowOutsideClick: false,
                 showConfirmButton: false,
-                didOpen: () => Swal.showLoading()
+                willOpen: () => {
+                    Swal.showLoading();
+                }
             });
-
+            
             try {
-                // â”€â”€ STEP 1: Kumpulkan semua field teks dari form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                const payload = {};
-                for (const [key, val] of new FormData(this).entries()) {
-                    if (val instanceof File) continue; // lewati file â€” dihandle terpisah
-                    if (key in payload) {
-                        // jika sudah ada â†’ jadikan array (untuk jenis_sampel dll)
-                        payload[key] = [].concat(payload[key], val);
-                    } else {
-                        payload[key] = val;
-                    }
-                }
-
-                // Pastikan field penting dari select aktif terisi
-                const activeSelect = getActiveSelect();
-                if (activeSelect) {
-                    if (!payload.service_id) payload.service_id = activeSelect.value || '';
-                    if (!payload.test_type_id) payload.test_type_id = (activeSelect.name === 'uji_bahan') ? '1' : '2';
-                    if (!payload.price_at_time || payload.price_at_time === '0') {
-                        const opt = activeSelect.options[activeSelect.selectedIndex];
-                        payload.price_at_time = opt?.getAttribute('data-price') || '0';
-                    }
-                }
-
-                // â”€â”€ STEP 2: Upload file langsung ke Supabase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                const fileFields = [
-                    { field: 'surat_permohonan',  payloadKey: 'file_surat_permohonan_url' },
-                    { field: 'scan_ktp',           payloadKey: 'file_ktp_url'             },
-                    { field: 'lampiran_pendukung', payloadKey: 'dokumen_tambahan_url'      }
-                ];
-
-                const filesToUpload = [];
-                const fileObjects   = {};
-
-                for (const { field } of fileFields) {
-                    const inp = this.querySelector(`input[name="${field}"]`);
-                    if (inp && inp.files[0]) {
-                        filesToUpload.push({ field, filename: inp.files[0].name });
-                        fileObjects[field] = inp.files[0];
-                    }
-                }
-
-                if (filesToUpload.length > 0) {
-                    Swal.update({ text: 'Menyiapkan upload file...' });
-
-                    // Minta signed URL
-                    const urlRes = await fetch('/api/submissions/upload-urls', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ files: filesToUpload })
+                const formData = new FormData(this);
+                
+                // ≡ƒöÑ KOMPRESI GAMBAR CLIENT-SIDE (DIOPTIMASI)
+                async function compressImage(file) {
+                    if (!file || !file.type.startsWith('image/')) return file;
+                    return new Promise((resolve) => {
+                        const img = new Image();
+                        const objectUrl = URL.createObjectURL(file);
+                        img.src = objectUrl;
+                        
+                        img.onload = () => {
+                            URL.revokeObjectURL(objectUrl);
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            const MAX_DIM = 1200;
+                            
+                            if (width > height && width > MAX_DIM) {
+                                height *= MAX_DIM / width;
+                                width = MAX_DIM;
+                            } else if (height > MAX_DIM) {
+                                width *= MAX_DIM / height;
+                                height = MAX_DIM;
+                            }
+                            
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            canvas.toBlob(blob => {
+                                if (blob && blob.size < file.size) {
+                                    resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
+                                } else {
+                                    resolve(file);
+                                }
+                            }, 'image/jpeg', 0.75);
+                        };
+                        img.onerror = () => {
+                            URL.revokeObjectURL(objectUrl);
+                            resolve(file);
+                        };
                     });
-
-                    if (!urlRes.ok) {
-                        const errText = await urlRes.text().catch(() => urlRes.status);
-                        throw new Error(`Gagal mendapatkan URL upload: ${errText}`);
-                    }
-
-                    const { data: urlData } = await urlRes.json();
-
-                    // Upload ke Supabase satu per satu
-                    for (const { field, payloadKey } of fileFields) {
-                        const info = urlData?.[field];
-                        if (!info?.signedUrl || !fileObjects[field]) continue;
-
-                        Swal.update({ text: `Mengupload ${field.replace(/_/g, ' ')}...` });
-
-                        const upRes = await fetch(info.signedUrl, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': fileObjects[field].type || 'application/octet-stream' },
-                            body: fileObjects[field]
-                        });
-
-                        if (!upRes.ok) {
-                            throw new Error(`Upload ${field} gagal (${upRes.status}). Coba lagi.`);
+                }
+                
+                const fileInputs = ['surat_permohonan', 'scan_ktp', 'lampiran_pendukung'];
+                for (let inputName of fileInputs) {
+                    const fileInput = document.querySelector(`input[name="${inputName}"]`);
+                    if (fileInput && fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        if (file.type.startsWith('image/')) {
+                            Swal.update({ text: `Mengompresi ${inputName.replace('_', ' ')}...` });
+                            const compressed = await compressImage(file);
+                            formData.set(inputName, compressed);
                         }
-
-                        payload[payloadKey] = info.publicUrl;
                     }
                 }
+                Swal.update({ text: 'Sedang mengirim pengajuan...' });
 
-                // â”€â”€ STEP 3: Kirim JSON ke backend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                Swal.update({ text: 'Menyimpan pengajuan...' });
-
-                const res = await fetch('/api/submissions', {
+                
+                // ≡ƒöÑ LOG SEMUA FORM DATA (TERMASUK HIDDEN)
+                console.log('≡ƒôñ [SUBMIT] FormData yang dikirim:');
+                for (let pair of formData.entries()) {
+                    console.log(`  ${pair[0]}:`, pair[1] instanceof File ? pair[1].name : pair[1]);
+                }
+                
+                // Pastikan hidden inputs tetap ada di FormData (jika kosong, set default)
+                if (!formData.has('service_id') || !formData.get('service_id')) {
+                    const activeSelect = getActiveSelect();
+                    if (activeSelect && activeSelect.value) {
+                        formData.set('service_id', activeSelect.value);
+                        console.log('≡ƒöä [SUBMIT] Set service_id via FormData:', activeSelect.value);
+                    }
+                }
+                if (!formData.has('test_type_id') || !formData.get('test_type_id')) {
+                    const activeSelect = getActiveSelect();
+                    if (activeSelect) {
+                        const selectName = activeSelect.name;
+                        const testTypeId = selectName === 'uji_bahan' ? '1' : '2';
+                        formData.set('test_type_id', testTypeId);
+                        console.log('≡ƒöä [SUBMIT] Set test_type_id via FormData:', testTypeId);
+                    }
+                }
+                if (!formData.has('price_at_time') || formData.get('price_at_time') === '0') {
+                    const activeSelect = getActiveSelect();
+                    if (activeSelect && activeSelect.value) {
+                        const selectedOption = activeSelect.options[activeSelect.selectedIndex];
+                        const price = selectedOption.getAttribute('data-price') || '0';
+                        formData.set('price_at_time', price);
+                        console.log('≡ƒöä [SUBMIT] Set price_at_time via FormData:', price);
+                    }
+                }
+                
+                // Token dari localStorage (selalu ada setelah login), fallback ke meta tag
+                const authToken = localStorage.getItem('token') 
+                    || document.getElementById('api-auth-token')?.getAttribute('data-token') 
+                    || '';
+                
+                const fetchOptions = {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
+                    body: formData
+                };
+                
+                // Jika token tersedia, kirim langsung ke backend API untuk menghindari double-upload
+                let submitUrl = '/user/submission';
+                if (authToken) {
+                    fetchOptions.headers = { 'Authorization': `Bearer ${authToken}` };
+                    submitUrl = '/api/submissions';
+                }
 
-                const result = await res.json().catch(() => ({ success: false, message: `HTTP ${res.status}` }));
-
-                if (res.ok && result.success) {
+                
+                const response = await fetch(submitUrl, fetchOptions);
+                
+                if (!response.ok) {
+                    const text = await response.text();
+                    console.error('Γ¥î Response not OK:', text);
+                    throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
+                }
+                
+                const result = await response.json();
+                console.log('≡ƒôª Result:', result);
+                
+                if (result.success) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Berhasil!',
+                        title: 'Berhasil',
                         text: 'Pengajuan berhasil dikirim',
                         timer: 1500,
                         showConfirmButton: false
@@ -782,22 +793,19 @@ document.addEventListener('DOMContentLoaded', async function() {
                         window.location.href = '/user/history?success=true&message=Pengajuan+berhasil+dikirim';
                     });
                 } else {
-                    Swal.fire('Gagal', result.message || 'Terjadi kesalahan saat menyimpan', 'error');
+                    Swal.fire('Error', result.message || 'Gagal mengirim pengajuan', 'error');
                 }
-
-            } catch (err) {
-                console.error('âŒ Submit error:', err);
-                Swal.fire('Error', err.message || 'Terjadi kesalahan', 'error');
+            } catch (error) {
+                console.error('Γ¥î Error:', error);
+                Swal.fire('Error', 'Terjadi kesalahan saat mengirim data: ' + error.message, 'error');
             } finally {
                 this.dataset.submitting = 'false';
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = originalBtnHtml;
-                }
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
             }
         });
     }
-
-    // Inisialisasi awal
+    
+    // Initial update
     setTimeout(updateAll, 500);
 });
