@@ -870,6 +870,16 @@ main.main-content,
     justify-content: flex-start;
 }
 
+.action-item span {
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    font-family: inherit !important;
+}
+
+.action-item i {
+    font-size: 1.1rem !important;
+}
+
 .action-item:hover {
     background: var(--primary-light);
     border-color: var(--primary);
