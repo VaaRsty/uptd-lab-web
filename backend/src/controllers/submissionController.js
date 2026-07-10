@@ -179,48 +179,46 @@ exports.create = async (req, res, next) => {
             updatedUrls.dokumen_tambahan = req.body.dokumen_tambahan_url;
         }
         
-        // Fallback: upload file melalui server (jika tidak ada direct URL)
+        // Fallback: upload file melalui server (paralel, max 6 detik total)
         if (req.files && Object.keys(updatedUrls).length === 0) {
-            // Helper: upload dengan timeout 8 detik agar tidak hang
-            const uploadWithTimeout = (buffer, name, mime, bucket, folder) => {
-                return Promise.race([
-                    uploadToSupabase(buffer, name, mime, bucket, folder),
-                    new Promise((_, reject) =>
-                        setTimeout(() => reject(new Error('Upload timeout (8s)')), 8000)
-                    )
-                ]);
-            };
+            const path = require('path');
+            const uploadTasks = [];
 
-            try {
-                if (req.files.surat_permohonan && req.files.surat_permohonan[0]) {
-                    const file = req.files.surat_permohonan[0];
-                    const ext = require('path').extname(file.originalname);
-                    const newName = `SuratPermohonan_Pengujian_${id}${ext}`;
-                    try {
-                        updatedUrls.file_surat_permohonan = await uploadWithTimeout(file.buffer, newName, file.mimetype, 'uploads', 'surat_permohonan');
-                        console.log('✅ Upload surat_permohonan OK');
-                    } catch (e) { console.error('⚠️ Upload surat_permohonan gagal:', e.message); }
-                }
-                if (req.files.scan_ktp && req.files.scan_ktp[0]) {
-                    const file = req.files.scan_ktp[0];
-                    const ext = require('path').extname(file.originalname);
-                    const newName = `KTP_Pengujian_${id}${ext}`;
-                    try {
-                        updatedUrls.file_ktp = await uploadWithTimeout(file.buffer, newName, file.mimetype, 'uploads', 'scan_ktp');
-                        console.log('✅ Upload scan_ktp OK');
-                    } catch (e) { console.error('⚠️ Upload scan_ktp gagal:', e.message); }
-                }
-                if (req.files.lampiran_pendukung && req.files.lampiran_pendukung[0]) {
-                    const file = req.files.lampiran_pendukung[0];
-                    const ext = require('path').extname(file.originalname);
-                    const newName = `Lampiran_Pengujian_${id}${ext}`;
-                    try {
-                        updatedUrls.dokumen_tambahan = await uploadWithTimeout(file.buffer, newName, file.mimetype, 'uploads', 'lampiran_pendukung');
-                        console.log('✅ Upload lampiran_pendukung OK');
-                    } catch (e) { console.error('⚠️ Upload lampiran_pendukung gagal:', e.message); }
-                }
-            } catch (uploadErr) {
-                console.error('❌ Gagal mengupload file ke Supabase:', uploadErr);
+            if (req.files.surat_permohonan?.[0]) {
+                const f = req.files.surat_permohonan[0];
+                const name = `SuratPermohonan_${id}${path.extname(f.originalname)}`;
+                uploadTasks.push(
+                    uploadToSupabase(f.buffer, name, f.mimetype, 'uploads', 'surat_permohonan')
+                        .then(url => { updatedUrls.file_surat_permohonan = url; })
+                        .catch(e => console.error('⚠️ surat_permohonan gagal:', e.message))
+                );
+            }
+            if (req.files.scan_ktp?.[0]) {
+                const f = req.files.scan_ktp[0];
+                const name = `KTP_${id}${path.extname(f.originalname)}`;
+                uploadTasks.push(
+                    uploadToSupabase(f.buffer, name, f.mimetype, 'uploads', 'scan_ktp')
+                        .then(url => { updatedUrls.file_ktp = url; })
+                        .catch(e => console.error('⚠️ scan_ktp gagal:', e.message))
+                );
+            }
+            if (req.files.lampiran_pendukung?.[0]) {
+                const f = req.files.lampiran_pendukung[0];
+                const name = `Lampiran_${id}${path.extname(f.originalname)}`;
+                uploadTasks.push(
+                    uploadToSupabase(f.buffer, name, f.mimetype, 'uploads', 'lampiran_pendukung')
+                        .then(url => { updatedUrls.dokumen_tambahan = url; })
+                        .catch(e => console.error('⚠️ lampiran gagal:', e.message))
+                );
+            }
+
+            if (uploadTasks.length > 0) {
+                // Semua upload paralel, max 6 detik total (aman untuk Vercel Hobby 10s)
+                await Promise.race([
+                    Promise.all(uploadTasks),
+                    new Promise(resolve => setTimeout(resolve, 6000))
+                ]);
+                console.log('✅ Upload selesai (atau timeout). URLs:', updatedUrls);
             }
         }
 
