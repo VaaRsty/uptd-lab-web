@@ -157,7 +157,7 @@ const formData = locals.formData || {};
 
                             <div class="input-group full-width">
                                 <label>Alamat <span class="required">*</span></label>
-                                <textarea name="alamat_pemohon" rows="2" required placeholder="Alamat lengkap instansi/pemohon"><%= locals.formData ? formData.alamat_pemohon : '' %></textarea>
+                                <textarea name="alamat_pemohon" rows="2" required placeholder="Alamat lengkap instansi/pemohon"><%= (locals.formData && formData.alamat_pemohon) ? formData.alamat_pemohon : (locals.user && user.alamat ? user.alamat : '') %></textarea>
                             </div>
 
                             <div class="input-group">

@@ -130,24 +130,37 @@ exports.create = async (req, res, next) => {
         const updatedUrls = {};
         if (req.files) {
             try {
+                const uploadTasks = [];
+
                 if (req.files.surat_permohonan && req.files.surat_permohonan[0]) {
                     const file = req.files.surat_permohonan[0];
                     const ext = require('path').extname(file.originalname);
                     const newName = `SuratPermohonan_Pengujian_${id}${ext}`;
-                    updatedUrls.file_surat_permohonan = await uploadToSupabase(file.buffer, newName, file.mimetype, 'uploads', 'surat_permohonan');
+                    uploadTasks.push(
+                        uploadToSupabase(file.buffer, newName, file.mimetype, 'uploads', 'surat_permohonan')
+                            .then(url => { updatedUrls.file_surat_permohonan = url; })
+                    );
                 }
                 if (req.files.scan_ktp && req.files.scan_ktp[0]) {
                     const file = req.files.scan_ktp[0];
                     const ext = require('path').extname(file.originalname);
                     const newName = `KTP_Pengujian_${id}${ext}`;
-                    updatedUrls.file_ktp = await uploadToSupabase(file.buffer, newName, file.mimetype, 'uploads', 'scan_ktp');
+                    uploadTasks.push(
+                        uploadToSupabase(file.buffer, newName, file.mimetype, 'uploads', 'scan_ktp')
+                            .then(url => { updatedUrls.file_ktp = url; })
+                    );
                 }
                 if (req.files.lampiran_pendukung && req.files.lampiran_pendukung[0]) {
                     const file = req.files.lampiran_pendukung[0];
                     const ext = require('path').extname(file.originalname);
                     const newName = `Lampiran_Pengujian_${id}${ext}`;
-                    updatedUrls.dokumen_tambahan = await uploadToSupabase(file.buffer, newName, file.mimetype, 'uploads', 'lampiran_pendukung');
+                    uploadTasks.push(
+                        uploadToSupabase(file.buffer, newName, file.mimetype, 'uploads', 'lampiran_pendukung')
+                            .then(url => { updatedUrls.dokumen_tambahan = url; })
+                    );
                 }
+
+                await Promise.all(uploadTasks);
 
                 // Update database jika ada file yang berhasil diupload
                 if (Object.keys(updatedUrls).length > 0) {
