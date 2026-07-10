@@ -160,17 +160,19 @@ exports.create = async (req, res, next) => {
                     );
                 }
 
-                await Promise.all(uploadTasks);
+                // Lakukan upload di background agar API merespons jauh lebih cepat (menghindari bottleneck 2 menit)
+                Promise.all(uploadTasks)
+                    .then(() => {
+                        if (Object.keys(updatedUrls).length > 0) {
+                            submissionModel.update(id, updatedUrls)
+                                .then(() => console.log('✅ Berhasil update submission dengan URL file (Background):', updatedUrls))
+                                .catch(e => console.error('Gagal update URL di background:', e));
+                        }
+                    })
+                    .catch(uploadErr => {
+                        console.error('❌ Gagal mengupload file ke Supabase (Background):', uploadErr);
+                    });
 
-                // Update database jika ada file yang berhasil diupload
-                if (Object.keys(updatedUrls).length > 0) {
-                    await submissionModel.update(id, updatedUrls);
-                    console.log('✅ Berhasil update submission dengan URL file:', updatedUrls);
-                }
-            } catch (uploadErr) {
-                console.error('❌ Gagal mengupload file ke Supabase:', uploadErr);
-                // Kita biarkan jalan terus karena submission sudah terbuat, tapi bisa juga di-cancel
-            }
         }
         // ------------------------------------------
 
